@@ -1,0 +1,268 @@
+/* Barra de navegación */
+.navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #ffffff;
+    padding: 20px 50px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+.logo {
+    font-size: 24px;
+    font-weight: bold;
+    color: #2c3e50;
+}
+
+.nav-links {
+    list-style: none;
+    display: flex;
+    gap: 20px;
+    align-items: center;
+}
+
+.nav-links a {
+    text-decoration: none;
+    color: #555;
+    font-weight: 500;
+    transition: color 0.3s;
+}
+
+.nav-links a:hover {
+    color: #e67e22;
+}
+
+.btn-contacto {
+    background-color: #2c3e50;
+    color: #fff !important;
+    padding: 10px 20px;
+    border-radius: 5px;
+}
+
+.btn-contacto:hover {
+    background-color: #1a252f;
+}
+
+/* =========================================
+   1. ESTILOS BASE Y GENERALES
+========================================= */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+body {
+    background-color: #f9f9f9;
+    color: #333;
+    line-height: 1.6;
+}
+
+/* =========================================
+   2. SECCIÓN MODALIDADES DE CONSTRUCCIÓN
+========================================= */
+.modalidades-seccion {
+    padding: 80px 50px;
+    background-color: #ffffff;
+    text-align: center;
+}
+
+.modalidades-seccion h2 {
+    font-size: 36px;
+    color: #2c3e50;
+    margin-bottom: 15px;
+}
+
+.modalidades-intro {
+    font-size: 18px;
+    color: #7f8c8d;
+    margin-bottom: 50px;
+}
+
+.contenedor-opciones {
+    display: flex;
+    justify-content: center;
+    gap: 40px;
+    flex-wrap: wrap; /* Permite que se adapte a celulares */
+    max-width: 1100px;
+    margin: 0 auto;
+}
+
+.opcion-tarjeta {
+    background-color: #f4f6f7; /* Gris claro */
+    padding: 50px 40px;
+    border-radius: 10px;
+    flex: 1; /* Hace que ambas tarjetas midan lo mismo */
+    min-width: 320px;
+    text-align: left;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    display: flex;
+    flex-direction: column;
+}
+
+.opcion-tarjeta:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+}
+
+.icono-opcion {
+    font-size: 45px;
+    margin-bottom: 20px;
+}
+
+.opcion-tarjeta h3 {
+    font-size: 26px;
+    margin-bottom: 15px;
+    color: #2c3e50;
+}
+
+.opcion-tarjeta p {
+    margin-bottom: 25px;
+    color: #555;
+    line-height: 1.6;
+}
+
+/* Lista de viñetas con diseño personalizado */
+.lista-ventajas {
+    list-style: none;
+    padding: 0;
+    margin-bottom: 40px;
+    flex-grow: 1; /* Empuja el botón siempre hacia abajo */
+}
+
+.lista-ventajas li {
+    margin-bottom: 15px;
+    position: relative;
+    padding-left: 30px;
+    color: #444;
+}
+
+.lista-ventajas li::before {
+    content: '✓'; /* Palomita de verificación */
+    color: #e67e22; /* Color naranjo */
+    position: absolute;
+    left: 0;
+    font-weight: bold;
+    font-size: 18px;
+}
+
+/* --- Estilos para la Tarjeta Premium (Desde cero) --- */
+.opcion-tarjeta.destacada {
+    background-color: #2c3e50; /* Azul oscuro */
+    color: #ffffff;
+}
+
+.opcion-tarjeta.destacada h3 {
+    color: #e67e22; /* Título naranjo para resaltar */
+}
+
+.opcion-tarjeta.destacada p,
+.opcion-tarjeta.destacada .lista-ventajas li {
+    color: #ecf0f1; /* Texto blanco/gris claro */
+}
+
+/* =========================================
+   3. BOTONES
+========================================= */
+.btn-primario {
+    background-color: #e67e22;
+    color: #fff;
+    padding: 15px 30px;
+    text-decoration: none;
+    text-align: center;
+    font-size: 18px;
+    border-radius: 5px;
+    font-weight: bold;
+    transition: background 0.3s;
+    display: block;
+}
+
+.btn-primario:hover {
+    background-color: #d35400;
+}
+
+.btn-secundario {
+    background-color: transparent;
+    color: #2c3e50;
+    border: 2px solid #2c3e50;
+    padding: 15px 30px;
+    text-decoration: none;
+    text-align: center;
+    border-radius: 5px;
+    font-weight: bold;
+    font-size: 18px;
+    transition: all 0.3s;
+    display: block;
+}
+
+.btn-secundario:hover {
+    background-color: #2c3e50;
+    color: #ffffff;
+}
+
+/* =========================================
+   4. PIE DE PÁGINA (FOOTER)
+========================================= */
+.footer-sitio {
+    background-color: #2c3e50;
+    color: #ecf0f1;
+    padding: 50px 20px 20px;
+    text-align: center;
+    margin-top: 60px;
+}
+
+.footer-contenido {
+    max-width: 800px;
+    margin: 0 auto 40px;
+}
+
+.footer-contenido h3 {
+    font-size: 32px;
+    color: #e67e22;
+    margin-bottom: 15px;
+    font-weight: bold;
+}
+
+.footer-contenido p {
+    font-size: 16px;
+    color: #bdc3c7;
+    margin-bottom: 20px;
+}
+
+.footer-contacto {
+    margin-top: 30px;
+    background-color: rgba(255, 255, 255, 0.05);
+    padding: 20px;
+    border-radius: 8px;
+    display: inline-block;
+}
+
+.footer-contacto p {
+    margin: 5px 0;
+    color: #ffffff;
+    font-weight: 500;
+}
+
+.footer-legal {
+    border-top: 1px solid #34495e;
+    padding-top: 20px;
+    font-size: 14px;
+    color: #7f8c8d;
+}
+
+/* =========================================
+   5. ADAPTACIÓN PARA CELULARES
+========================================= */
+@media (max-width: 768px) {
+    .modalidades-seccion {
+        padding: 50px 20px;
+    }
+    
+    .contenedor-opciones {
+        flex-direction: column;
+    }
+}

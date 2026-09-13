@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Modalidades de Construcción - HomeCount Simulator</title>
+    <link rel="stylesheet" href="style4.css">
+    <script src="script.js" defer></script>
+</head>
+<body>
+
+    <!-- Menú de Navegación -->
+    <header class="navbar">
+        <div class="logo">HomeCount Simulator</div>
+        <nav>
+            <ul class="nav-links">
+                <li><a href="inicio.html">Inicio</a></li>
+                <li><a href="contrucion.html">Servicios</a></li>
+                <li><a href="casas_rapidas.html">Proyectos</a></li>
+                <li><a href="inicio.html#contacto" class="btn-contacto">Contacto</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <!-- Sección Crear desde Cero -->
+    <section id="desde-cero" class="desde-cero-seccion">
+        <div class="contenedor-creacion">
+            
+            <!-- Columna Izquierda: Información -->
+            <div class="info-creacion">
+                <h2>Diseña tu Casa desde Cero</h2>
+                <p>Personaliza cada detalle de tu futuro hogar. Selecciona los parámetros básicos para que nuestro equipo pueda evaluar la viabilidad de tu proyecto basándose en el presupuesto que indicaste.</p>
+                
+                <!-- Aquí se conecta el presupuesto del inicio -->
+                <div class="caja-presupuesto-vinculado">
+                    <p>Tu presupuesto indicado:</p>
+                    <h3 class="valor-mostrado">$<span id="presupuesto-vinculado">500.000</span> CLP</h3>
+                    <small>Este valor se actualiza si mueves la barra en la sección de inicio.</small>
+                </div>
+            </div>
+
+            <!-- Columna Derecha: Formulario y Resultados -->
+            <div class="seccion-interactiva">
+                <!-- Formulario de características de la casa -->
+                <form class="formulario-creacion" id="form-desde-cero">
+                    <div class="grupo-input">
+                        <label for="metros-cuadrados">Metros Cuadrados (m²)</label>
+                        <input type="number" id="metros-cuadrados" placeholder="Ej: 120" min="20" required>
+                    </div>
+                    <div class="grupo-input">
+                        <label for="habitaciones">Número de Habitaciones</label>
+                        <input type="number" id="habitaciones" placeholder="Ej: 3" min="1" required>
+                    <button type="submit" class="btn-primario">Enviar Especificaciones</button>
+                </form>
+
+                <!-- Contenedor del Desglose de Materiales (Oculto por defecto) -->
+                <div id="resultado-presupuesto" class="resultado-presupuesto" style="display: none;">
+                    <h3>Desglose Estimado de Materiales</h3>
+                    <p class="nota-desglose">Cálculo basado en los metros cuadrados indicados.</p>
+                    
+                    <ul id="lista-materiales" class="lista-materiales">
+                        <!-- JavaScript inyectará la lista de clavos, cemento, etc. aquí -->
+                    </ul>
+                    
+                    <div class="resumen-total">
+                        <p>Costo Total Estimado: <strong id="costo-total-calc">$0</strong></p>
+                        <div id="mensaje-diferencia" class="alerta-presupuesto"></div>
+                    </div>
+                </div>
+            </div>
+            
+        </div>
+    </section>
+
+    <!-- Pie de página -->
+    <footer>
+        <p>&copy; 2026 HomeCount Simulator - Todos los derechos reservados.</p>
+    </footer>  
+
+</body>
+</html>
