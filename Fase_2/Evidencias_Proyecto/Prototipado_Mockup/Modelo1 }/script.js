@@ -165,3 +165,4 @@ if (inputMetros) {
 if (typeof barra !== 'undefined' && barra) {
     barra.addEventListener('input', calcularMateriales);
 }
+

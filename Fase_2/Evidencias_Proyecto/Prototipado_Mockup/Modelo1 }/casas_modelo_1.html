@@ -1,0 +1,53 @@
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Modalidades de Construcción</title>
+    <link rel="stylesheet" href="Style5.css">
+    <script src="script_casas1.js" defer></script>
+</head>
+
+    <!-- Menú de Navegación -->
+    <header class="navbar">
+        <div class="logo">HomeCount Simulator
+        </div>
+        <nav>
+            <ul class="nav-links">
+                <li><a href="inicio.html">Inicio</a></li>
+                <li><a href="contrucion.html">Servicios</a></li>
+                <li><a href="casas_rapidas.html">Proyectos</a></li>
+                <li><a href="inicio.html#contacto" class="btn-contacto">Contacto</a></li>
+            </ul>
+        </nav>
+    </header>
+
+<!-- Importar Three.js -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<!-- 1. El script principal de Three.js que ya tenías -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+<!-- 2. NUEVO: Agregar OrbitControls para poder rotar la cámara -->
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+
+<section id="constructor-3d" class="seccion-3d">
+    <div class="ui-3d">
+        <h2>Simulador 3D</h2>
+        <div class="herramientas-3d">
+            <button class="btn-mat-3d activo" data-mat="madera" data-precio="15000">🪵 Madera ($15.000)</button>
+            <button class="btn-mat-3d" data-mat="ladrillo" data-precio="25000">🧱 Ladrillo ($25.000)</button>
+            <button class="btn-mat-3d" data-mat="concreto" data-precio="35000">🪨 Concreto ($35.000)</button>
+        </div>
+        <div class="presupuesto-3d">
+            Costo Total: <strong id="total-3d">$0</strong> CLP
+        </div>
+        <p class="instrucciones-3d"><strong>Click:</strong> Construir muro | <strong>Shift + Click:</strong> Borrar muro</p>
+    </div>
+    <!-- Contenedor donde se renderizará el mundo 3D -->
+    <div id="canvas-3d-container"></div>
+</section>
+
+
+    
+
+<footer>
+    <p>&copy; 2024 HomeCount Simulator. Todos los derechos reservados.</p>
+</footer>
