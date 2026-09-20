@@ -1,0 +1,382 @@
+/* Configuraciones generales */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+body {
+    background-color: #f9f9f9;
+    color: #333;
+    line-height: 1.6;
+}
+
+/* Barra de navegación */
+.navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #ffffff;
+    padding: 20px 50px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+.logo {
+    font-size: 24px;
+    font-weight: bold;
+    color: #2c3e50;
+}
+
+.nav-links {
+    list-style: none;
+    display: flex;
+    gap: 20px;
+    align-items: center;
+}
+
+.nav-links a {
+    text-decoration: none;
+    color: #555;
+    font-weight: 500;
+    transition: color 0.3s;
+}
+
+.nav-links a:hover {
+    color: #e67e22;
+}
+
+.btn-contacto {
+    background-color: #2c3e50;
+    color: #fff !important;
+    padding: 10px 20px;
+    border-radius: 5px;
+}
+
+.btn-contacto:hover {
+    background-color: #1a252f;
+}
+
+/* Sección Hero (Inicio) */
+.hero {
+    /* Aquí puedes poner la URL de una foto real de una casa */
+    background: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)), url('https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80') center/cover;
+    height: 80vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    color: #fff;
+    padding: 0 20px;
+}
+
+.hero-content h1 {
+    font-size: 48px;
+    margin-bottom: 20px;
+}
+
+.hero-content p {
+    font-size: 20px;
+    margin-bottom: 30px;
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.btn-primario {
+    background-color: #e67e22;
+    color: #fff;
+    padding: 15px 30px;
+    text-decoration: none;
+    font-size: 18px;
+    border-radius: 5px;
+    font-weight: bold;
+    transition: background 0.3s;
+}
+
+.btn-primario:hover {
+    background-color: #d35400;
+}
+
+/* Sección de Servicios */
+.servicios {
+    padding: 80px 50px;
+    text-align: center;
+}
+
+.servicios h2 {
+    font-size: 36px;
+    margin-bottom: 50px;
+    color: #2c3e50;
+}
+
+.grid-servicios {
+    display: flex;
+    justify-content: center;
+    gap: 30px;
+    flex-wrap: wrap;
+}
+
+.tarjeta {
+    background-color: #fff;
+    padding: 40px 30px;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+    width: 300px;
+    transition: transform 0.3s;
+}
+
+.tarjeta:hover {
+    transform: translateY(-10px);
+}
+
+.tarjeta h3 {
+    margin-bottom: 15px;
+    color: #2c3e50;
+}
+
+/* --- Sección Presupuesto --- */
+.presupuesto-seccion {
+    padding: 80px 50px;
+    text-align: center;
+    background-color: #ecf0f1; /* Un gris muy claro para diferenciar la sección */
+}
+
+.presupuesto-seccion h2 {
+    font-size: 36px;
+    margin-bottom: 30px;
+    color: #2c3e50;
+}
+
+.contenedor-presupuesto {
+    background-color: #fff;
+    padding: 40px;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+    max-width: 600px;
+    margin: 0 auto; /* Centra el cuadro */
+}
+
+/* Estilo de la barra deslizable */
+input[type="range"] {
+    width: 100%;
+    margin: 30px 0;
+    cursor: pointer;
+    accent-color: #e67e22; /* Le da el color naranjo a la barra */
+}
+
+/* Texto del precio */
+.valor-mostrado {
+    font-size: 28px;
+    font-weight: bold;
+    color: #2c3e50;
+}
+
+#valor-pantalla {
+    color: #e67e22; /* Destaca solo el número en naranjo */
+}
+
+/* --- Sección Galería --- */
+.galeria-seccion {
+    padding: 80px 50px;
+    background-color: #ffffff;
+    text-align: center;
+}
+
+.galeria-seccion h2 {
+    font-size: 36px;
+    color: #2c3e50;
+    margin-bottom: 10px;
+}
+
+.galeria-intro {
+    font-size: 18px;
+    color: #7f8c8d;
+    margin-bottom: 50px;
+}
+
+.galeria-categoria {
+    margin-bottom: 60px;
+    text-align: left;
+}
+
+.galeria-categoria h3 {
+    font-size: 28px;
+    color: #e67e22; /* Naranjo para resaltar */
+    margin-bottom: 25px;
+    border-bottom: 2px solid #ecf0f1;
+    padding-bottom: 10px;
+}
+
+/* La cuadrícula que ordena las fotos */
+.grid-imagenes {
+    display: grid;
+    /* Esto hace que se adapten a la pantalla solas */
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); 
+    gap: 25px;
+}
+
+/* El recuadro donde irá la foto */
+.espacio-imagen {
+    background-color: #f4f6f7;
+    border: 2px dashed #bdc3c7; /* Línea punteada como placeholder */
+    border-radius: 10px;
+    height: 250px;
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+/* Efecto al pasar el ratón */
+.espacio-imagen:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+}
+
+/* Texto temporal de fondo */
+.texto-imagen {
+    color: #95a5a6;
+    font-weight: 500;
+    position: absolute;
+    z-index: 1;
+}
+
+/* La imagen real (cuando la agregues) */
+.imagen-galeria {
+    width: 100%;
+    height: 100%;
+    object-fit: cover; /* Evita que la foto se estire o deforme */
+    position: absolute;
+    z-index: 2; /* Para que tape el texto temporal */
+}
+
+/* Adaptación para celulares */
+@media (max-width: 768px) {
+    .galeria-seccion {
+        padding: 50px 20px;
+    }
+}
+
+/* --- Ventana Modal para Imágenes --- */
+.modal {
+    display: none; /* Oculto por defecto hasta que se hace clic */
+    position: fixed;
+    z-index: 1000; /* Asegura que quede por encima de todo */
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.85); /* Fondo negro semitransparente */
+    justify-content: center; /* Centra horizontalmente */
+    align-items: center; /* Centra verticalmente */
+}
+
+/* La imagen dentro del modal */
+.modal-contenido {
+    /* Muestra la resolución original, pero evita que se salga de la pantalla si es gigante */
+    max-width: 90%;
+    max-height: 90%;
+    object-fit: contain; /* Nunca deforma la imagen */
+    border-radius: 5px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+}
+
+/* Botón de cerrar "X" */
+.cerrar-modal {
+    position: absolute;
+    top: 20px;
+    right: 40px;
+    color: #fff;
+    font-size: 50px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: color 0.3s;
+}
+
+.cerrar-modal:hover {
+    color: #e67e22; /* Se pone naranjo al pasar el mouse */
+}
+
+/* Cambiar el cursor a una "manito" en la galería para que el usuario sepa que puede hacer clic */
+.espacio-imagen {
+    cursor: pointer;
+}
+
+/* --- Sección de Contacto --- */
+.contacto-seccion {
+    padding: 80px 50px;
+    background-color: #ecf0f1;
+    text-align: center;
+}
+
+.contacto-seccion h2 {
+    font-size: 36px;
+    color: #2c3e50;
+    margin-bottom: 10px;
+}
+
+.contacto-seccion p {
+    margin-bottom: 30px;
+    color: #7f8c8d;
+}
+
+.formulario {
+    max-width: 500px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 15px; /* Espacio entre las cajas */
+}
+
+.formulario input, 
+.formulario textarea {
+    padding: 15px;
+    border: 1px solid #bdc3c7;
+    border-radius: 5px;
+    font-size: 16px;
+    font-family: inherit;
+    outline: none;
+    transition: border-color 0.3s;
+}
+
+.formulario input:focus, 
+.formulario textarea:focus {
+    border-color: #e67e22; /* Se pone naranjo al escribir */
+}
+
+/* El texto de éxito o error */
+#mensaje-estado {
+    margin-top: 15px;
+    font-weight: bold;
+}
+
+/* Footer */
+footer {
+    background-color: #2c3e50;
+    color: #fff;
+    text-align: center;
+    padding: 20px;
+    margin-top: 40px;
+}
+
+/* Adaptación para pantallas pequeñas (Celulares) */
+@media (max-width: 768px) {
+    .navbar {
+        flex-direction: column;
+        gap: 15px;
+    }
+    .hero-content h1 {
+        font-size: 36px;
+    }
+    .grid-servicios {
+        flex-direction: column;
+        align-items: center;
+    }
+}
+

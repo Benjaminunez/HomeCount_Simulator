@@ -1,0 +1,151 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Construye Tu Casa Ideal</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <script src="{% static 'js/script.js' %}" defer></script>
+</head>
+<body>
+
+    <!-- Menú de Navegación -->
+    <header class="navbar">
+        <div class="logo">HomeCount Simulator
+        </div>
+        <nav>
+            <ul class="nav-links">
+                <li><a href="{% url 'inicio' %}">Inicio</a></li>
+                <li><a href="{% url 'contrucion' %}">Servicios</a></li>
+                <li><a href="{% url 'casas_rapidas' %}">Proyectos</a></li>
+                <li><a href="{% url 'inicio' %}#contacto" class="btn-contacto">Contacto</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <!-- Sección Principal (Hero) -->
+    <section id="inicio" class="hero">
+        <div class="hero-content">
+            <h1>Diseñamos y construimos la casa de tus sueños</h1>
+            <p>Desde los primeros planos hasta la entrega de llaves. Materializamos tus ideas con los mejores estándares de calidad.</p>
+            <a href="#contacto" class="btn-primario">Comenzar mi proyecto</a>
+        </div>
+    </section>
+
+    <!-- Sección de Servicios -->
+    <section id="servicios" class="servicios">
+        <h2>Lo que hacemos</h2>
+        <div class="grid-servicios">
+            <div class="tarjeta">
+                <h3>Diseño Arquitectónico</h3>
+                <p>Planos en 2D y modelos en 3D para que visualices tu futuro hogar antes de poner el primer ladrillo.</p>
+            </div>
+            <div class="tarjeta">
+                <h3>Construcción</h3>
+                <p>Obras desde cero con materiales de primera calidad y un equipo de profesionales experimentados.</p>
+            </div>
+            <div class="tarjeta">
+                <h3>Remodelación</h3>
+                <p>Dale una nueva vida a tus espacios. Ampliaciones, rediseño de interiores y modernización.</p>
+            </div>
+        </div>
+    </section>
+
+<!-- Sección de Proyectos y Presupuesto -->
+    <section id="proyectos" class="presupuesto-seccion">
+        <h2>Ajusta tu Presupuesto</h2>
+        <div class="contenedor-presupuesto">
+            <p>Desliza la barra para indicar cuánto planeas invertir:</p>
+            
+            <!-- Barra deslizable (Slider) -->
+            <input type="range" id="barra-presupuesto" min="0" max="2000000000" step="10000" value="500000">
+            
+            <!-- Aquí se mostrará el número que cambia -->
+            <p class="valor-mostrado">$<span id="valor-pantalla">500.000</span> CLP</p>
+            <a href="{% url 'contrucion' %}" class="Contrucion">Construcción</a>
+        </div>
+    </section>
+
+<!-- Sección de Galería (Planos y Casas) -->
+    <section class="galeria-seccion">
+        <h2>Nuestros Diseños y Obras</h2>
+        <p class="galeria-intro">Explora nuestra colección de planos y los resultados finales de nuestras casas.</p>
+
+        <!-- Sub-sección: Planos -->
+        <div class="galeria-categoria">
+            <h3>Planos Arquitectónicos</h3>
+            <div class="grid-imagenes">
+                <!-- Espacio 1 -->
+                <div class="espacio-imagen">
+                    <span class="texto-imagen">Inserta aquí la foto de tu plano</span>
+                    <img src="{% static 'imagen-galeria/plano 1.jpg' %}" alt="Plano 1" class="imagen-galeria">
+                </div>
+                <!-- Espacio 2 -->
+                <div class="espacio-imagen">
+                    <span class="texto-imagen">Inserta aquí la foto de tu plano</span>
+                    <img src="{% static 'imagen-galeria/plano 2.jpg' %}" alt="Plano 2" class="imagen-galeria">
+                </div>
+                <!-- Espacio 3 -->
+                <div class="espacio-imagen">
+                    <span class="texto-imagen">Inserta aquí la foto de tu plano</span>
+                    <img src="{% static 'imagen-galeria/plano 3.png' %}" alt="Plano 3" class="imagen-galeria">
+                </div>
+            </div>
+        </div>
+
+        <!-- Sub-sección: Casas -->
+        <div class="galeria-categoria">
+            <h3>Casas Terminadas</h3>
+            <div class="grid-imagenes">
+                <!-- Espacio 1 -->
+                <div class="espacio-imagen">
+                    <span class="texto-imagen">Inserta aquí la foto de la casa</span>
+                    <img src="{% static 'imagen-galeria/casa1.jpg' %}" alt="Casa 1" class="imagen-galeria">
+                </div>
+                <!-- Espacio 2 -->
+                <div class="espacio-imagen">
+                    <span class="texto-imagen">Inserta aquí la foto de la casa</span>
+                    <img src="{% static 'imagen-galeria/casa2.jpg' %}" alt="Casa 2" class="imagen-galeria">
+                </div>
+                <!-- Espacio 3 -->
+                <div class="espacio-imagen">
+                    <span class="texto-imagen">Inserta aquí la foto de la casa</span>
+                    <img src="{% static 'imagen-galeria/casa3.jpg' %}" alt="Casa 3" class="imagen-galeria">
+                </div>
+            </div>
+        </div>
+        <div id="modal-imagen" class="modal">
+        <span class="cerrar-modal">&times;</span>
+        <img class="modal-contenido" id="imagen-ampliada">
+    </div>
+    </section>
+    
+
+<!-- Sección de Contacto -->
+    <section id="contacto" class="contacto-seccion">
+        <h2>Contáctanos</h2>
+        <p>Cuéntanos sobre tu proyecto y te responderemos a la brevedad.</p>
+        
+        <form id="formulario-contacto" class="formulario">
+            <!-- Los atributos 'name' son vitales para que la API sepa qué dato es cuál -->
+            <input type="text" name="user_name" placeholder="Tu Nombre" required>
+            <input type="email" name="user_email" placeholder="Tu Correo" required>
+            <textarea name="message" placeholder="Escribe tu mensaje aquí..." rows="5" required></textarea>
+            
+            <button type="submit" class="btn-primario">Enviar Mensaje</button>
+        </form>
+        <!-- Mensaje que aparecerá al enviar (éxito o error) -->
+        <p id="mensaje-estado"></p>
+    </section>
+
+    <!-- Importar la API de EmailJS (Pon esto justo antes de tus propios <script>) -->
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+    
+    <!-- Pie de página -->
+    <footer>
+        <p>&copy; 2026 ArquiCasa - Todos los derechos reservados.</p>
+    </footer>
+
+</body>
+</html>
