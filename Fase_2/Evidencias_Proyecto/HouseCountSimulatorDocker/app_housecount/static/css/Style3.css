@@ -199,4 +199,194 @@ footer {
 }
 
 
+/* =========================================
+   ESTILOS PREMIUM PARA EL FILTRO DE CASAS
+   ========================================= */
 
+.btn-toggle-lateral {
+    background-color: #ffffff;
+    border: 1px solid #e2e8f0;
+    padding: 0.65rem 1.25rem;
+    border-radius: 8px;
+    cursor: pointer;
+    color: #0f172a;
+    font-size: 0.9rem;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    transition: all 0.2s ease-in-out;
+}
+
+.btn-toggle-lateral:hover {
+    background-color: #f8fafc;
+    border-color: #cbd5e1;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.07);
+    transform: translateY(-1px);
+}
+
+.btn-toggle-lateral span {
+    color: #2563eb; /* Icono azul vibrante */
+    font-weight: bold;
+}
+
+/* Panel Lateral (Sidebar Card) */
+.sidebar-filtros {
+    width: 280px;
+    flex-shrink: 0;
+    background: #ffffff;
+    padding: 1.5rem;
+    border-radius: 12px;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+/* Secciones internas y títulos */
+.sidebar-seccion {
+    border-bottom: 1px solid #f1f5f9;
+    padding-bottom: 1.2rem;
+    margin-bottom: 1.2rem;
+}
+
+.sidebar-seccion:last-of-type {
+    border-bottom: none;
+    margin-bottom: 0.5rem;
+}
+
+.sidebar-titulo {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #0f172a;
+    letter-spacing: -0.01em;
+    margin-bottom: 0.8rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.sidebar-titulo::after {
+    content: "⌄";
+    color: #2563eb; /* Flecha azul */
+    font-size: 1.2rem;
+    font-weight: 600;
+}
+
+/* Campos de texto / números */
+.sidebar-label-text {
+    display: block;
+    font-size: 0.825rem;
+    font-weight: 500;
+    color: #64748b;
+    margin-bottom: 0.35rem;
+}
+
+.sidebar-input-text {
+    width: 100%;
+    padding: 0.55rem 0.75rem;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    color: #1e293b;
+    background-color: #f8fafc;
+    box-sizing: border-box;
+    transition: all 0.2s ease;
+}
+
+.sidebar-input-text:focus {
+    outline: none;
+    border-color: #2563eb;
+    background-color: #ffffff;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+/* Opciones de Radio Button */
+.sidebar-opcion {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.875rem;
+    color: #334155;
+    padding: 0.4rem 0.5rem;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color 0.15s ease;
+}
+
+.sidebar-opcion:hover {
+    background-color: #f1f5f9;
+    color: #0f172a;
+}
+
+.sidebar-opcion input[type="radio"] {
+    margin: 0;
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
+    accent-color: #2563eb;
+}
+
+/* Botones de acción dentro del filtro */
+.sidebar-filtros .btn-modelo {
+    background-color: #0f172a;
+    color: #ffffff;
+    padding: 0.65rem;
+    border: none;
+    border-radius: 6px;
+    font-weight: 600;
+    font-size: 0.875rem;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.sidebar-filtros .btn-modelo:hover {
+    background-color: #1e293b;
+}
+
+/* Enlace limpiar con clase dedicada */
+.sidebar-btn-limpiar {
+    display: block;
+    width: 100%;
+    text-align: center;
+    padding: 0.55rem;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    text-decoration: none;
+    color: #475569;
+    font-size: 0.875rem;
+    font-weight: 500;
+    background: #ffffff;
+    transition: all 0.2s ease;
+    box-sizing: border-box;
+}
+
+.sidebar-btn-limpiar:hover {
+    background-color: #f8fafc;
+    color: #0f172a;
+    border-color: #94a3b8;
+}
+
+/* Indicar que el título es interactivo */
+.sidebar-titulo {
+    cursor: pointer;
+    user-select: none; /* Evita seleccionar el texto al hacer doble clic */
+}
+
+/* Transición suave para la flecha */
+.sidebar-titulo::after {
+    transition: transform 0.2s ease-in-out;
+}
+
+/* Rotar la flecha cuando la sección está contraída */
+.sidebar-seccion.colapsado .sidebar-titulo::after {
+    transform: rotate(-90deg);
+}
+
+/* Ocultar el contenido de la sección cuando tiene la clase 'colapsado' */
+.sidebar-seccion.colapsado .sidebar-opcion,
+.sidebar-seccion.colapsado .sidebar-label-text,
+.sidebar-seccion.colapsado .sidebar-input-text {
+    display: none !important;
+}
