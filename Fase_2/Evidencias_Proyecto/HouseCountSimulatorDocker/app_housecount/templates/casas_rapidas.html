@@ -147,9 +147,61 @@
 
 </section>
 
+<section class="seccion-modelos" style="margin-top: 3rem; border-top: 2px solid #f1f5f9; padding-top: 3rem;">
+    <div class="encabezado-modelos">
+        <h2>El Mercado en Tiempo Real</h2>
+        <p>Explora algunas de las propiedades que se están vendiendo actualmente y compara opciones.</p>
+    </div>
+
+    <div class="grid-modelos">
+        {% for casa in casas_mercado %}
+            <div class="tarjeta-modelo">
+                <div class="imagen-modelo">
+                    <img src="{{ casa.imagen_alta }}" alt="{{ casa.title }}" class="img-real-modelo">
+                </div>
+                <div class="info-modelo">
+                    <h3 style="font-size: 1.05rem; height: 3em; overflow: hidden; margin-bottom: 0.2rem;">
+                        {{ casa.title }}
+                    </h3>
+                    
+                    <!-- NUEVO: Agregamos la descripción aquí -->
+                    <p style="font-size: 0.85rem; color: #64748b; line-height: 1.4; height: 4.2em; overflow: hidden; margin-bottom: 0.8rem;">
+                        {{ casa.descripcion }}
+                    </p>
+                    
+                    <div class="caracteristicas-modelo" style="margin-bottom: 0.8rem;">
+                        <span>📏 {{ casa.m2 }}</span>
+                        <span>🛏️ {{ casa.habs }}</span>
+                        <span>🛁 {{ casa.banos }}</span>
+                    </div>
+
+                    <div style="margin-bottom: 1rem;">
+                        <span style="background: #f8fafc; border: 1px solid #e2e8f0; padding: 4px 8px; border-radius: 4px; font-size: 0.8rem; color: #475569;">
+                            📍 {{ casa.city }}
+                        </span>
+                    </div>
+                    
+                    <p class="precio-modelo">
+                        <strong>{{ casa.currency_id }} ${{ casa.price|intcomma }}</strong>
+                    </p>
+                    
+                    <a href="{{ casa.permalink }}" target="_blank" rel="noopener noreferrer" class="btn-modelo" style="background-color: #ffe600; color: #2d3277; box-shadow: none; border: 1px solid #f0d800;">
+                        Ver en Portal Inmobiliario
+                    </a>
+                </div>
+            </div>
+        {% empty %}
+            <div style="grid-column: 1 / -1; text-align: center; padding: 3rem; color: #64748b;">
+                <p>No pudimos conectar con el mercado en este momento. Intenta más tarde.</p>
+            </div>
+        {% endfor %}
+    </div>
+</section>
+
 <!-- Pie de página -->
 <footer>
     <p>&copy; 2026 ArquiCasa - Todos los derechos reservados.</p>
 </footer>
+
 </body>
 </html>

@@ -73,12 +73,31 @@
 }
 
 /* Cuadrícula de modelos */
-.grid-modelos {
+/*.grid-modelos {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
     gap: 30px;
     max-width: 1200px;
     margin: 0 auto;
+}*/
+
+.grid-modelos {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1.5rem; 
+    max-width: 2200px; 
+    margin: 0 auto;   
+}
+
+@media (max-width: 992px) {
+    .grid-modelos {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+@media (max-width: 576px) {
+    .grid-modelos {
+        grid-template-columns: 1fr;
+    }
 }
 
 /* Tarjeta individual de cada modelo */
