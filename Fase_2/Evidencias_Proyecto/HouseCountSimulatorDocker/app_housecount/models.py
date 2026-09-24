@@ -29,6 +29,12 @@ class Material(models.Model):  #MATERIALES INDIVIDUALES
     coste = models.BigIntegerField(help_text="Costo unitario del material en CLP")
     dimensiones = models.CharField(max_length=100, blank=True, null=True, help_text="Ej: 1.20m x 2.40m, 6 metros, etc.")
     unidad_medida = models.CharField(max_length=50, default="Unidad", help_text="Ej: Saco, Plancha, Tira, m²")
+    archivo_3d = models.FileField(
+        upload_to='modelos_3d/materiales/', 
+        null=True, 
+        blank=True, 
+        help_text="Archivo .glb para el modelo 3D"
+    )
 
     class Meta:
         verbose_name = "Material"
@@ -43,6 +49,12 @@ class Habitacion(models.Model):  #DESCRIPCION MODULO DE HABITACION
     nombre_modulo = models.CharField(max_length=100, help_text="Ej: Dormitorio Principal, Baño Completo, Cocina")
     dimensiones = models.CharField(max_length=100, help_text="Ej: 3m x 4m (12 m²)")
     descripcion = models.TextField(blank=True, null=True)
+    archivo_3d = models.FileField(
+        upload_to='modelos_3d/habitaciones/', 
+        null=True, 
+        blank=True, 
+        help_text="Archivo .glb para el módulo prefabricado"
+    )
     
     # Relación Mucho a Muchos con Materiales a través de la tabla intermedia
     materiales = models.ManyToManyField(

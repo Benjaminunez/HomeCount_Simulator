@@ -4,7 +4,7 @@ import requests
 import json
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
-from .models import ModeloCasa
+from .models import ModeloCasa, Material, Habitacion
 
 def inicio(request): return render(request, 'inicio.html')
 def contrucion(request): return render(request, 'contrucion.html')
@@ -172,3 +172,70 @@ def api_propiedades_unica(request):
             return JsonResponse({'error': str(e)}, status=400)
 
     return JsonResponse({'error': 'Método no permitido'}, status=405)
+
+
+    # -------------------------------------------------------------------------------------------------------------------------------
+    # seccion dedicado a modelaje 3D mediante lo almacenado en DB
+    # -------------------------------------------------------------------------------------------------------------------------------
+
+@csrf_exempt
+def api_materiales_3d(request):
+    # --- GET: Devuelve Materiales y Módulos de Habitación ---
+    if request.method == 'GET':
+        materiales = Material.objects.all()
+        habitaciones = Habitacion.objects.prefetch_related('detalles_materiales__material').all()
+        
+        # 1. Serializamos los materiales individuales
+        lista_materiales = []
+        for mat in materiales:
+            textura = mat.nombre.split()[0].lower() if mat.nombre else "default"
+            lista_materiales.append({
+                "id": mat.id,
+                "nombre": mat.nombre,
+                "coste": mat.coste,
+                "textura_key": textura,
+                # CORRECCIÓN: Usar mat.archivo_3d.name para evitar errores de archivo vacío
+                "archivo_3d": mat.archivo_3d.url if mat.archivo_3d and mat.archivo_3d.name else None
+            })
+            
+        # 2. Serializamos los módulos de habitaciones con su costo calculado
+        lista_habitaciones = []
+        for hab in habitaciones:
+            desglose = [
+                {
+                    "material": detalle.material.nombre,
+                    "cantidad": detalle.cantidad,
+                    "subtotal": detalle.coste_subtotal
+                }
+                for detalle in hab.detalles_materiales.all()
+            ]
+            lista_habitaciones.append({
+                "id": hab.id,
+                "nombre": hab.nombre_modulo,
+                "dimensiones": hab.dimensiones,
+                "coste_total": hab.coste_total,  
+                "materiales": desglose,
+                # CORRECCIÓN: Usar hab.archivo_3d.name
+                "archivo_3d": hab.archivo_3d.url if hab.archivo_3d and hab.archivo_3d.name else None
+            })
+            
+        # Devolvemos ambos catálogos en un solo objeto JSON
+        return JsonResponse({
+            "materiales": lista_materiales,
+            "habitaciones": lista_habitaciones
+        }, safe=False)
+        
+    # --- POST: Permite crear materiales nuevos (vía Postman) ---
+    elif request.method == 'POST':
+        try:
+            body = json.loads(request.body)
+            nuevo_material = Material.objects.create(
+                nombre=body.get('nombre'),
+                coste=body.get('coste'),
+                dimensiones=body.get('dimensiones', ''),
+                unidad_medida=body.get('unidad_medida', 'Unidad')
+            )
+            return JsonResponse({"mensaje": "Material creado exitosamente", "id": nuevo_material.id}, status=201)
+            
+        except Exception as e:
+            return JsonResponse({"error": str(e)}, status=400)
