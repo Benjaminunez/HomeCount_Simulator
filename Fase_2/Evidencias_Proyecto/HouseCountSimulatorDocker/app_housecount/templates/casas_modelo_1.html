@@ -29,25 +29,36 @@
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
 
 <section id="constructor-3d" class="seccion-3d">
-    <div class="ui-3d">
-        <h2>Simulador 3D</h2>
-        <div class="herramientas-contenedor">
-            <h3>Materiales Base</h3>
-            <div id="lista-materiales" class="herramientas-3d"></div>
-            <h3>Módulos Prefabricados</h3>
-        <div id="lista-habitaciones" class="herramientas-3d"></div>
+    
+    <!-- 1. Contenedor del lienzo 3D (Ahora ocupará todo el fondo) -->
+    <div id="canvas-3d-container"></div>
+
+    <!-- 2. Capa de Interfaz (UI) flotante invisible que contiene los widgets -->
+    <div id="ui-flotante">
+        
+        <!-- Widget Superior Derecho: Presupuesto y Botón Borrar -->
+        <div class="panel-superior-derecho">
+            <div class="presupuesto-total">
+                Costo Total: <strong id="total-3d">$0</strong> CLP
+            </div>
+            <button id="btn-borrar-todo" class="btn-peligro">
+                🗑️ Borrar Diseño Definitivamente
+            </button>
         </div>
-        <div class="presupuesto-3d">
-            Costo Total: <strong id="total-3d">$0</strong> CLP
+
+        <!-- Instrucciones (Flotantes arriba al centro) -->
+        <div class="panel-instrucciones">
+            <p><strong>Click:</strong> Construir | <strong>Shift + Click:</strong> Borrar</p>
         </div>
-        <p class="instrucciones-3d"><strong>Click:</strong> Construir muro | <strong>Shift + Click:</strong> Borrar muro</p>
+
+        <!-- Catálogo Inferior Centrado (Contenedores vacíos para inyectar con JS) -->
+        <div class="panel-inferior-centro">
+            <div id="lista-materiales" class="catalogo-scroll"></div>
+            <div id="lista-habitaciones" class="catalogo-scroll"></div>
+        </div>
+        
     </div>
-    <!-- Contenedor donde se renderizará el mundo 3D -->
-    <div id="canvas-3d-container">
-        <button id="btn-borrar-todo" style="background-color: #e74c3c; color: white; padding: 8px 15px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; margin-top: 10px;">
-            🗑️ Borrar Diseño Definitivamente
-        </button>
-    </div>
+    
 </section>
 
 <footer>

@@ -1,134 +1,228 @@
+body {
+    display: flex;
+    flex-direction: column;
+    height: 100vh; /* La página ocupa exactamente el 100% del alto de la ventana */
+    margin: 0;
+    overflow: hidden; /* Bloqueamos el scroll de la página completa */
+}
+
 .navbar {
     display: flex;
     justify-content: space-between;
     align-items: center;
     background-color: #ffffff;
-    padding: 20px 50px;
+    padding: 15px 50px;
     box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-    position: sticky;
-    top: 0;
     z-index: 100;
-}
-
-.logo {
-    font-size: 24px;
-    font-weight: bold;
-    color: #2c3e50;
 }
 
 .nav-links {
     list-style: none;
     display: flex;
+    flex-direction: row; /* Esto los pone en una sola línea horizontal */
     gap: 20px;
     align-items: center;
+    margin: 0;
+    padding: 0;
 }
 
-.nav-links a {
-    text-decoration: none;
-    color: #555;
-    font-weight: 500;
-    transition: color 0.3s;
-}
-
-.nav-links a:hover {
-    color: #e67e22;
-}
-
-.btn-contacto {
-    background-color: #2c3e50;
-    color: #fff !important;
-    padding: 10px 20px;
-    border-radius: 5px;
-}
-
-.btn-contacto:hover {
-    background-color: #1a252f;
-}
-
+/* 1. Contenedor principal de la sección 3D */
 .seccion-3d {
-    display: flex;
-    flex-direction: row; /* Coloca los elementos uno al lado del otro */
-    height: 85vh; /* Sincronizado con la altura máxima del menú */
+    flex-grow: 1; 
+    position: relative; /* Clave para que los paneles floten solo dentro de esta caja */
     width: 100%;
-    overflow: hidden; /* Evita barras de desplazamiento externas */
+    height: calc(100vh - 140px);
+    background-color: #87CEEB; /* Fondo cielo */
+    overflow: hidden;
 }
 
+/* 2. El lienzo 3D ocupa todo el fondo de su contenedor */
 #canvas-3d-container {
-    flex-grow: 1; /* Toma todo el ancho disponible restante */
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
     height: 100%;
-    min-width: 0; /* Previene bugs de desbordamiento en flexbox */
+    z-index: 1;
 }
 
-/* Contenedor principal del panel izquierdo */
-.ui-3d {
-    width: 320px;
-    min-width: 320px; /* Evita que el canvas lo aplaste */
+/* 3. Capa invisible para los paneles flotantes */
+#ui-flotante {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
     height: 100%;
-    overflow-y: auto;
-    padding: 15px;
-    background-color: #f4f4f4; /* Mantiene el contraste del menú */
-    border-right: 2px solid #ccc; /* Línea divisoria */
-}
-/* Contenedores de las listas (Materiales y Habitaciones) */
-.herramientas-3d {
-    display: grid;
-    grid-template-columns: 1fr 1fr; /* Divide los botones en 2 columnas */
-    gap: 8px;
-    margin-bottom: 25px;
+    pointer-events: none; /* Deja pasar los clicks al mundo 3D */
+    z-index: 10; 
 }
 
-/* Ajuste de los botones para hacerlos compactos */
-.btn-mat-3d, .btn-hab-3d {
-    padding: 8px 5px;
-    font-size: 0.8rem;
-    text-align: center;
-    border-radius: 6px;
+/* 4. Reactivamos los clicks SOLO en los paneles */
+.panel-superior-derecho, 
+.panel-inferior-centro,
+.panel-instrucciones {
+    pointer-events: auto; 
+}
+
+/* 5. Widget del Presupuesto (Arriba a la derecha) */
+.panel-superior-derecho {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    background: rgba(255, 255, 255, 0.85); /* Glassmorphism */
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    padding: 15px 20px;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.15);
     display: flex;
     flex-direction: column;
+    align-items: flex-end;
+    gap: 10px;
+    top: 20px;
+}
+
+.presupuesto-total {
+    font-size: 1.1rem;
+    color: #2c3e50;
+}
+
+#total-3d {
+    font-size: 1.3rem;
+    color: #27ae60; /* Verde para el dinero */
+}
+
+.btn-peligro {
+    background-color: #e74c3c;
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background 0.3s;
+    font-size: 0.85rem;
+}
+.btn-peligro:hover {
+    background-color: #c0392b;
+}
+
+/* 6. Instrucciones flotantes (Arriba al centro) */
+.panel-instrucciones {
+    position: absolute;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    padding: 8px 25px;
+    border-radius: 20px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+    font-size: 0.9rem;
+    color: #333;
+    top: 20px;
+}
+
+/* 7. Barra de Catálogo Inferior (Abajo al centro) */
+.panel-inferior-centro {
+    position: absolute;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    padding: 15px 20px;
+    border-radius: 15px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+    display: flex;
+    gap: 20px;
+    max-width: 90vw; 
+    overflow-x: auto; /* Permite scroll horizontal si hay muchos items */
+}
+
+.catalogo-scroll {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+}
+
+/* Divisor visual entre materiales y habitaciones */
+#lista-materiales {
+    border-right: 2px solid rgba(0,0,0,0.1);
+    padding-right: 20px;
+}
+
+/* 8. Botones convertidos a Tarjetas (Como en Los Sims) */
+.btn-mat-3d, .btn-hab-3d {
+    width: 80px;
+    height: 80px;
+    border-radius: 12px;
+    background-color: #ffffff;
+    border: 2px solid transparent;
+    cursor: pointer;
+    display: inline-flex;
     align-items: center;
     justify-content: center;
-    word-break: break-word; /* Evita que nombres largos rompan el botón */
+    margin: 5px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    transition: all 0.2s ease;
 }
 
-/* Estilizar la barra de scroll para que se vea moderna (Chrome/Edge/Safari) */
-.ui-3d::-webkit-scrollbar {
-    width: 6px;
-}
-.ui-3d::-webkit-scrollbar-thumb {
-    background: #bdc3c7;
-    border-radius: 4px;
-}
-
-.btn-mat-3d {
-    padding: 10px;
-    cursor: pointer;
-    border: 2px solid #bdc3c7;
-    background: #fff;
-    border-radius: 5px;
-    font-weight: bold;
-    transition: all 0.2s;
+.btn-mat-3d img, .btn-hab-3d img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+    border-radius: 6px;
+    pointer-events: none; /* Evita bugs al hacer click */
 }
 
-.btn-mat-3d.activo {
-    border-color: #e67e22;
-    background-color: #fdf3e9;
+.btn-mat-3d span, .btn-hab-3d span {
+    font-size: 24px; /* Tamaño ideal si usas emojis temporalmente */
 }
 
-.presupuesto-3d {
-    font-size: 18px;
-    margin-bottom: 10px;
+.btn-mat-3d:hover, .btn-hab-3d:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.15);
 }
 
-.instrucciones-3d {
-    font-size: 12px;
+.btn-mat-3d.activo, .btn-hab-3d.activo {
+    border-color: #2ecc71; 
+    background-color: #f0fdf4;
+}
+
+/* Ajuste sutil del texto interior (precio más claro) */
+.btn-mat-3d small, .btn-hab-3d small {
+    font-weight: normal;
     color: #7f8c8d;
+    margin-top: 4px;
 }
 
-/* Footer */
+
+
+.btn-mat-3d:hover::after, .btn-hab-3d:hover::after,
+.btn-mat-3d:hover::before, .btn-hab-3d:hover::before {
+    opacity: 1;
+    visibility: visible;
+    transform: translateX(-50%) translateY(0);
+}
+
+/* Ocultar barra de scroll en el catálogo para diseño limpio */
+.panel-inferior-centro::-webkit-scrollbar {
+    height: 6px;
+}
+.panel-inferior-centro::-webkit-scrollbar-thumb {
+    background: #bdc3c7;
+    border-radius: 10px;
+}
+
 footer {
+    display: block; /* Lo volvemos a mostrar */
     background-color: #2c3e50;
     color: #fff;
     text-align: center;
-    padding: 20px;
-    margin-top: 40px;
+    padding: 15px;
+    z-index: 100;
+    margin-top: 0; /* MUY IMPORTANTE: Quitar el margin-top de 40px que tenía antes */
 }
