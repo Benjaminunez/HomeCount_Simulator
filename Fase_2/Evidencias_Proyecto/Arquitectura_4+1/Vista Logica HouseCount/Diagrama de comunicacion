@@ -1,0 +1,60 @@
+<mxfile host="app.diagrams.net">
+  <diagram name="Página-1" id="1R_2MLriZv7OHrMqX_LA">
+    <mxGraphModel grid="1" page="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="nJng68ZLBBcoZttUNEcT-1" parent="1" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;" value="Usuario" vertex="1">
+          <mxGeometry height="60" width="30" x="370" y="531" as="geometry" />
+        </mxCell>
+        <mxCell id="nJng68ZLBBcoZttUNEcT-2" parent="1" style="html=1;whiteSpace=wrap;" value="Simulador UI" vertex="1">
+          <mxGeometry height="41" width="154" x="626" y="549" as="geometry" />
+        </mxCell>
+        <mxCell id="nJng68ZLBBcoZttUNEcT-3" parent="1" style="html=1;whiteSpace=wrap;" value="Motor de Calculo" vertex="1">
+          <mxGeometry height="30" width="140" x="900" y="310" as="geometry" />
+        </mxCell>
+        <mxCell id="nJng68ZLBBcoZttUNEcT-4" edge="1" parent="1" source="nJng68ZLBBcoZttUNEcT-1" style="html=1;verticalAlign=bottom;endArrow=block;curved=0;rounded=0;fontSize=12;startSize=8;endSize=8;entryX=0;entryY=0.25;entryDx=0;entryDy=0;" target="nJng68ZLBBcoZttUNEcT-2" value="1 : Ingresar dimensiones y tipo de obra">
+          <mxGeometry relative="1" width="80" y="17" as="geometry">
+            <mxPoint as="offset" />
+            <mxPoint x="501" y="536" as="sourcePoint" />
+            <mxPoint x="581" y="536" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="nJng68ZLBBcoZttUNEcT-5" edge="1" parent="1" source="nJng68ZLBBcoZttUNEcT-2" style="html=1;verticalAlign=bottom;endArrow=block;curved=0;rounded=0;fontSize=12;startSize=8;endSize=8;exitX=0;exitY=1;exitDx=0;exitDy=0;dashed=1;dashPattern=1 1;strokeWidth=2;entryX=1;entryY=1;entryDx=0;entryDy=0;entryPerimeter=0;" target="nJng68ZLBBcoZttUNEcT-1" value="&lt;li&gt;2 : Confirmar datos ingresados validos&lt;/li&gt;">
+          <mxGeometry relative="1" width="80" x="-0.0085" y="28" as="geometry">
+            <mxPoint as="offset" />
+            <mxPoint x="770" y="581" as="sourcePoint" />
+            <mxPoint x="457" y="589" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="nJng68ZLBBcoZttUNEcT-6" edge="1" parent="1" source="nJng68ZLBBcoZttUNEcT-2" style="html=1;verticalAlign=bottom;endArrow=block;curved=0;rounded=0;fontSize=12;startSize=8;endSize=8;exitX=1;exitY=0;exitDx=0;exitDy=0;entryX=0;entryY=0;entryDx=0;entryDy=0;" target="nJng68ZLBBcoZttUNEcT-3" value="3 : Solicitar cálculo de materiales">
+          <mxGeometry relative="1" width="80" x="0.0079" y="16" as="geometry">
+            <mxPoint as="offset" />
+            <mxPoint x="908" y="538.5" as="sourcePoint" />
+            <mxPoint x="988" y="538.5" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="nJng68ZLBBcoZttUNEcT-7" edge="1" parent="1" source="nJng68ZLBBcoZttUNEcT-3" style="html=1;verticalAlign=bottom;endArrow=block;curved=0;rounded=0;fontSize=12;startSize=8;endSize=8;entryX=0;entryY=0.14;entryDx=0;entryDy=0;exitX=1;exitY=0;exitDx=0;exitDy=0;entryPerimeter=0;" value="4 : Consultar precios y rendimientos actuales">
+          <mxGeometry relative="1" width="80" as="geometry">
+            <mxPoint x="1157" y="610" as="sourcePoint" />
+            <mxPoint x="1330" y="314" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="nJng68ZLBBcoZttUNEcT-8" edge="1" parent="1" style="html=1;verticalAlign=bottom;endArrow=block;curved=0;rounded=0;fontSize=12;startSize=8;endSize=8;entryX=1;entryY=1;entryDx=0;entryDy=0;exitX=0;exitY=1;exitDx=0;exitDy=0;dashed=1;dashPattern=1 1;strokeWidth=2;" target="nJng68ZLBBcoZttUNEcT-3" value="5 : Retornar lista de materiales y precios">
+          <mxGeometry relative="1" width="80" x="-0.0077" y="24" as="geometry">
+            <mxPoint as="offset" />
+            <mxPoint x="1330" y="340" as="sourcePoint" />
+            <mxPoint x="1405" y="615" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="nJng68ZLBBcoZttUNEcT-9" edge="1" parent="1" source="nJng68ZLBBcoZttUNEcT-2" style="html=1;verticalAlign=bottom;endArrow=none;curved=0;rounded=0;fontSize=12;startSize=8;endSize=8;exitX=1;exitY=1;exitDx=0;exitDy=0;entryX=0;entryY=1;entryDx=0;entryDy=0;startArrow=classic;startFill=1;endFill=0;dashed=1;dashPattern=1 1;strokeWidth=2;" target="nJng68ZLBBcoZttUNEcT-3" value="&lt;font style=&quot;font-size: 11px;&quot;&gt;6 : Enviar estimación final de costos y cantidades &amp;lt;&amp;lt;Detalles del presupuesto&amp;gt;&amp;gt;&lt;/font&gt;">
+          <mxGeometry relative="1" width="80" x="0.0367" y="-32" as="geometry">
+            <mxPoint as="offset" />
+            <mxPoint x="893" y="664" as="sourcePoint" />
+            <mxPoint x="973" y="664" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
