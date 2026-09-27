@@ -11,7 +11,8 @@ document.addEventListener('DOMContentLoaded', () => {
     let modoConstruccion = 'material'; 
     let rotacionActual = 0; 
     let urlActual = null;          
-    let texturaActual = 'concreto'; 
+    let texturaActual = 'concreto';
+    let esModoOscuro = false; // Nueva variable de estado para el modo oscuro
     const uiTotal = document.getElementById('total-3d');
     
     // Configurar materiales visuales de respaldo (Fallback)
@@ -97,7 +98,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- 5. Entorno y Herramientas 3D (Auto Expansión y Reducción) ---
     let tamanoTerreno = 1000;
-    let gridHelper = new THREE.GridHelper(tamanoTerreno, tamanoTerreno / 50);
+    let gridHelper = new THREE.GridHelper(tamanoTerreno, tamanoTerreno / 50, 0x888888, 0x888888);
     scene.add(gridHelper);
 
     const ejesBlender = new THREE.AxesHelper(300);
@@ -118,7 +119,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
         scene.remove(gridHelper);
         if (gridHelper.geometry) gridHelper.geometry.dispose();
-        gridHelper = new THREE.GridHelper(tamanoTerreno, Math.floor(tamanoTerreno / 50));
+        
+        // Mantener el color adecuado de la cuadrícula dependiendo del tema actual
+        const colorGrid = esModoOscuro ? 0x444444 : 0x888888;
+        gridHelper = new THREE.GridHelper(tamanoTerreno, Math.floor(tamanoTerreno / 50), colorGrid, colorGrid);
         scene.add(gridHelper);
 
         scene.remove(plano);
@@ -222,12 +226,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 caja.getSize(tamano);
                 const tamanoObjetivo = esHabitacion ? 200 : 50; 
                 const maxDimension = Math.max(tamano.x, tamano.z);
+                
                 if (maxDimension > 0) {
                     const escala = tamanoObjetivo / maxDimension;
                     modeloCargado.scale.set(escala, escala, escala);
+                    modeloCargado.updateMatrixWorld(true);
                 }
+                
                 const cajaEscalada = new THREE.Box3().setFromObject(modeloCargado);
-                modeloCargado.position.y = -cajaEscalada.min.y;
+                modeloCargado.position.y -= cajaEscalada.min.y;
 
                 modeloActualGLTF = new THREE.Group();
                 modeloActualGLTF.add(modeloCargado);
@@ -246,7 +253,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // --- CARGA DINÁMICA DE LA API (Actualizada para UI Limpia con Tooltip JS) ---
+    // --- CARGA DINÁMICA DE LA API ---
     const contenedorMateriales = document.getElementById('lista-materiales');
     const contenedorHabitaciones = document.getElementById('lista-habitaciones');
 
@@ -256,7 +263,6 @@ document.addEventListener('DOMContentLoaded', () => {
             if (contenedorMateriales) contenedorMateriales.innerHTML = ''; 
             if (contenedorHabitaciones) contenedorHabitaciones.innerHTML = '';
 
-            // --- RENDERIZADO DE MATERIALES BASE ---
             if (data.materiales && data.materiales.length > 0) {
                 data.materiales.forEach((mat, index) => {
                     const btn = document.createElement('button');
@@ -266,11 +272,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (mat.imagen) {
                         btn.innerHTML = `<img src="${mat.imagen}" alt="${mat.nombre}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 8px; pointer-events: none;">`;
                     } else {
-                        // Si algún material no tiene imagen subida, muestra el emoji por defecto
                         btn.innerHTML = `<span style="font-size: 1.8rem; pointer-events: none;">🧱</span>`;
                     }
 
-                    // Eventos para mostrar el tooltip flotante
                     btn.addEventListener('mouseenter', () => {
                         tooltipCatalogo.innerHTML = `${mat.nombre}<br><strong>$${precioFormateado} CLP</strong>`;
                         tooltipCatalogo.style.display = 'block';
@@ -294,7 +298,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
             }
 
-            // --- RENDERIZADO DE HABITACIONES/MÓDULOS ---
             if (data.habitaciones && data.habitaciones.length > 0) {
                 data.habitaciones.forEach(hab => {
                     const btn = document.createElement('button');
@@ -307,7 +310,6 @@ document.addEventListener('DOMContentLoaded', () => {
                         btn.innerHTML = `<span style="font-size: 1.8rem; pointer-events: none;">🏠</span>`;
                     }
 
-                    // Eventos para mostrar el tooltip flotante
                     btn.addEventListener('mouseenter', () => {
                         tooltipCatalogo.innerHTML = `${hab.nombre} (${hab.dimensiones})<br><strong>$${costoTotalFormateado} CLP</strong>`;
                         tooltipCatalogo.style.display = 'block';
@@ -332,9 +334,55 @@ document.addEventListener('DOMContentLoaded', () => {
         })
         .catch(error => console.error("Error cargando el catálogo:", error));
 
+
+    // --- FUNCIÓN: Actualizar Desglose en la UI ---
+    function actualizarListaUI() {
+        const listaUI = document.getElementById('lista-objetos-ui');
+        if (!listaUI) return; 
+
+        const conteoObjetos = {};
+        
+        for (let i = 1; i < objetosInteractuables.length; i++) {
+            const obj = objetosInteractuables[i];
+            const nombre = obj.userData.nombre || (obj.userData.tipo === 'habitacion' ? 'Módulo Habitacional' : 'Bloque Material');
+            const precio = obj.userData.precio || 0;
+
+            if (!conteoObjetos[nombre]) {
+                conteoObjetos[nombre] = { cantidad: 0, subtotal: 0 };
+            }
+            conteoObjetos[nombre].cantidad += 1;
+            conteoObjetos[nombre].subtotal += precio;
+        }
+
+        listaUI.innerHTML = '';
+        const nombres = Object.keys(conteoObjetos);
+        
+        if (nombres.length === 0) {
+            listaUI.innerHTML = '<li class="item-vacio">No hay elementos en la escena</li>';
+            return;
+        }
+
+        nombres.forEach(nombre => {
+            const datos = conteoObjetos[nombre];
+            const subtotalFormateado = new Intl.NumberFormat('es-CL').format(datos.subtotal);
+            
+            const li = document.createElement('li');
+            li.className = 'item-lista-objeto';
+            li.innerHTML = `
+                <div>
+                    <span class="nombre-item">${nombre}</span>
+                    <span class="cantidad-item">x${datos.cantidad}</span>
+                </div>
+                <span class="subtotal-item">$${subtotalFormateado}</span>
+            `;
+            listaUI.appendChild(li);
+        });
+    }
+
     function actualizarPresupuesto(valor) {
         costoTotal += valor;
         if (uiTotal) uiTotal.textContent = `$${new Intl.NumberFormat('es-CL').format(costoTotal)}`;
+        actualizarListaUI();
     }
 
     document.addEventListener('keydown', (event) => {
@@ -409,10 +457,11 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (maxDimension > 0) {
                         const escala = (item.tipo === 'habitacion' ? 200 : 50) / maxDimension;
                         modelo.scale.set(escala, escala, escala);
+                        modelo.updateMatrixWorld(true);
                     }
                     
                     const cajaEscalada = new THREE.Box3().setFromObject(modelo);
-                    modelo.position.y = -cajaEscalada.min.y;
+                    modelo.position.y -= cajaEscalada.min.y;
 
                     const grupo = new THREE.Group();
                     grupo.add(modelo);
@@ -443,16 +492,41 @@ document.addEventListener('DOMContentLoaded', () => {
 
     let inicioX = 0, inicioY = 0;
 
-    function calcularPosicionSnappeada(interseccion) {
+    // --- NUEVA MEJORA: Eje Y dinámico para apilar ---
+    function calcularPosicionSnappeada(interseccion, usarGrid = true) {
         const gridTamXZ = (modoConstruccion === 'habitacion') ? 200 : 50;
         const gridTamY = (modoConstruccion === 'habitacion') ? 100 : 50;
+        
+        // Obtener la normal para empujar el punto ligeramente hacia afuera (para calcular la posición correcta)
         const normal = interseccion.face ? interseccion.face.normal : new THREE.Vector3(0, 1, 0);
         const punto = interseccion.point.clone().add(normal.clone().multiplyScalar(0.1));
+        
+        // La altura del suelo sigue siendo el mínimo
+        const alturaMinima = modeloActualGLTF ? 0 : (gridTamY / 2);
+
+        if (!usarGrid) {
+            // Si el grid está desactivado, tomamos la altura exacta, pero evitamos que pase debajo del piso
+            return { x: punto.x, y: Math.max(punto.y, alturaMinima), z: punto.z };
+        }
+
+        // Posicionamiento "encajado" (Grid Snapping) para X y Z
         const posX = Math.floor(punto.x / gridTamXZ) * gridTamXZ + (gridTamXZ / 2);
         const posZ = Math.floor(punto.z / gridTamXZ) * gridTamXZ + (gridTamXZ / 2);
-        let posY = !modeloActualGLTF ? Math.floor(punto.y / gridTamY) * gridTamY + (gridTamY / 2) : Math.floor(punto.y / gridTamY) * gridTamY;
-        const alturaMinima = modeloActualGLTF ? 0 : (gridTamY / 2);
-        return { x: posX, y: Math.max(alturaMinima, posY), z: posZ };
+        
+        // Posicionamiento para Y (Aquí está la mejora que permite apilar)
+        let posY;
+        if (modeloActualGLTF) {
+            // Si es un modelo 3D (su centro/pivote suele estar abajo)
+            posY = Math.floor(punto.y / gridTamY) * gridTamY;
+        } else {
+            // Si es un bloque geométrico nativo (su pivote está en el centro)
+            posY = Math.floor(punto.y / gridTamY) * gridTamY + (gridTamY / 2);
+        }
+        
+        // Protegemos que no quede por debajo del suelo
+        posY = Math.max(posY, alturaMinima);
+        
+        return { x: posX, y: posY, z: posZ };
     }
 
     renderer.domElement.addEventListener('pointermove', (event) => {
@@ -489,7 +563,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const intersecciones = raycaster.intersectObjects(objetosInteractuables, true);
             if (intersecciones.length > 0) {
-                const pos = calcularPosicionSnappeada(intersecciones[0]);
+                const pos = calcularPosicionSnappeada(intersecciones[0], !event.altKey);
                 bloqueFantasma.position.set(pos.x, pos.y, pos.z);
                 bloqueFantasma.visible = true;
                 materialFantasma.color.setHex(0x00ff00); 
@@ -530,10 +604,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 restaurarResaltado();
                 scene.remove(objBorrar);
                 objetosInteractuables.splice(objetosInteractuables.indexOf(objBorrar), 1);
+                
                 actualizarPresupuesto(-objBorrar.userData.precio);
-                
                 recalcularTamanoTerreno(); 
-                
                 guardarEscenaLocal();
                 if (tooltip) tooltip.style.display = 'none';
             }
@@ -551,7 +624,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     nuevoObjeto = new THREE.Mesh(geometriaFinal, materialVisual);
                 }
                 
-                const pos = calcularPosicionSnappeada(interseccion);
+                const pos = calcularPosicionSnappeada(interseccion, !event.altKey);
                 nuevoObjeto.position.set(pos.x, pos.y, pos.z);
                 nuevoObjeto.rotation.y = rotacionActual;
                 nuevoObjeto.userData = { precio: precioActual, tipo: modoConstruccion, url3D: urlActual, textura: texturaActual, nombre: nombreActual };
@@ -560,12 +633,33 @@ document.addEventListener('DOMContentLoaded', () => {
                 objetosInteractuables.push(nuevoObjeto);
                 
                 recalcularTamanoTerreno(); 
-
                 actualizarPresupuesto(precioActual);
                 guardarEscenaLocal();
             }
         }
     });
+
+    // --- Lógica del Modo Claro / Oscuro ---
+    const btnCambiarTema = document.getElementById('btn-cambiar-tema');
+    if (btnCambiarTema) {
+        btnCambiarTema.addEventListener('click', () => {
+            esModoOscuro = !esModoOscuro;
+            
+            // 1. Delegar a CSS (style5.css) los estilos de la interfaz web
+            document.body.classList.toggle('tema-oscuro', esModoOscuro);
+
+            // 2. Gestionar los elementos internos del Canvas 3D (Three.js)
+            if (esModoOscuro) {
+                renderer.setClearColor(0x1a1a1a, 1); // Fondo oscuro
+                if (gridHelper && gridHelper.material) gridHelper.material.color.setHex(0x444444); // Grid oscuro
+                btnCambiarTema.innerHTML = '☀️ Modo Claro';
+            } else {
+                renderer.setClearColor(0xe0e0e0, 1); // Fondo gris claro (original)
+                if (gridHelper && gridHelper.material) gridHelper.material.color.setHex(0x888888); // Grid normal
+                btnCambiarTema.innerHTML = '🌙 Modo Oscuro';
+            }
+        });
+    }
 
     const btnBorrarTodo = document.getElementById('btn-borrar-todo');
     if (btnBorrarTodo) {
@@ -575,8 +669,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (tooltip) tooltip.style.display = 'none';
                 for (let i = objetosInteractuables.length - 1; i > 0; i--) scene.remove(objetosInteractuables[i]);
                 objetosInteractuables.length = 1; 
+                
                 costoTotal = 0;
                 if (uiTotal) uiTotal.textContent = '$0';
+                actualizarListaUI();
+                
                 localStorage.removeItem('proyecto_homecount');
                 localStorage.removeItem('camara_homecount');
 
@@ -591,6 +688,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     cargarEscenaLocal();
     cargarCamaraLocal();
+    actualizarListaUI(); 
 
     function animar() {
         requestAnimationFrame(animar);
