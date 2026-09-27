@@ -1,0 +1,48 @@
+@startuml
+' Forzar líneas ortogonales (rectas)
+skinparam linetype ortho
+
+' Aumentar la separación horizontal y vertical entre los bloques
+skinparam nodesep 120
+skinparam ranksep 120
+
+' Darle un poco de margen interno a las cajas para que no se vean apretadas
+skinparam padding 10
+
+skinparam node {
+    BackgroundColor LightSkyBlue
+    BorderColor RoyalBlue
+}
+skinparam component {
+    BackgroundColor White
+}
+
+' Nodos Superiores
+node "Gateway Externo\n(Servidor Unsplash)" as Unsplash
+node "Cliente Web\n(Navegador)" as ClienteWeb
+node "Cliente REST\n(Postman)" as Postman
+
+' Nodo Medio (Host)
+node "Servidor Host\n(Docker/Podman)" as DockerHost {
+    component "<<component>>\nCatálogo Web (Django)" as WebApp
+    component "<<component>>\nAPI RESTful (Django)" as API
+}
+
+' Nodo Inferior (Almacenamiento)
+node "<<Device>>\nAlmacenamiento (Volúmenes)" as Storage {
+    component "<<artifact>>\nArchivos /media/" as Media
+    component "<<artifact>>\ndb.sqlite3" as DB
+}
+
+' Conexiones de los clientes al Host y al Exterior
+ClienteWeb -left-> Unsplash : HTTP (src images)
+ClienteWeb -down-> WebApp : HTTP
+Postman -down-> API : HTTP / JSON
+
+' Conexiones al almacenamiento
+WebApp -down-> Media : I/O
+WebApp -down-> DB : I/O (SQL)
+API -down-> Media : I/O
+API -down-> DB : I/O (SQL)
+
+@enduml

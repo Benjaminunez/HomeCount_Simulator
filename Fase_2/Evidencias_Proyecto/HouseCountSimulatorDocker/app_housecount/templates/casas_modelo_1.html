@@ -38,12 +38,20 @@
         
         <!-- Widget Superior Derecho: Presupuesto y Botón Borrar -->
         <div class="panel-superior-derecho">
-            <div class="presupuesto-total">
-                Costo Total: <strong id="total-3d">$0</strong> CLP
-            </div>
+
             <button id="btn-borrar-todo" class="btn-peligro">
                 🗑️ Borrar Diseño Definitivamente
             </button>
+            <button id="btn-cambiar-tema" class="btn-tema">🌙 Modo Oscuro</button>
+            <div id="lista-objetos-container">
+                <h4 class="titulo-desglose">Desglose de Diseño</h4>
+                <ul id="lista-objetos-ui">
+                    <li class="item-vacio">No hay elementos en la escena</li>
+                </ul>
+            </div>            
+            <div class="presupuesto-total">
+                Costo Total: <strong id="total-3d">$0</strong> CLP
+            </div>
         </div>
 
         <!-- Instrucciones (Flotantes arriba al centro) -->

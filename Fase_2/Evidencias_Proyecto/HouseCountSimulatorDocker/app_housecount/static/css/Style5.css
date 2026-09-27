@@ -1,5 +1,3 @@
-subir a git hub 
-
 body {
     display: flex;
     flex-direction: column;
@@ -87,6 +85,7 @@ body {
 .presupuesto-total {
     font-size: 1.1rem;
     color: #2c3e50;
+    padding: 8px 46px;
 }
 
 #total-3d {
@@ -98,7 +97,7 @@ body {
     background-color: #e74c3c;
     color: white;
     border: none;
-    padding: 8px 12px;
+    padding: 8px 46px;
     border-radius: 6px;
     cursor: pointer;
     font-weight: bold;
@@ -227,4 +226,139 @@ footer {
     padding: 15px;
     z-index: 100;
     margin-top: 0; /* MUY IMPORTANTE: Quitar el margin-top de 40px que tenía antes */
+}
+
+/* listado de objetos ingresados en el modelo 3D*/
+#lista-objetos-container {
+    margin-top: 15px;
+    background-color: #f9f9f9;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 41px;
+    max-height: 350px; /* Evita que crezca infinitamente */
+    overflow-y: auto;  /* Agrega scroll si hay muchos elementos */
+}
+
+.titulo-desglose {
+    margin: 0 0 10px 0;
+    font-size: 14px;
+    color: #333;
+    border-bottom: 2px solid #ddd;
+    padding-bottom: 5px;
+    text-align: left;
+}
+
+#lista-objetos-ui {
+    list-style-type: none;
+    padding: 0;
+    margin: 10px 0 0 0;
+    max-height: 250px; /* Por si la lista crece mucho, añade un scroll */
+    overflow-y: auto;
+}
+
+.item-lista-objeto {
+    display: flex;
+    justify-content: space-between; /* Empuja el nombre a la izquierda y el precio a la derecha */
+    align-items: center;
+    padding: 10px 5px;
+    border-bottom: 1px solid #e0e0e0;
+    font-size: 14px;
+}
+
+.item-lista-objeto:last-child {
+    border-bottom: none;
+}
+
+/* Estilo para el nombre del objeto */
+.nombre-item {
+    font-weight: 600;
+    color: #34495e;
+    margin-right: 8px; /* Separación entre el nombre y la cantidad */
+}
+
+/* Estilo para la cantidad (ej. x3) */
+.cantidad-item {
+    color: #7f8c8d;
+    font-size: 0.9em;
+    background-color: #f1f2f6;
+    padding: 2px 6px;
+    border-radius: 4px;
+}
+
+/* Estilo para el subtotal */
+.subtotal-item {
+    font-weight: bold;
+    color: #27ae60; /* El mismo tono verde que usas en el total */
+}
+
+/* Estilo para cuando la lista está vacía */
+.item-vacio {
+    text-align: center;
+    color: #95a5a6;
+    font-size: 13px;
+    padding: 15px 0;
+    font-style: italic;
+}
+
+/* --- ESTILOS BASE DEL BOTÓN --- */
+.btn-tema {
+    margin-bottom: 10px;
+    padding: 8px 12px;
+    cursor: pointer;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+    background-color: #ffffff;
+    color: #333333;
+    font-weight: bold;
+    transition: background-color 0.3s, color 0.3s, border-color 0.3s;
+}
+
+.btn-tema:hover {
+    background-color: #f0f0f0;
+}
+
+/* --- ESTILOS DEL MODO OSCURO (UI Web) --- */
+body.tema-oscuro {
+    background-color: #121212;
+    color: #e0e0e0;
+}
+
+/* El botón en modo oscuro */
+body.tema-oscuro .btn-tema {
+    background-color: #2c3e50;
+    color: #ffffff;
+    border-color: #1a252f;
+}
+
+body.tema-oscuro .btn-tema:hover {
+    background-color: #34495e;
+}
+
+/* Paneles y recuadros en modo oscuro (ajusta las clases según las tuyas) */
+body.tema-oscuro #lista-objetos-container {
+    background-color: #1e1e1e;
+    border-color: #333333;
+    color: #e0e0e0;
+}
+
+body.tema-oscuro .titulo-desglose {
+    color: #e0e0e0;
+    border-bottom-color: #444444;
+}
+
+body.tema-oscuro .item-lista-objeto {
+    border-bottom-color: #333333;
+}
+
+body.tema-oscuro .nombre-item {
+    color: #ecf0f1;
+}
+
+body.tema-oscuro .cantidad-item {
+    background-color: #333333;
+    color: #bdc3c7;
+}
+
+body.tema-oscuro .subtotal-item {
+    color: #2ecc71; /* Un verde un poco más brillante para fondos oscuros */
 }
