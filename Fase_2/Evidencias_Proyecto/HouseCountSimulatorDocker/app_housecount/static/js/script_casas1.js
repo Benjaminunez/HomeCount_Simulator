@@ -40,6 +40,26 @@ document.addEventListener('DOMContentLoaded', () => {
         document.body.appendChild(tooltip);
     }
 
+    // --- Tooltip Flotante para el Catálogo ---
+    let tooltipCatalogo = document.getElementById('tooltip-catalogo');
+    if (!tooltipCatalogo) {
+        tooltipCatalogo = document.createElement('div');
+        tooltipCatalogo.id = 'tooltip-catalogo';
+        tooltipCatalogo.style.position = 'fixed';
+        tooltipCatalogo.style.display = 'none';
+        tooltipCatalogo.style.backgroundColor = '#2c3e50';
+        tooltipCatalogo.style.color = 'white';
+        tooltipCatalogo.style.padding = '8px 12px';
+        tooltipCatalogo.style.borderRadius = '6px';
+        tooltipCatalogo.style.fontSize = '13px';
+        tooltipCatalogo.style.pointerEvents = 'none';
+        tooltipCatalogo.style.zIndex = '10000';
+        tooltipCatalogo.style.textAlign = 'center';
+        tooltipCatalogo.style.boxShadow = '0px 4px 10px rgba(0,0,0,0.2)';
+        tooltipCatalogo.style.transform = 'translateX(-50%)'; 
+        document.body.appendChild(tooltipCatalogo);
+    }
+
     // --- 1. Configuración Básica y Renderizador ---
     const scene = new THREE.Scene();
     const anchoSeguro = container.clientWidth || 800;
@@ -111,7 +131,6 @@ document.addEventListener('DOMContentLoaded', () => {
         objetosInteractuables[0] = plano;
     }
 
-    // Recalcula y ajusta el tamaño (hacia arriba o hacia abajo)
     function recalcularTamanoTerreno() {
         let maxDistancia = 0;
         const margen = 150; 
@@ -227,7 +246,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // --- CARGA DINÁMICA DE LA API RESTAURADA ---
+    // --- CARGA DINÁMICA DE LA API (Actualizada para UI Limpia con Tooltip JS) ---
     const contenedorMateriales = document.getElementById('lista-materiales');
     const contenedorHabitaciones = document.getElementById('lista-habitaciones');
 
@@ -237,12 +256,32 @@ document.addEventListener('DOMContentLoaded', () => {
             if (contenedorMateriales) contenedorMateriales.innerHTML = ''; 
             if (contenedorHabitaciones) contenedorHabitaciones.innerHTML = '';
 
+            // --- RENDERIZADO DE MATERIALES BASE ---
             if (data.materiales && data.materiales.length > 0) {
                 data.materiales.forEach((mat, index) => {
                     const btn = document.createElement('button');
                     btn.className = `btn-mat-3d ${index === 0 ? 'activo' : ''}`;
                     const precioFormateado = new Intl.NumberFormat('es-CL').format(mat.coste);
-                    btn.innerHTML = `🧱 ${mat.nombre}<br><small>$${precioFormateado}</small>`;
+                    
+                    if (mat.imagen) {
+                        btn.innerHTML = `<img src="${mat.imagen}" alt="${mat.nombre}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 8px; pointer-events: none;">`;
+                    } else {
+                        // Si algún material no tiene imagen subida, muestra el emoji por defecto
+                        btn.innerHTML = `<span style="font-size: 1.8rem; pointer-events: none;">🧱</span>`;
+                    }
+
+                    // Eventos para mostrar el tooltip flotante
+                    btn.addEventListener('mouseenter', () => {
+                        tooltipCatalogo.innerHTML = `${mat.nombre}<br><strong>$${precioFormateado} CLP</strong>`;
+                        tooltipCatalogo.style.display = 'block';
+                        const rect = btn.getBoundingClientRect();
+                        tooltipCatalogo.style.left = (rect.left + (rect.width / 2)) + 'px';
+                        tooltipCatalogo.style.top = (rect.top - tooltipCatalogo.offsetHeight - 8) + 'px';
+                    });
+
+                    btn.addEventListener('mouseleave', () => {
+                        tooltipCatalogo.style.display = 'none';
+                    });
 
                     btn.addEventListener('click', function() {
                         document.querySelectorAll('.btn-mat-3d, .btn-hab-3d').forEach(b => b.classList.remove('activo'));
@@ -255,18 +294,38 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
             }
 
+            // --- RENDERIZADO DE HABITACIONES/MÓDULOS ---
             if (data.habitaciones && data.habitaciones.length > 0) {
                 data.habitaciones.forEach(hab => {
                     const btn = document.createElement('button');
                     btn.className = 'btn-hab-3d'; 
                     const costoTotalFormateado = new Intl.NumberFormat('es-CL').format(hab.coste_total);
-                    btn.innerHTML = `🏠 ${hab.nombre} (${hab.dimensiones})<br><small>$${costoTotalFormateado}</small>`;
+                    
+                    if (hab.imagen) {
+                        btn.innerHTML = `<img src="${hab.imagen}" alt="${hab.nombre}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 8px; pointer-events: none;">`;
+                    } else {
+                        btn.innerHTML = `<span style="font-size: 1.8rem; pointer-events: none;">🏠</span>`;
+                    }
+
+                    // Eventos para mostrar el tooltip flotante
+                    btn.addEventListener('mouseenter', () => {
+                        tooltipCatalogo.innerHTML = `${hab.nombre} (${hab.dimensiones})<br><strong>$${costoTotalFormateado} CLP</strong>`;
+                        tooltipCatalogo.style.display = 'block';
+                        const rect = btn.getBoundingClientRect();
+                        tooltipCatalogo.style.left = (rect.left + (rect.width / 2)) + 'px';
+                        tooltipCatalogo.style.top = (rect.top - tooltipCatalogo.offsetHeight - 8) + 'px';
+                    });
+
+                    btn.addEventListener('mouseleave', () => {
+                        tooltipCatalogo.style.display = 'none';
+                    });
 
                     btn.addEventListener('click', function() {
                         document.querySelectorAll('.btn-mat-3d, .btn-hab-3d').forEach(b => b.classList.remove('activo'));
                         this.classList.add('activo');
                         seleccionarElemento(hab.archivo_3d, hab.coste_total, true, 'concreto', hab.nombre);
                     });
+                    
                     if (contenedorHabitaciones) contenedorHabitaciones.appendChild(btn);
                 });
             }
