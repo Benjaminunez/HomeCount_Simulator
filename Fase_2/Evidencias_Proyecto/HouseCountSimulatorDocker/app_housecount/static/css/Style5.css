@@ -150,9 +150,26 @@ body {
 }
 
 /* Divisor visual entre materiales y habitaciones */
+#lista-materiales,
+#lista-habitaciones {
+    display: flex;
+    flex-wrap: nowrap; /* Fuerza a que los botones estén en una sola línea */
+    overflow-x: auto;  /* Habilita el scroll horizontal en este contenedor */
+    overflow-y: hidden; 
+    gap: 15px;
+    align-items: center;
+    max-width: 50vw; /* Limita el ancho para forzar el scroll interno */
+    scrollbar-width: none; /* Oculta la barra en Firefox */
+}
+
 #lista-materiales {
     border-right: 2px solid rgba(0,0,0,0.1);
     padding-right: 20px;
+}
+
+#lista-materiales::-webkit-scrollbar,
+#lista-habitaciones::-webkit-scrollbar {
+    display: none; 
 }
 
 /* 8. Botones convertidos a Tarjetas (Como en Los Sims) */
@@ -169,6 +186,7 @@ body {
     margin: 5px;
     box-shadow: 0 2px 5px rgba(0,0,0,0.1);
     transition: all 0.2s ease;
+    flex: 0 0 auto;
 }
 
 .btn-mat-3d img, .btn-hab-3d img {
@@ -230,12 +248,10 @@ footer {
 
 /* listado de objetos ingresados en el modelo 3D*/
 #lista-objetos-container {
-    margin-top: 15px;
     background-color: #f9f9f9;
     border: 1px solid #e0e0e0;
     border-radius: 8px;
-    padding: 41px 50px;
-    max-height: 350px; /* Evita que crezca infinitamente */
+    padding: 25px 30px;
     overflow-y: auto;  /* Agrega scroll si hay muchos elementos */
 }
 
@@ -252,7 +268,7 @@ footer {
     list-style-type: none;
     padding: 0;
     margin: 10px 0 0 0;
-    max-height: 250px; /* Por si la lista crece mucho, añade un scroll */
+    height: 120px; /* Por si la lista crece mucho, añade un scroll */
     overflow-y: auto;
 }
 
