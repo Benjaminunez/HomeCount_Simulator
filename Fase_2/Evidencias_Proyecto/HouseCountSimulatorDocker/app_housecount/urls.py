@@ -10,4 +10,9 @@ urlpatterns = [
     path('casas_modelo_1.html', views.casas_modelo_1, name='casas_modelo_1'),
     path('api/propiedades/', views.api_propiedades_unica, name='api_propiedades'),
     path('api/materiales-3d/', views.api_materiales_3d, name='api_materiales_3d'),
+    path('registro/', views.registro, name='registro'),
+    path('login/', views.iniciar_sesion, name='login'),
+    path('logout/', views.cerrar_sesion, name='logout'),
+    path('api/guardar-diseno/', views.guardar_diseno, name='guardar_diseno'),
+    path('api/obtener-disenos/', views.obtener_disenos, name='obtener_disenos'),
 ]

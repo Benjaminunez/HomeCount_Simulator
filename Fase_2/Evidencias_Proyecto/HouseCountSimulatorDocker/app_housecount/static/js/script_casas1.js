@@ -686,6 +686,52 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    const btnGuardarNube = document.getElementById('btn-guardar-nube');
+    if (btnGuardarNube) {
+        btnGuardarNube.addEventListener('click', () => {
+            // Llamamos a la función que vive en guardado_bd.js pasándole nuestras variables 3D
+            procesarGuardado(objetosInteractuables, camera, controles, costoTotal);
+        });
+    }
+
+    const btnCargar = document.getElementById('btn-cargar-nube');
+    if (btnCargar) {
+        btnCargar.addEventListener('click', () => {
+            // Pasamos un quinto argumento: una función que actualiza el estado interno
+            cargarDisenosUsuario(scene, objetosInteractuables, camera, controles, (nuevoCosto) => {
+                costoTotal = nuevoCosto; // Actualizamos la variable interna
+                if (uiTotal) {
+                    uiTotal.textContent = `$${new Intl.NumberFormat('es-CL').format(costoTotal)}`;
+                }
+                actualizarListaUI();       // Reconstruye la lista en HTML
+                recalcularTamanoTerreno(); // Ajusta la cuadrícula por si el proyecto es enorme
+            });
+        });
+    }
+
+    function ajustarYAgregarModelo(gltfScene, anchoDeseado, altoDeseado, profundoDeseado) {
+        // 1. Calcular tamaño original del archivo GLTF
+        const boxOriginal = new THREE.Box3().setFromObject(gltfScene);
+        const sizeOriginal = boxOriginal.getSize(new THREE.Vector3());
+
+        // 2. Calcular los factores de escala necesarios
+        const factorX = anchoDeseado / sizeOriginal.x;
+        const factorY = altoDeseado / sizeOriginal.y;
+        const factorZ = profundoDeseado / sizeOriginal.z;
+
+        // 3. Aplicar escala al grupo principal
+        gltfScene.scale.set(factorX, factorY, factorZ);
+
+        // 4. Forzar actualización de la matriz para que el Bounding Box se recalcule correctamente
+        gltfScene.updateMatrixWorld(true);
+
+        // 5. Corregir altura para que no quede enterrado en el piso (Y = 0)
+        const boxEscalado = new THREE.Box3().setFromObject(gltfScene);
+        gltfScene.position.y = -boxEscalado.min.y; // Ajusta la base exactamente al suelo
+
+        return gltfScene;
+    }
+
     cargarEscenaLocal();
     cargarCamaraLocal();
     actualizarListaUI(); 

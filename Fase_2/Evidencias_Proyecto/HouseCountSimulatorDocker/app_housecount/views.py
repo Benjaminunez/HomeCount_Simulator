@@ -1,32 +1,42 @@
-from django.shortcuts import render
-from .models import ModeloCasa
-import requests
 import json
+import requests
+from django.shortcuts import render, redirect
+from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
+from django.contrib.auth import login, logout, authenticate
+from django.contrib.auth.decorators import login_required
+from django.contrib import messages
 from django.http import JsonResponse
-from django.views.decorators.csrf import csrf_exempt
-from .models import ModeloCasa, Material, Habitacion
+from django.views.decorators.csrf import csrf_exempt, ensure_csrf_cookie
 
-def inicio(request): return render(request, 'inicio.html')
-def contrucion(request): return render(request, 'contrucion.html')
-def casas_rapidas(request): return render(request, 'casas_rapidas.html')
-def creacion_de_casas(request): return render(request, 'creacion_de_Casas.html')
-def casas_modelo_1(request): return render(request, 'casas_modelo_1.html')
+from .models import ModeloCasa, Material, Habitacion, Proyecto3D
+
+
+# --- Vistas de Navegación HTML ---
+
+def inicio(request): 
+    return render(request, 'inicio.html')
+
+def contrucion(request): 
+    return render(request, 'contrucion.html')
+
+def creacion_de_casas(request): 
+    return render(request, 'creacion_de_Casas.html')
+
+def casas_modelo_1(request): 
+    return render(request, 'casas_modelo_1.html')
 
 def casas_rapidas(request):
-    # 1. Traer todos los modelos por defecto
     modelos = ModeloCasa.objects.all()
 
-    # 2. Capturar los parámetros enviados por la URL (GET)
     precio_max = request.GET.get('precio_max')
     m2_min = request.GET.get('m2_min')
     habitaciones = request.GET.get('habitaciones')
     banos = request.GET.get('banos')
     
-    # 3. Aplicar los filtros solo si el usuario ingresó un valor
     if precio_max:
-        modelos = modelos.filter(precio__lte=precio_max)  # lte = Menor o igual a
+        modelos = modelos.filter(precio__lte=precio_max)
     if m2_min:
-        modelos = modelos.filter(metros_cuadrados__gte=m2_min)  # gte = Mayor o igual a
+        modelos = modelos.filter(metros_cuadrados__gte=m2_min)
     if habitaciones:
         modelos = modelos.filter(habitaciones__gte=habitaciones)
     if banos:
@@ -35,32 +45,29 @@ def casas_rapidas(request):
     casas_mercado = []
     
     try:
-        
         url_api = "https://gist.githubusercontent.com/Benjaminunez/b367b26daa23044dd9ee7ee14ad3a8e0/raw/ac4792063436f31d0218f2025dccac3a2a285753/casas_api.json" 
-        
-        # Una petición limpia, sin headers ni bloqueos
         respuesta = requests.get(url_api, timeout=5)
-        
         if respuesta.status_code == 200:
-            casas_mercado = respuesta.json() # Los datos ya vienen listos
-            
+            casas_mercado = respuesta.json()
     except Exception as e:
         print(f"Error al conectar con la API: {e}")
     
     context = {
-            'modelos': modelos,
-            'filtros': {
-                'precio_max': precio_max or '',
-                'm2_min': m2_min or '',
-                'habitaciones': habitaciones or '',
-                'banos': banos or '',
-            },
-            'casas_mercado': casas_mercado,
-        }
+        'modelos': modelos,
+        'filtros': {
+            'precio_max': precio_max or '',
+            'm2_min': m2_min or '',
+            'habitaciones': habitaciones or '',
+            'banos': banos or '',
+        },
+        'casas_mercado': casas_mercado,
+    }
         
     return render(request, 'casas_rapidas.html', context)
 
-# metodo para la recepción de información generada por postman y que llegue al deb del HouseCount
+
+# --- API para Propiedades (Postman / Integraciones) ---
+
 def casa_a_dict(casa):
     return {
         'id': casa.id,
@@ -75,12 +82,8 @@ def casa_a_dict(casa):
 
 @csrf_exempt
 def api_propiedades_unica(request):
-    # -------------------------------------------------------------
-    # GET: Leer todas o leer una sola (si se envía ?id=X)
-    # -------------------------------------------------------------
     if request.method == 'GET':
-        casa_id = request.GET.get('id') # Busca si hay un ?id= en la URL
-        
+        casa_id = request.GET.get('id')
         if casa_id:
             try:
                 casa = ModeloCasa.objects.get(id=casa_id)
@@ -91,9 +94,6 @@ def api_propiedades_unica(request):
             casas = ModeloCasa.objects.all()
             return JsonResponse({'propiedades': [casa_a_dict(c) for c in casas]}, status=200)
 
-    # -------------------------------------------------------------
-    # POST: Crear una o varias propiedades
-    # -------------------------------------------------------------
     elif request.method == 'POST':
         try:
             data = json.loads(request.body)
@@ -123,14 +123,10 @@ def api_propiedades_unica(request):
         except Exception as e:
             return JsonResponse({'error': str(e)}, status=400)
 
-    # -------------------------------------------------------------
-    # PUT / PATCH: Actualizar (El ID debe venir en el JSON)
-    # -------------------------------------------------------------
     elif request.method in ['PUT', 'PATCH']:
         try:
             data = json.loads(request.body)
-            casa_id = data.get('id') # Extraemos el ID del JSON enviado
-            
+            casa_id = data.get('id')
             if not casa_id:
                 return JsonResponse({'error': 'Debes incluir el "id" en el JSON para actualizar'}, status=400)
                 
@@ -149,9 +145,6 @@ def api_propiedades_unica(request):
         except Exception as e:
             return JsonResponse({'error': str(e)}, status=400)
 
-    # -------------------------------------------------------------
-    # DELETE: Eliminar (Enviando el ID en la URL o en el JSON)
-    # -------------------------------------------------------------
     elif request.method == 'DELETE':
         try:
             casa_id = request.GET.get('id')
@@ -174,58 +167,49 @@ def api_propiedades_unica(request):
     return JsonResponse({'error': 'Método no permitido'}, status=405)
 
 
-    # -------------------------------------------------------------------------------------------------------------------------------
-    # seccion dedicado a modelaje 3D mediante lo almacenado en DB
-    # -------------------------------------------------------------------------------------------------------------------------------
+# --- API para Materiales y Módulos 3D ---
 
 @csrf_exempt
 def api_materiales_3d(request):
-    # --- GET: Devuelve Materiales y Módulos de Habitación ---
     if request.method == 'GET':
         materiales = Material.objects.all()
         habitaciones = Habitacion.objects.prefetch_related('detalles_materiales__material').all()
         
-        # 1. Serializamos los materiales individuales
-        lista_materiales = []
-        for mat in materiales:
-            textura = mat.nombre.split()[0].lower() if mat.nombre else "default"
-            lista_materiales.append({
+        lista_materiales = [
+            {
                 "id": mat.id,
                 "nombre": mat.nombre,
                 "coste": mat.coste,
-                "textura_key": textura,
-                # CORRECCIÓN: Usar mat.archivo_3d.name para evitar errores de archivo vacío
+                "textura_key": mat.nombre.split()[0].lower() if mat.nombre else "default",
                 "archivo_3d": mat.archivo_3d.url if mat.archivo_3d and mat.archivo_3d.name else None
-            })
+            }
+            for mat in materiales
+        ]
             
-        # 2. Serializamos los módulos de habitaciones con su costo calculado
-        lista_habitaciones = []
-        for hab in habitaciones:
-            desglose = [
-                {
-                    "material": detalle.material.nombre,
-                    "cantidad": detalle.cantidad,
-                    "subtotal": detalle.coste_subtotal
-                }
-                for detalle in hab.detalles_materiales.all()
-            ]
-            lista_habitaciones.append({
+        lista_habitaciones = [
+            {
                 "id": hab.id,
                 "nombre": hab.nombre_modulo,
                 "dimensiones": hab.dimensiones,
                 "coste_total": hab.coste_total,  
-                "materiales": desglose,
-                # CORRECCIÓN: Usar hab.archivo_3d.name
+                "materiales": [
+                    {
+                        "material": detalle.material.nombre,
+                        "cantidad": detalle.cantidad,
+                        "subtotal": detalle.coste_subtotal
+                    }
+                    for detalle in hab.detalles_materiales.all()
+                ],
                 "archivo_3d": hab.archivo_3d.url if hab.archivo_3d and hab.archivo_3d.name else None
-            })
+            }
+            for hab in habitaciones
+        ]
             
-        # Devolvemos ambos catálogos en un solo objeto JSON
         return JsonResponse({
             "materiales": lista_materiales,
             "habitaciones": lista_habitaciones
         }, safe=False)
         
-    # --- POST: Permite crear materiales nuevos (vía Postman) ---
     elif request.method == 'POST':
         try:
             body = json.loads(request.body)
@@ -239,3 +223,83 @@ def api_materiales_3d(request):
             
         except Exception as e:
             return JsonResponse({"error": str(e)}, status=400)
+
+
+# --- Autenticación de Usuarios ---
+
+def registro(request):
+    if request.method == 'POST':
+        form = UserCreationForm(request.POST)
+        if form.is_valid():
+            user = form.save()
+            login(request, user)
+            messages.success(request, f"¡Bienvenido {user.username}! Tu cuenta ha sido creada.")
+            return redirect('inicio')
+    else:
+        form = UserCreationForm()
+    return render(request, 'registroUser.html', {'form': form})
+
+def iniciar_sesion(request):
+    if request.method == 'POST':
+        form = AuthenticationForm(request, data=request.POST)
+        if form.is_valid():
+            username = form.cleaned_data.get('username')
+            password = form.cleaned_data.get('password')
+            user = authenticate(username=username, password=password)
+            if user is not None:
+                login(request, user)
+                messages.success(request, f"Has iniciado sesión como {username}.")
+                return redirect('inicio')
+        else:
+            messages.error(request, "Usuario o contraseña incorrectos.")
+    else:
+        form = AuthenticationForm()
+    return render(request, 'loginUser.html', {'form': form})
+
+def cerrar_sesion(request):
+    logout(request)
+    messages.info(request, "Has cerrado sesión exitosamente.")
+    return redirect('inicio')
+
+
+# --- Guardar / Cargar Escenas 3D (Vinculado con el usuario activo) ---
+
+@login_required
+def guardar_diseno(request):
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            
+            proyecto = Proyecto3D.objects.create(
+                usuario=request.user, 
+                nombre=data.get('nombre_proyecto', 'Sin nombre'),
+                costo_total=data.get('costo_total', 0),
+                datos_escena=data.get('datos_escena', []),
+                datos_camara=data.get('datos_camara', {})
+            )
+            
+            return JsonResponse({'estado': 'exito', 'mensaje': 'Proyecto guardado correctamente.', 'id': proyecto.id})
+        except Exception as e:
+            return JsonResponse({'estado': 'error', 'mensaje': str(e)}, status=400)
+            
+    return JsonResponse({'estado': 'error', 'mensaje': 'Método no permitido'}, status=405)
+
+@ensure_csrf_cookie
+def obtener_disenos(request):
+    if not request.user.is_authenticated:
+        return JsonResponse({'estado': 'error', 'mensaje': 'Debes iniciar sesión.'}, status=403)
+    
+    proyectos = Proyecto3D.objects.filter(usuario=request.user).order_by('-fecha_creacion')
+    lista = [
+        {
+            'id': p.id,
+            'nombre': p.nombre,
+            'costo_total': float(p.costo_total),
+            'fecha': p.fecha_creacion.strftime('%d/%m/%Y %H:%M'),
+            'datos_escena': p.datos_escena,
+            'datos_camara': p.datos_camara
+        }
+        for p in proyectos
+    ]
+        
+    return JsonResponse({'estado': 'exito', 'disenos': lista})

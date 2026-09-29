@@ -1,4 +1,5 @@
 from django.db import models
+from django.contrib.auth.models import User
 
 class ModeloCasa(models.Model):
     nombre = models.CharField(max_length=100)
@@ -96,3 +97,14 @@ class MaterialHabitacion(models.Model):  #MATERIALES DE CADA HABITACION
     def coste_subtotal(self):
         """Subtotal = Precio unitario del material * Cantidad"""
         return self.material.coste * self.cantidad
+
+class Proyecto3D(models.Model):
+    usuario = models.ForeignKey(User, on_delete=models.CASCADE)
+    nombre = models.CharField(max_length=100)
+    costo_total = models.DecimalField(max_digits=12, decimal_places=2, default=0.0)
+    datos_escena = models.JSONField()
+    datos_camara = models.JSONField()
+    fecha_creacion = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.nombre} - {self.usuario.username}"

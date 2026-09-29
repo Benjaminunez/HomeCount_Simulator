@@ -362,3 +362,9 @@ body.tema-oscuro .cantidad-item {
 body.tema-oscuro .subtotal-item {
     color: #2ecc71; /* Un verde un poco más brillante para fondos oscuros */
 }
+
+#btn-guardar-nube{
+    background-color: #27ae60; 
+    color: white; 
+    border-color: #2ecc71
+}

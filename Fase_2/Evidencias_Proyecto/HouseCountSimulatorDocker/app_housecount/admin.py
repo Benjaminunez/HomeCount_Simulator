@@ -1,7 +1,8 @@
 from django.contrib import admin
-from .models import ModeloCasa, Material, Habitacion, MaterialHabitacion
+from .models import ModeloCasa, Material, Habitacion, MaterialHabitacion, Proyecto3D
 
 # Registra tus modelos aqui.
+admin.site.register(Proyecto3D)
 
 @admin.register(ModeloCasa)
 class ModeloCasaAdmin(admin.ModelAdmin):
@@ -46,3 +47,4 @@ class MaterialHabitacionAdmin(admin.ModelAdmin):
     def coste_subtotal_formateado(self, obj):
         return f"${obj.coste_subtotal:,}".replace(",", ".")
     coste_subtotal_formateado.short_description = "Subtotal"
+
