@@ -257,6 +257,21 @@ document.addEventListener('DOMContentLoaded', () => {
     const contenedorMateriales = document.getElementById('lista-materiales');
     const contenedorHabitaciones = document.getElementById('lista-habitaciones');
 
+    // --- NUEVA MEJORA: Scroll horizontal con la rueda del ratón ---
+    [contenedorMateriales, contenedorHabitaciones].forEach(contenedor => {
+        if (!contenedor) return;
+        contenedor.addEventListener('wheel', (evento) => {
+            if (evento.deltaY !== 0) {
+                evento.preventDefault(); 
+                
+                contenedor.scrollBy({
+                    left: evento.deltaY * 1.2, // Multiplicador para ajustar la distancia por cada giro de rueda
+                    behavior: 'smooth'         // Magia para la fluidez
+                });
+            }
+        }, { passive: false });
+    });
+
     fetch('/api/materiales-3d/')
         .then(response => response.json())
         .then(data => {
