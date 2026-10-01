@@ -181,7 +181,8 @@ def api_materiales_3d(request):
                 "nombre": mat.nombre,
                 "coste": mat.coste,
                 "textura_key": mat.nombre.split()[0].lower() if mat.nombre else "default",
-                "archivo_3d": mat.archivo_3d.url if mat.archivo_3d and mat.archivo_3d.name else None
+                "archivo_3d": mat.archivo_3d.url if mat.archivo_3d and mat.archivo_3d.name else None,
+                "imagen": mat.imagen.url if mat.imagen and mat.imagen.name else None
             }
             for mat in materiales
         ]
@@ -200,7 +201,8 @@ def api_materiales_3d(request):
                     }
                     for detalle in hab.detalles_materiales.all()
                 ],
-                "archivo_3d": hab.archivo_3d.url if hab.archivo_3d and hab.archivo_3d.name else None
+                "archivo_3d": hab.archivo_3d.url if hab.archivo_3d and hab.archivo_3d.name else None,
+                "imagen": hab.imagen.url if hab.imagen and hab.imagen.name else None
             }
             for hab in habitaciones
         ]
