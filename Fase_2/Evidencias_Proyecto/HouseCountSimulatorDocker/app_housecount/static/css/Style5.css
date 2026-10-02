@@ -84,6 +84,8 @@ body {
     display: flex;
     flex-direction: column;
     transition: max-height 0.3s ease, padding 0.3s ease;
+    margin-top: 10px;
+    margin-left: 10px;
 }
 
 .panel-superior-derecho.colapsado #contenido-panel-derecho {
