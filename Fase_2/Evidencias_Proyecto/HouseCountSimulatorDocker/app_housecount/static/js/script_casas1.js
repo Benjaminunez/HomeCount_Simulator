@@ -747,6 +747,28 @@ document.addEventListener('DOMContentLoaded', () => {
         return gltfScene;
     }
 
+    // --- Lógica del Botón Detalle ---
+    const btnDetalle = document.getElementById('btn-detalle-materiales');
+    const contenedorLista = document.getElementById('lista-objetos-container');
+    const iconoDetalle = document.getElementById('icono-detalle');
+
+    if (btnDetalle && contenedorLista) {
+        // Aseguramos que inicie cerrado al cargar la página
+        contenedorLista.style.display = 'none';
+        if (iconoDetalle) iconoDetalle.textContent = '▶';
+
+        // Lógica para abrir/cerrar al hacer clic
+        btnDetalle.addEventListener('click', () => {
+            if (contenedorLista.style.display === 'none' || contenedorLista.style.display === '') {
+                contenedorLista.style.display = 'block'; // Muestra la lista
+                if (iconoDetalle) iconoDetalle.textContent = '▼'; // Flecha abajo
+            } else {
+                contenedorLista.style.display = 'none'; // Oculta la lista
+                if (iconoDetalle) iconoDetalle.textContent = '▶'; // Flecha lateral
+            }
+        });
+    }
+
     cargarEscenaLocal();
     cargarCamaraLocal();
     actualizarListaUI(); 
