@@ -282,8 +282,15 @@ document.addEventListener('DOMContentLoaded', () => {
             const contenedorFiltros = document.getElementById('filtros-categorias');
 
             if (data.materiales && data.materiales.length > 0) {
-                // 1. Extraer categorías únicas de la base de datos
-                const categoriasUnicas = ['Todos', ...new Set(data.materiales.map(mat => mat.categoria || 'Sin Categoría'))];
+                
+                // 1. Extraer y ordenar categorías (Estructura primero, Sin Categoría al final)
+                let categoriasDB = [...new Set(data.materiales.map(mat => mat.categoria))];
+                const otrasCategorias = categoriasDB.filter(c => c !== 'Estructura' && c !== 'Sin Categoría');
+                
+                const categoriasUnicas = ['Todos'];
+                if (categoriasDB.includes('Estructura')) categoriasUnicas.push('Estructura');
+                categoriasUnicas.push(...otrasCategorias.sort()); 
+                if (categoriasDB.includes('Sin Categoría')) categoriasUnicas.push('Sin Categoría');
 
                 // 2. Generar los botones de las pestañas
                 if (contenedorFiltros) {
@@ -299,10 +306,10 @@ document.addEventListener('DOMContentLoaded', () => {
                             document.querySelectorAll('.tab-categoria').forEach(b => b.classList.remove('activa'));
                             btnTab.classList.add('activa');
 
-                            // Filtrar los materiales en la barra inferior
+                            // Filtrar los materiales en la barra inferior (Lógica simplificada)
                             document.querySelectorAll('.btn-mat-3d').forEach(btnMat => {
                                 const categoriaMat = btnMat.dataset.categoria;
-                                if (cat === 'Todos' || categoriaMat === (cat === 'Sin Categoría' ? 'null' : cat)) {
+                                if (cat === 'Todos' || categoriaMat === cat) {
                                     btnMat.style.display = 'inline-block';
                                 } else {
                                     btnMat.style.display = 'none';
@@ -318,8 +325,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     const btn = document.createElement('button');
                     btn.className = `btn-mat-3d ${index === 0 ? 'activo' : ''}`;
                     
-                    // Guardamos la categoría en el HTML para que el filtro funcione
-                    btn.dataset.categoria = mat.categoria || 'null'; 
+                    // Guardamos la categoría exacta en el HTML para que el filtro funcione
+                    btn.dataset.categoria = mat.categoria; 
                     
                     const precioFormateado = new Intl.NumberFormat('es-CL').format(mat.coste);
                     
@@ -331,7 +338,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
                     // Eventos de Tooltip y Click
                     btn.addEventListener('mouseenter', () => {
-                        tooltipCatalogo.innerHTML = `<span style="font-size: 10px; color: #a0aec0;">${mat.categoria || 'Sin Categoría'}</span><br>${mat.nombre}<br><strong>$${precioFormateado} CLP</strong>`;
+                        tooltipCatalogo.innerHTML = `<span style="font-size: 10px; color: #a0aec0;">${mat.categoria}</span><br>${mat.nombre}<br><strong>$${precioFormateado} CLP</strong>`;
                         tooltipCatalogo.style.display = 'block';
                         const rect = btn.getBoundingClientRect();
                         tooltipCatalogo.style.left = (rect.left + (rect.width / 2)) + 'px';
