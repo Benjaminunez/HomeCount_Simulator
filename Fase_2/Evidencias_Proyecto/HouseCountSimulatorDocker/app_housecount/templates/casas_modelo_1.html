@@ -39,10 +39,13 @@
         
         <!-- Widget Superior Derecho: Presupuesto y Botón Borrar -->
         <div class="panel-superior-derecho">
-            <button id="btn-borrar-todo" class="btn-peligro" onclick="limpiarEscenaCompleta(scene, objetosInteractuables)"> 
-                🗑️
-            </button>
-
+            <div id="contenedor-acciones-superiores">
+                <button id="btn-borrar-todo" class="btn-peligro" onclick="limpiarEscenaCompleta(scene, objetosInteractuables)"> 
+                    🗑️
+                </button>
+                <button id="btn-modo-oscuro">🌙</button>
+            </div>
+    
             <!-- NUEVO: Botón para mostrar/ocultar el sumario -->
             <button id="btn-detalle-materiales" class="btn-detalle">
                 Detalle <span id="icono-detalle">▼</span>

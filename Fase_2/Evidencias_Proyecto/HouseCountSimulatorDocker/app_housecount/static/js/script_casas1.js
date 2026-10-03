@@ -655,23 +655,23 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // --- Lógica del Modo Claro / Oscuro ---
-    const btnCambiarTema = document.getElementById('btn-cambiar-tema');
-    if (btnCambiarTema) {
-        btnCambiarTema.addEventListener('click', () => {
+    const btnModoOscuro = document.getElementById('btn-modo-oscuro');
+    if (btnModoOscuro) {
+        btnModoOscuro.addEventListener('click', () => {
             esModoOscuro = !esModoOscuro;
             
-            // 1. Delegar a CSS (style5.css) los estilos de la interfaz web
+            // 1. Delegar a CSS los estilos de la interfaz web
             document.body.classList.toggle('tema-oscuro', esModoOscuro);
 
             // 2. Gestionar los elementos internos del Canvas 3D (Three.js)
             if (esModoOscuro) {
                 renderer.setClearColor(0x1a1a1a, 1); // Fondo oscuro
-                if (gridHelper && gridHelper.material) gridHelper.material.color.setHex(0x444444); // Grid oscuro
-                btnCambiarTema.innerHTML = '☀️ Modo Claro';
+                if (gridHelper && gridHelper.material) gridHelper.material.color.setHex(0x777777); // Grid oscuro
+                btnModoOscuro.textContent = '☀️'; // Cambia el icono al sol
             } else {
                 renderer.setClearColor(0xe0e0e0, 1); // Fondo gris claro (original)
                 if (gridHelper && gridHelper.material) gridHelper.material.color.setHex(0x888888); // Grid normal
-                btnCambiarTema.innerHTML = '🌙 Modo Oscuro';
+                btnModoOscuro.textContent = '🌙'; // Vuelve al icono de luna
             }
         });
     }

@@ -36,6 +36,14 @@ body {
     overflow: hidden;
 }
 
+#contenedor-acciones-superiores {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 15px; /* Separación entre botones */
+    margin-bottom: 15px;
+}
+
 .cabecera-panel {
     display: flex;
     justify-content: flex-end;
@@ -113,7 +121,8 @@ body {
     width: 100%;
 }
 
-#btn-borrar-todo {
+#btn-borrar-todo,
+#btn-modo-oscuro {
     /* Dimensiones y forma circular */
     width: 42px;
     height: 42px;
@@ -144,11 +153,20 @@ body {
     box-shadow: 0 4px 8px rgba(239, 68, 68, 0.2);
 }
 
-#btn-borrar-todo:active {
+#btn-modo-oscuro:hover {
+    background-color: #e0e7ff; 
+    border-color: #818cf8;
+    transform: scale(1.1) rotate(-8deg); 
+    box-shadow: 0 4px 8px rgba(99, 102, 241, 0.2);
+}
+
+#btn-borrar-todo:active,
+#btn-modo-oscuro:active {
     transform: scale(0.95); /* Se hunde un poco */
 }
 
-#btn-borrar-todo::after {
+#btn-borrar-todo::after,
+#btn-modo-oscuro::after {
     content: "Borrar modelo";
     position: absolute;
     top: 125%; /* Lo empuja hacia abajo del botón */
@@ -172,7 +190,15 @@ body {
     box-shadow: 0 3px 6px rgba(0,0,0,0.15);
 }
 
-#btn-borrar-todo::before {
+#btn-borrar-todo::after {
+    content: "Borrar modelo";
+}
+#btn-modo-oscuro::after {
+    content: "Cambiar tema";
+}
+
+#btn-borrar-todo::before,
+#btn-modo-oscuro::before {
     content: "";
     position: absolute;
     top: 105%; /* Se ubica justo debajo del botón */
@@ -193,7 +219,9 @@ body {
 }
 
 #btn-borrar-todo:hover::after,
-#btn-borrar-todo:hover::before {
+#btn-borrar-todo:hover::before,
+#btn-modo-oscuro:hover::after,
+#btn-modo-oscuro:hover::before {
     opacity: 1;
     visibility: visible;
     transform: translateX(-50%) translateY(0);
