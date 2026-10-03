@@ -275,22 +275,20 @@ body {
 
 /* 7. Barra de Catálogo Inferior (Abajo al centro) */
 .panel-inferior-centro {
-    position: absolute;
-    bottom: 15px;
-    left: 50%;
-    transform: translateX(-50%);
     background: rgba(255, 255, 255, 0.85);
     backdrop-filter: blur(8px);
     -webkit-backdrop-filter: blur(8px);
     padding: 10px 15px;
     border-radius: 15px;
+    /* Redondeamos diferente arriba a la izquierda para que fusione con la pestaña activa */
+    border-top-left-radius: 0px; 
     box-shadow: 0 8px 32px rgba(0,0,0,0.2);
     display: flex;
-    flex-direction: row; /* Fuerza la fila horizontal */
+    flex-direction: row; /* Mantiene tus listas horizontales */
     gap: 15px;
-    max-width: 90vw; 
     overflow-x: auto;
     scrollbar-width: none;
+    width: 100%;
 }
 
 .panel-instrucciones {
@@ -591,4 +589,55 @@ body.tema-oscuro .cantidad-item {
 
 body.tema-oscuro .subtotal-item {
     color: #2ecc71; /* Un verde un poco más brillante para fondos oscuros */
+}
+
+#zona-menu-inferior {
+    position: absolute;
+    bottom: 15px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    flex-direction: column; /* Apila pestañas arriba y caja abajo */
+    align-items: flex-start; /* Alinea las pestañas a la izquierda */
+    z-index: 100;
+    max-width: 90vw;
+    pointer-events: auto;
+}
+
+.tabs-categorias {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 0px; /* Para que toquen la caja blanca */
+    z-index: 2;
+    overflow-x: auto;
+    scrollbar-width: none;
+}
+
+.tab-categoria {
+    background: rgba(241, 245, 249, 0.7);
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    border-bottom: none;
+    padding: 8px 18px;
+    border-radius: 12px 12px 0 0;
+    font-size: 13px;
+    font-weight: 600;
+    color: #475569;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+}
+
+.tab-categoria:hover {
+    background: rgba(255, 255, 255, 0.9);
+    color: #0f172a;
+}
+
+.tab-categoria.activa {
+    background: rgba(255, 255, 255, 0.85); /* Mismo color que tu panel inferior */
+    color: #0f172a;
+    font-weight: 700;
+    padding-bottom: 12px; /* La empuja hacia abajo para "fusionarla" con la caja */
+    margin-bottom: -2px; /* Monta la pestaña levemente sobre la caja blanca */
+    box-shadow: 0 -4px 10px rgba(0,0,0,0.05);
 }

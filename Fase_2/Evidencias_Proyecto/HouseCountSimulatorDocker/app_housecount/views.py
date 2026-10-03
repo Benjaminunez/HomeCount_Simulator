@@ -182,7 +182,8 @@ def api_materiales_3d(request):
                 "coste": mat.coste,
                 "textura_key": mat.nombre.split()[0].lower() if mat.nombre else "default",
                 "archivo_3d": mat.archivo_3d.url if mat.archivo_3d and mat.archivo_3d.name else None,
-                "imagen": mat.imagen.url if mat.imagen and mat.imagen.name else None
+                "imagen": mat.imagen.url if mat.imagen and mat.imagen.name else None,
+                "categoria": mat.categoria.nombre if mat.categoria else "Sin Categoría"
             }
             for mat in materiales
         ]

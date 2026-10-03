@@ -278,10 +278,49 @@ document.addEventListener('DOMContentLoaded', () => {
             if (contenedorMateriales) contenedorMateriales.innerHTML = ''; 
             if (contenedorHabitaciones) contenedorHabitaciones.innerHTML = '';
 
+            // --- LÓGICA DE PESTAÑAS (CATEGORÍAS) ---
+            const contenedorFiltros = document.getElementById('filtros-categorias');
+
             if (data.materiales && data.materiales.length > 0) {
+                // 1. Extraer categorías únicas de la base de datos
+                const categoriasUnicas = ['Todos', ...new Set(data.materiales.map(mat => mat.categoria || 'Sin Categoría'))];
+
+                // 2. Generar los botones de las pestañas
+                if (contenedorFiltros) {
+                    contenedorFiltros.innerHTML = '';
+                    
+                    categoriasUnicas.forEach((cat, index) => {
+                        const btnTab = document.createElement('button');
+                        btnTab.textContent = cat;
+                        btnTab.className = `tab-categoria ${index === 0 ? 'activa' : ''}`;
+
+                        btnTab.addEventListener('click', () => {
+                            // Cambiar estado visual de la pestaña activa
+                            document.querySelectorAll('.tab-categoria').forEach(b => b.classList.remove('activa'));
+                            btnTab.classList.add('activa');
+
+                            // Filtrar los materiales en la barra inferior
+                            document.querySelectorAll('.btn-mat-3d').forEach(btnMat => {
+                                const categoriaMat = btnMat.dataset.categoria;
+                                if (cat === 'Todos' || categoriaMat === (cat === 'Sin Categoría' ? 'null' : cat)) {
+                                    btnMat.style.display = 'inline-block';
+                                } else {
+                                    btnMat.style.display = 'none';
+                                }
+                            });
+                        });
+                        contenedorFiltros.appendChild(btnTab);
+                    });
+                }
+
+                // 3. Renderizar los materiales (agregando la categoría como dataset)
                 data.materiales.forEach((mat, index) => {
                     const btn = document.createElement('button');
                     btn.className = `btn-mat-3d ${index === 0 ? 'activo' : ''}`;
+                    
+                    // Guardamos la categoría en el HTML para que el filtro funcione
+                    btn.dataset.categoria = mat.categoria || 'null'; 
+                    
                     const precioFormateado = new Intl.NumberFormat('es-CL').format(mat.coste);
                     
                     if (mat.imagen) {
@@ -290,8 +329,9 @@ document.addEventListener('DOMContentLoaded', () => {
                         btn.innerHTML = `<span style="font-size: 1.8rem; pointer-events: none;">🧱</span>`;
                     }
 
+                    // Eventos de Tooltip y Click
                     btn.addEventListener('mouseenter', () => {
-                        tooltipCatalogo.innerHTML = `${mat.nombre}<br><strong>$${precioFormateado} CLP</strong>`;
+                        tooltipCatalogo.innerHTML = `<span style="font-size: 10px; color: #a0aec0;">${mat.categoria || 'Sin Categoría'}</span><br>${mat.nombre}<br><strong>$${precioFormateado} CLP</strong>`;
                         tooltipCatalogo.style.display = 'block';
                         const rect = btn.getBoundingClientRect();
                         tooltipCatalogo.style.left = (rect.left + (rect.width / 2)) + 'px';
@@ -313,6 +353,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
             }
 
+            // --- LÓGICA DE HABITACIONES (Se mantiene igual) ---
             if (data.habitaciones && data.habitaciones.length > 0) {
                 data.habitaciones.forEach(hab => {
                     const btn = document.createElement('button');
