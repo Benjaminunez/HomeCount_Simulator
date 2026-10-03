@@ -1,6 +1,17 @@
 from django.db import models
 from django.contrib.auth.models import User
 
+class CategoriaMaterial(models.Model):
+    nombre = models.CharField(max_length=100, unique=True)
+    descripcion = models.TextField(blank=True, null=True)
+
+    def __str__(self):
+        return self.nombre
+
+    class Meta:
+        verbose_name = "Categoría"
+        verbose_name_plural = "Categorías"
+
 class ModeloCasa(models.Model):
     nombre = models.CharField(max_length=100)
     metros_cuadrados = models.IntegerField(help_text="Superficie en m²")
@@ -36,6 +47,13 @@ class Material(models.Model):  #MATERIALES INDIVIDUALES
         null=True, 
         blank=True, 
         help_text="Archivo .glb para el modelo 3D"
+    )
+    categoria = models.ForeignKey(
+        CategoriaMaterial, 
+        on_delete=models.SET_NULL, # Si borras la categoría, el material no se borra, solo queda "Sin categoría"
+        null=True, 
+        blank=True,
+        related_name='materiales'
     )
 
     class Meta:

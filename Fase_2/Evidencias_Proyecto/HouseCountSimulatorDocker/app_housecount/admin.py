@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import ModeloCasa, Material, Habitacion, MaterialHabitacion, Proyecto3D
+from .models import ModeloCasa, Material, Habitacion, MaterialHabitacion, Proyecto3D, CategoriaMaterial
 
 # Registra tus modelos aqui.
 admin.site.register(Proyecto3D)
@@ -20,9 +20,9 @@ class MaterialHabitacionInline(admin.TabularInline):
 
 @admin.register(Material)
 class MaterialAdmin(admin.ModelAdmin):
-    list_display = ('nombre', 'coste_formateado', 'dimensiones', 'unidad_medida')
+    list_display = ('nombre', 'categoria', 'coste_formateado', 'dimensiones', 'unidad_medida')
     search_fields = ('nombre',)
-    list_filter = ('unidad_medida',)
+    list_filter = ('categoria', 'unidad_medida')
 
     def coste_formateado(self, obj):
         return f"${obj.coste:,}".replace(",", ".")
@@ -48,3 +48,6 @@ class MaterialHabitacionAdmin(admin.ModelAdmin):
         return f"${obj.coste_subtotal:,}".replace(",", ".")
     coste_subtotal_formateado.short_description = "Subtotal"
 
+@admin.register(CategoriaMaterial)
+class CategoriaMaterialAdmin(admin.ModelAdmin):
+    list_display = ('nombre',)
