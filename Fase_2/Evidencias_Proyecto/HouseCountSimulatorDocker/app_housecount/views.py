@@ -8,7 +8,7 @@ from django.contrib import messages
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt, ensure_csrf_cookie
 
-from .models import ModeloCasa, Material, Habitacion, Proyecto3D
+from .models import ModeloCasa, Material, Habitacion, Proyecto3D, CategoriaMaterial
 
 
 # --- Vistas de Navegación HTML ---
@@ -216,14 +216,27 @@ def api_materiales_3d(request):
     elif request.method == 'POST':
         try:
             body = json.loads(request.body)
-            nuevo_material = Material.objects.create(
-                nombre=body.get('nombre'),
-                coste=body.get('coste'),
-                dimensiones=body.get('dimensiones', ''),
-                unidad_medida=body.get('unidad_medida', 'Unidad')
-            )
-            return JsonResponse({"mensaje": "Material creado exitosamente", "id": nuevo_material.id}, status=201)
             
+            def crear_material(item):
+                nombre_cat = item.get('categoria')
+                cat_obj = None
+                if nombre_cat:
+                    cat_obj, _ = CategoriaMaterial.objects.get_or_create(nombre=nombre_cat)
+                return Material.objects.create(
+                    nombre=item.get('nombre'),
+                    coste=item.get('coste', 0),
+                    dimensiones=item.get('dimensiones', ''),
+                    unidad_medida=item.get('unidad_medida', 'Unidad'),
+                    categoria=cat_obj
+                )
+
+            if isinstance(body, list):
+                creados = [crear_material(item).id for item in body]
+                return JsonResponse({"mensaje": f"Se crearon {len(creados)} materiales exitosamente.", "ids": creados}, status=201)
+            else:
+                mat = crear_material(body)
+                return JsonResponse({"mensaje": "Material creado exitosamente", "id": mat.id}, status=201)
+                
         except Exception as e:
             return JsonResponse({"error": str(e)}, status=400)
 
