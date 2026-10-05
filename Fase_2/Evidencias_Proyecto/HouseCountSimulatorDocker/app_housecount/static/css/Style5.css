@@ -26,6 +26,79 @@ body {
     padding: 0;
 }
 
+/* 1. Aplicar la fuente moderna a todo el documento */
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* 2. Logo */
+.logo {
+    font-size: 22px;
+    font-weight: 700;
+    color: #2c3e50;
+    letter-spacing: 0.5px;
+}
+
+/* 3. Enlaces del menú (Inicio, Servicios, Proyectos) */
+.nav-links a {
+    text-decoration: none; /* Quita el subrayado azul */
+    color: #555555;
+    font-size: 15px;
+    font-weight: 600;
+    padding: 6px 12px;
+    border-radius: 6px;
+    transition: all 0.25s ease;
+}
+
+/* Efecto al pasar el ratón */
+.nav-links a:hover {
+    color: #e67e22; /* El naranja característico de tu web */
+}
+
+/* 4. Botón destacado de Contacto */
+.btn-contacto {
+    background-color: #2c3e50 !important;
+    color: #ffffff !important;
+    padding: 8px 18px !important;
+    border-radius: 6px !important;
+    font-weight: 600 !important;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    transition: all 0.25s ease;
+}
+
+.btn-contacto:hover {
+    background-color: #e67e22 !important; /* Cambia a naranja al pasar el ratón */
+    transform: translateY(-1px);
+    box-shadow: 0 4px 10px rgba(230, 126, 34, 0.25);
+}
+
+/* 5. Adaptación automática al Modo Oscuro */
+body.tema-oscuro .navbar {
+    background-color: #1e1e1e;
+    border-bottom: 1px solid #333333;
+}
+
+body.tema-oscuro .logo {
+    color: #f1f5f9;
+}
+
+body.tema-oscuro .nav-links a {
+    color: #cbd5e1;
+}
+
+body.tema-oscuro .nav-links a:hover {
+    color: #e67e22;
+}
+
+body.tema-oscuro .btn-contacto {
+    background-color: #e67e22 !important;
+    color: #ffffff !important;
+}
+
+body.tema-oscuro .btn-contacto:hover {
+    background-color: #d35400 !important;
+}
+
 /* 1. Contenedor principal de la sección 3D */
 .seccion-3d {
     flex-grow: 1; 
@@ -313,13 +386,14 @@ body {
     overflow-y: hidden; 
     gap: 15px;
     align-items: center;
-    max-width: 50vw; /* Limita el ancho para forzar el scroll interno */
+    width: 100%;     
+    max-width: 100%;  
     scrollbar-width: none; /* Oculta la barra en Firefox */
 }
 
 #lista-materiales {
-    border-right: 2px solid rgba(0,0,0,0.1);
-    padding-right: 20px;
+    border-right: none;
+    padding-right: 0;
 }
 
 #lista-materiales::-webkit-scrollbar,
@@ -640,4 +714,123 @@ body.tema-oscuro .subtotal-item {
     padding-bottom: 12px; /* La empuja hacia abajo para "fusionarla" con la caja */
     margin-bottom: -2px; /* Monta la pestaña levemente sobre la caja blanca */
     box-shadow: 0 -4px 10px rgba(0,0,0,0.05);
+}
+
+/* --- cosas que agrego el milo --- */
+
+/* --- Barra de Pestañas (Tabs) en el Panel Derecho --- */
+.navegacion-tabs-derecho {
+    display: flex;
+    gap: 6px;
+    background-color: #e2e8f0; /* Fondo sutil para la barra */
+    padding: 5px;
+    border-radius: 10px;
+    margin: 12px 0 15px 0;
+}
+
+/* Botón individual de pestaña */
+.btn-tab {
+    flex: 1; /* Hace que todos los botones tengan el mismo ancho */
+    padding: 8px 12px;
+    border: none;
+    outline: none;
+    background: transparent;
+    color: #64748b;
+    font-size: 13px;
+    font-weight: 600;
+    border-radius: 7px;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    text-align: center;
+    user-select: none;
+}
+
+/* Efecto al pasar el cursor por encima */
+.btn-tab:hover {
+    color: #2c3e50;
+    background-color: rgba(255, 255, 255, 0.6);
+}
+
+/* Pestaña activa (seleccionada) */
+.btn-tab.activo {
+    background-color: #ffffff;
+    color: #e67e22; /* El naranja característico de tu sitio */
+    font-weight: 700;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08); /* Pequeña elevación */
+}
+
+/* --- Contenedor de contenido de las pestañas --- */
+.contenido-tab {
+    animation: aparecerTab 0.25s ease-in-out;
+}
+
+/* Animación sutil de desvanecimiento al cambiar de tab */
+@keyframes aparecerTab {
+    from {
+        opacity: 0;
+        transform: translateY(4px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Títulos y textos dentro del tab */
+.titulo-desglose {
+    font-size: 14px;
+    color: #2c3e50;
+    margin-bottom: 8px;
+    font-weight: 600;
+}
+
+.texto-placeholder {
+    font-size: 12px;
+    color: #7f8c8d;
+}
+
+/* --- Adaptación automática para el Modo Oscuro --- */
+body.tema-oscuro .navegacion-tabs-derecho {
+    background-color: #2d3748;
+}
+
+body.tema-oscuro .btn-tab {
+    color: #a0aec0;
+}
+
+body.tema-oscuro .btn-tab:hover {
+    color: #f7fafc;
+    background-color: rgba(255, 255, 255, 0.08);
+}
+
+body.tema-oscuro .btn-tab.activo {
+    background-color: #1a202c;
+    color: #f39c12;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+}
+
+body.tema-oscuro .titulo-desglose {
+    color: #2c3e50;
+}
+body.tema-oscuro .texto-placeholder {
+    color: #7f8c8d;
+}
+
+/* --- Mantener fija la posición y tamaño del menú inferior --- */
+#zona-menu-inferior {
+
+    width: 1400px; 
+    max-width: 95vw; 
+}
+.panel-inferior-centro {
+    width: 100%;
+
+    display: flex;
+    justify-content: flex-start;
+}
+
+#lista-habitaciones {
+    border-left: none !important;
+    padding-left: 0 !important;
+    margin-left: 0 !important;
 }
