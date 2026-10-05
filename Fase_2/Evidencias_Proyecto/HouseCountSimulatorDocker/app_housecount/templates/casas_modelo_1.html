@@ -47,18 +47,39 @@
                 <button id="btn-modo-oscuro">🌙</button>
             </div>
     
-            <!-- NUEVO: Botón para mostrar/ocultar el sumario -->
-            <button id="btn-detalle-materiales" class="btn-detalle">
-                Detalle <span id="icono-detalle">▼</span>
-            </button>
+            <!-- Botones de Pestañas (Tabs) -->
+            <div class="navegacion-tabs-derecho">
+                <button class="btn-tab activo" onclick="cambiarTab('tab-dimensiones', this)">📐 Dimensiones</button>
+                <button class="btn-tab" onclick="cambiarTab('tab-detalle', this)">📋 Detalle</button>
+                <button class="btn-tab" onclick="cambiarTab('tab-modulos', this)">🧱 Módulos</button>
+            </div>
 
-            <!-- Contenedor que se ocultará -->
-            <div id="lista-objetos-container">
-                <h4 class="titulo-desglose">Sumario de Materiales:</h4>
-                <ul id="lista-objetos-ui">
+            <!-- Contenedores de Información -->
+            <div id="contenedor-tabs-derecho">
+                
+                <!-- 1. Tab: Dimensiones -->
+                <div id="tab-dimensiones" class="contenido-tab" style="display: block;">
+                    <h4 class="titulo-desglose">Dimensiones del Proyecto</h4>
+                    <p class="texto-placeholder">Área y perímetro de la construcción se mostrarán aquí.</p>
+                </div>
 
-                </ul>
-            </div>            
+                <!-- 2. Tab: Detalle (Materiales) -->
+                <div id="tab-detalle" class="contenido-tab" style="display: none;">
+                    <h4 class="titulo-desglose">Sumario de Materiales</h4>
+                    <ul id="lista-objetos-ui">
+                        <!-- JS inyectará los materiales aquí -->
+                    </ul>
+                </div>
+
+                <!-- 3. Tab: Módulos -->
+                <div id="tab-modulos" class="contenido-tab" style="display: none;">
+                    <h4 class="titulo-desglose">Módulos Utilizados</h4>
+                    <ul id="lista-modulos-ui">
+                        <!-- JS inyectará los módulos 3D aquí -->
+                    </ul>
+                </div>
+
+            </div>
             
             <div class="presupuesto-total">
                 Costo Total: <strong id="total-3d">$0</strong> CLP

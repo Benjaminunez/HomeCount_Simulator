@@ -276,14 +276,16 @@ document.addEventListener('DOMContentLoaded', () => {
         .then(response => response.json())
         .then(data => {
             if (contenedorMateriales) contenedorMateriales.innerHTML = ''; 
-            if (contenedorHabitaciones) contenedorHabitaciones.innerHTML = '';
-
+            if (contenedorHabitaciones) {
+                contenedorHabitaciones.innerHTML = '';
+                // 1. Inicia oculto para que no aparezca junto a "Todos"
+                contenedorHabitaciones.style.display = 'none'; 
+            }
             // --- LÓGICA DE PESTAÑAS (CATEGORÍAS) ---
             const contenedorFiltros = document.getElementById('filtros-categorias');
-
             if (data.materiales && data.materiales.length > 0) {
                 
-                // 1. Extraer y ordenar categorías (Estructura primero, Sin Categoría al final)
+                // Extraer categorías de materiales
                 let categoriasDB = [...new Set(data.materiales.map(mat => mat.categoria))];
                 const otrasCategorias = categoriasDB.filter(c => c !== 'Estructura' && c !== 'Sin Categoría');
                 
@@ -291,8 +293,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (categoriasDB.includes('Estructura')) categoriasUnicas.push('Estructura');
                 categoriasUnicas.push(...otrasCategorias.sort()); 
                 if (categoriasDB.includes('Sin Categoría')) categoriasUnicas.push('Sin Categoría');
-
-                // 2. Generar los botones de las pestañas
+                // 2. AGREGAR LA NUEVA PESTAÑA SI EXISTEN HABITACIONES
+                if (data.habitaciones && data.habitaciones.length > 0) {
+                    categoriasUnicas.push('Módulos Prehechos');
+                }
+                // Generar los botones de las pestañas
                 if (contenedorFiltros) {
                     contenedorFiltros.innerHTML = '';
                     
@@ -300,34 +305,38 @@ document.addEventListener('DOMContentLoaded', () => {
                         const btnTab = document.createElement('button');
                         btnTab.textContent = cat;
                         btnTab.className = `tab-categoria ${index === 0 ? 'activa' : ''}`;
-
                         btnTab.addEventListener('click', () => {
-                            // Cambiar estado visual de la pestaña activa
+                            // Cambiar clase activa en los botones de pestañas
                             document.querySelectorAll('.tab-categoria').forEach(b => b.classList.remove('activa'));
                             btnTab.classList.add('activa');
-
-                            // Filtrar los materiales en la barra inferior (Lógica simplificada)
-                            document.querySelectorAll('.btn-mat-3d').forEach(btnMat => {
-                                const categoriaMat = btnMat.dataset.categoria;
-                                if (cat === 'Todos' || categoriaMat === cat) {
-                                    btnMat.style.display = 'inline-block';
-                                } else {
-                                    btnMat.style.display = 'none';
-                                }
-                            });
+                            // 3. LÓGICA DE VISIBILIDAD: ¿Es Módulos Prehechos o Materiales?
+                            if (cat === 'Módulos Prehechos') {
+                                // Ocultar materiales y mostrar módulos de habitaciones
+                                if (contenedorMateriales) contenedorMateriales.style.display = 'none';
+                                if (contenedorHabitaciones) contenedorHabitaciones.style.display = 'flex';
+                            } else {
+                                // Mostrar materiales y ocultar módulos de habitaciones
+                                if (contenedorMateriales) contenedorMateriales.style.display = 'flex';
+                                if (contenedorHabitaciones) contenedorHabitaciones.style.display = 'none';
+                                // Filtrar los materiales según la categoría seleccionada
+                                document.querySelectorAll('.btn-mat-3d').forEach(btnMat => {
+                                    const categoriaMat = btnMat.dataset.categoria;
+                                    if (cat === 'Todos' || categoriaMat === cat) {
+                                        btnMat.style.display = 'inline-block';
+                                    } else {
+                                        btnMat.style.display = 'none';
+                                    }
+                                });
+                            }
                         });
                         contenedorFiltros.appendChild(btnTab);
                     });
                 }
-
-                // 3. Renderizar los materiales (agregando la categoría como dataset)
+                // Renderizar los materiales (se mantiene igual que antes)...
                 data.materiales.forEach((mat, index) => {
                     const btn = document.createElement('button');
                     btn.className = `btn-mat-3d ${index === 0 ? 'activo' : ''}`;
-                    
-                    // Guardamos la categoría exacta en el HTML para que el filtro funcione
-                    btn.dataset.categoria = mat.categoria; 
-                    
+                    btn.dataset.categoria = mat.categoria;
                     const precioFormateado = new Intl.NumberFormat('es-CL').format(mat.coste);
                     
                     if (mat.imagen) {
@@ -335,8 +344,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     } else {
                         btn.innerHTML = `<span style="font-size: 1.8rem; pointer-events: none;">🧱</span>`;
                     }
-
-                    // Eventos de Tooltip y Click
                     btn.addEventListener('mouseenter', () => {
                         tooltipCatalogo.innerHTML = `<span style="font-size: 10px; color: #a0aec0;">${mat.categoria}</span><br>${mat.nombre}<br><strong>$${precioFormateado} CLP</strong>`;
                         tooltipCatalogo.style.display = 'block';
@@ -344,23 +351,19 @@ document.addEventListener('DOMContentLoaded', () => {
                         tooltipCatalogo.style.left = (rect.left + (rect.width / 2)) + 'px';
                         tooltipCatalogo.style.top = (rect.top - tooltipCatalogo.offsetHeight - 8) + 'px';
                     });
-
                     btn.addEventListener('mouseleave', () => {
                         tooltipCatalogo.style.display = 'none';
                     });
-
                     btn.addEventListener('click', function() {
                         document.querySelectorAll('.btn-mat-3d, .btn-hab-3d').forEach(b => b.classList.remove('activo'));
                         this.classList.add('activo');
                         seleccionarElemento(mat.archivo_3d, mat.coste, false, mat.textura_key, mat.nombre);
                     });
-
                     if (contenedorMateriales) contenedorMateriales.appendChild(btn);
                     if (index === 0) seleccionarElemento(mat.archivo_3d, mat.coste, false, mat.textura_key, mat.nombre);
                 });
             }
-
-            // --- LÓGICA DE HABITACIONES (Se mantiene igual) ---
+            // Renderizar las habitaciones (se mantiene igual que antes)...
             if (data.habitaciones && data.habitaciones.length > 0) {
                 data.habitaciones.forEach(hab => {
                     const btn = document.createElement('button');
@@ -372,7 +375,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     } else {
                         btn.innerHTML = `<span style="font-size: 1.8rem; pointer-events: none;">🏠</span>`;
                     }
-
                     btn.addEventListener('mouseenter', () => {
                         tooltipCatalogo.innerHTML = `${hab.nombre} (${hab.dimensiones})<br><strong>$${costoTotalFormateado} CLP</strong>`;
                         tooltipCatalogo.style.display = 'block';
@@ -380,11 +382,9 @@ document.addEventListener('DOMContentLoaded', () => {
                         tooltipCatalogo.style.left = (rect.left + (rect.width / 2)) + 'px';
                         tooltipCatalogo.style.top = (rect.top - tooltipCatalogo.offsetHeight - 8) + 'px';
                     });
-
                     btn.addEventListener('mouseleave', () => {
                         tooltipCatalogo.style.display = 'none';
                     });
-
                     btn.addEventListener('click', function() {
                         document.querySelectorAll('.btn-mat-3d, .btn-hab-3d').forEach(b => b.classList.remove('activo'));
                         this.classList.add('activo');
@@ -828,4 +828,27 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     
     animar();
+
+    window.cambiarTab = function(tabId, elementoBoton) {
+        // 1. Ocultar todos los contenidos
+        const contenidos = document.querySelectorAll('.contenido-tab');
+        contenidos.forEach(contenido => {
+            contenido.style.display = 'none';
+        });
+        // 2. Quitar la clase 'activo' de todos los botones
+        const botones = document.querySelectorAll('.btn-tab');
+        botones.forEach(boton => {
+            boton.classList.remove('activo');
+        });
+        // 3. Mostrar el tab seleccionado
+        const tabSeleccionado = document.getElementById(tabId);
+        if (tabSeleccionado) {
+            tabSeleccionado.style.display = 'block';
+        }
+        
+        // 4. Marcar el botón presionado como activo
+        if (elementoBoton) {
+            elementoBoton.classList.add('activo');
+        }
+    };
 });
