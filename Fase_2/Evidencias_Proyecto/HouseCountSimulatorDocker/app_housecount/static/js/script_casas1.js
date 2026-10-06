@@ -9,7 +9,8 @@ document.addEventListener('DOMContentLoaded', () => {
     let precioActual = 15000;
     let costoTotal = 0;
     let modoConstruccion = 'material'; 
-    let rotacionActual = 0; 
+    let rotacionActual = 0;
+    let escalaActual = 1.0; // NUEVA VARIABLE PARA LA ESCALA
     let urlActual = null;          
     let texturaActual = 'concreto';
     let esModoOscuro = false; // Nueva variable de estado para el modo oscuro
@@ -217,7 +218,11 @@ document.addEventListener('DOMContentLoaded', () => {
         nombreActual = nombreElemento || (esHabitacion ? 'Módulo Habitacional' : 'Material Base');
         modeloActualGLTF = null;
         rotacionActual = 0;
-        if (bloqueFantasma) bloqueFantasma.rotation.y = 0;
+        escalaActual = 1.0; // Reiniciar escala
+        if (bloqueFantasma) {
+            bloqueFantasma.rotation.y = 0;
+            bloqueFantasma.scale.set(1, 1, 1);
+        }
 
         if (url3D) {
             cargarModeloOptimizado(url3D, (modeloCargado) => {
@@ -453,6 +458,15 @@ document.addEventListener('DOMContentLoaded', () => {
             rotacionActual -= Math.PI / 4;
             if (bloqueFantasma) bloqueFantasma.rotation.y = rotacionActual;
         }
+        // Controles de escala con + y -
+        if (event.key === '+' || event.key === '=') {
+            escalaActual += 0.1;
+            if (bloqueFantasma) bloqueFantasma.scale.set(escalaActual, escalaActual, escalaActual);
+        }
+        if (event.key === '-') {
+            escalaActual = Math.max(0.1, escalaActual - 0.1); // Evitar que desaparezca o sea negativo
+            if (bloqueFantasma) bloqueFantasma.scale.set(escalaActual, escalaActual, escalaActual);
+        }
     });
 
     document.addEventListener('keyup', (event) => {
@@ -475,7 +489,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 tipo: obj.userData.tipo,
                 url3D: obj.userData.url3D,
                 textura: obj.userData.textura,
-                nombre: obj.userData.nombre
+                nombre: obj.userData.nombre,
+                escala: obj.userData.escala || 1.0 // Guarda la escala
             });
         }
         localStorage.setItem('proyecto_homecount', JSON.stringify(datosGuardados));
@@ -518,8 +533,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     const maxDimension = Math.max(tamano.x, tamano.z);
                     
                     if (maxDimension > 0) {
-                        const escala = (item.tipo === 'habitacion' ? 200 : 50) / maxDimension;
-                        modelo.scale.set(escala, escala, escala);
+                        const escalaBase = (item.tipo === 'habitacion' ? 200 : 50) / maxDimension;
+                        const escalaFinal = escalaBase * (item.escala || 1.0); // Multiplica por la escala del usuario
+                        modelo.scale.set(escalaFinal, escalaFinal, escalaFinal);
                         modelo.updateMatrixWorld(true);
                     }
                     
@@ -530,7 +546,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     grupo.add(modelo);
                     grupo.position.set(item.posX, item.posY, item.posZ);
                     grupo.rotation.y = item.rotY;
-                    grupo.userData = { precio: item.precio, tipo: item.tipo, url3D: item.url3D, textura: item.textura, nombre: item.nombre };
+                    grupo.userData = { precio: item.precio, tipo: item.tipo, url3D: item.url3D, textura: item.textura, nombre: item.nombre, escala: item.escala || 1.0 };
                     scene.add(grupo);
                     objetosInteractuables.push(grupo);
                     actualizarPresupuesto(item.precio);
@@ -542,7 +558,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 const malla = new THREE.Mesh(geo, mat);
                 malla.position.set(item.posX, item.posY, item.posZ);
                 malla.rotation.y = item.rotY;
-                malla.userData = { precio: item.precio, tipo: item.tipo, url3D: null, textura: item.textura, nombre: item.nombre };
+                const esc = item.escala || 1.0;
+                malla.scale.set(esc, esc, esc);
+                malla.userData = { precio: item.precio, tipo: item.tipo, url3D: null, textura: item.textura, nombre: item.nombre, escala: esc };
                 scene.add(malla);
                 objetosInteractuables.push(malla);
                 actualizarPresupuesto(item.precio);
@@ -690,7 +708,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 const pos = calcularPosicionSnappeada(interseccion, !event.altKey);
                 nuevoObjeto.position.set(pos.x, pos.y, pos.z);
                 nuevoObjeto.rotation.y = rotacionActual;
-                nuevoObjeto.userData = { precio: precioActual, tipo: modoConstruccion, url3D: urlActual, textura: texturaActual, nombre: nombreActual };
+                nuevoObjeto.scale.set(escalaActual, escalaActual, escalaActual); // Aplica escala
+                nuevoObjeto.userData = { precio: precioActual, tipo: modoConstruccion, url3D: urlActual, textura: texturaActual, nombre: nombreActual, escala: escalaActual };
                 
                 scene.add(nuevoObjeto);
                 objetosInteractuables.push(nuevoObjeto);
@@ -704,23 +723,27 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Lógica del Modo Claro / Oscuro ---
     const btnModoOscuro = document.getElementById('btn-modo-oscuro');
+    esModoOscuro = localStorage.getItem('modo_oscuro_homecount') === 'true';
+    function aplicarTemaVisual(oscuro) {
+        document.body.classList.toggle('tema-oscuro', oscuro);
+
+        if (oscuro) {
+            renderer.setClearColor(0x1a1a1a, 1); // Fondo oscuro
+            if (gridHelper && gridHelper.material) gridHelper.material.color.setHex(0x777777); // Grid oscuro
+            if (btnModoOscuro) btnModoOscuro.textContent = '☀️'; // Cambia el icono al sol
+        } else {
+            renderer.setClearColor(0xe0e0e0, 1); // Fondo gris claro (original)
+            if (gridHelper && gridHelper.material) gridHelper.material.color.setHex(0x888888); // Grid normal
+            if (btnModoOscuro) btnModoOscuro.textContent = '🌙'; // Vuelve al icono de luna
+        }
+    }
+    aplicarTemaVisual(esModoOscuro);
+
     if (btnModoOscuro) {
         btnModoOscuro.addEventListener('click', () => {
             esModoOscuro = !esModoOscuro;
-            
-            // 1. Delegar a CSS los estilos de la interfaz web
-            document.body.classList.toggle('tema-oscuro', esModoOscuro);
-
-            // 2. Gestionar los elementos internos del Canvas 3D (Three.js)
-            if (esModoOscuro) {
-                renderer.setClearColor(0x1a1a1a, 1); // Fondo oscuro
-                if (gridHelper && gridHelper.material) gridHelper.material.color.setHex(0x777777); // Grid oscuro
-                btnModoOscuro.textContent = '☀️'; // Cambia el icono al sol
-            } else {
-                renderer.setClearColor(0xe0e0e0, 1); // Fondo gris claro (original)
-                if (gridHelper && gridHelper.material) gridHelper.material.color.setHex(0x888888); // Grid normal
-                btnModoOscuro.textContent = '🌙'; // Vuelve al icono de luna
-            }
+            localStorage.setItem('modo_oscuro_homecount', esModoOscuro);
+            aplicarTemaVisual(esModoOscuro);
         });
     }
 

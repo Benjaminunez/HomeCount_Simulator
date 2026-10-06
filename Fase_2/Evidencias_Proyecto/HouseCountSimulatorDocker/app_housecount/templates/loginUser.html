@@ -1,25 +1,36 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Iniciar Sesión</title>
+    <title>Iniciar Sesión - HomeCount Simulator</title>
+    <!-- Aquí enlazas tu archivo CSS externo -->
+    <link rel="stylesheet" href="{% static 'css/StyleLogin.css' %}">
+    <link rel="icon" type="image/png" href="media/iconosPestana/Login.ico"> <!--icono para pestaña de navegador-->
 </head>
 <body>
-    <h2>Iniciar Sesión</h2>
-    
-    {% if messages %}
-        <ul style="color: red;">
-            {% for message in messages %}
-                <li>{{ message }}</li>
-            {% endfor %}
-        </ul>
-    {% endif %}
 
-    <form method="POST">
-        {% csrf_token %}
-        {{ form.as_p }}
-        <button type="submit">Ingresar</button>
-    </form>
-    <p>¿No tienes cuenta? <a href="{% url 'registro' %}">Regístrate aquí</a></p>
+    <div class="login-card">
+        <h2>Iniciar Sesión</h2>
+        
+        {% if messages %}
+            <ul class="mensajes-alerta">
+                {% for message in messages %}
+                    <li>{{ message }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+
+        <form method="POST" class="login-form">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <button type="submit" class="btn-ingresar">Ingresar</button>
+        </form>
+
+        <div class="login-footer">
+            ¿No tienes cuenta? <a href="{% url 'registro' %}">Regístrate aquí</a>
+        </div>
+    </div>
+
 </body>
 </html>

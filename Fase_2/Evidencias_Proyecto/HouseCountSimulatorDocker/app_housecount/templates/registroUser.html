@@ -1,15 +1,37 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Registro</title>
+    <title>Registro - HomeCount Simulator</title>
+    <link rel="stylesheet" href="{% static 'css/StyleRegistro.css' %}">
+    <link rel="icon" type="image/png" href="media/iconosPestana/Register.ico"> <!--icono para pestaña de navegador-->
 </head>
-<body style="padding: 50px;">
-    <h2>Crear una Cuenta de Prueba</h2>
-    <form method="POST">
-        {% csrf_token %}
-        {{ form.as_p }}
-        <button type="submit" style="padding: 10px; margin-top: 10px;">Registrarme</button>
-    </form>
+<body>
+
+    <div class="login-card">
+        <h2>Crear una Cuenta HouseCount</h2>
+        
+        {% if form.errors %}
+            <ul class="mensajes-alerta">
+                {% for field, errors in form.errors.items %}
+                    {% for error in errors %}
+                        <li>{{ error }}</li>
+                    {% endfor %}
+                {% endfor %}
+            </ul>
+        {% endif %}
+
+        <form method="POST" class="login-form">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <button type="submit" class="btn-ingresar">Registrarme</button>
+        </form>
+
+        <div class="login-footer">
+            ¿Ya tienes cuenta? <a href="{% url 'login' %}">Inicia sesión aquí</a>
+        </div>
+    </div>
+
 </body>
 </html>

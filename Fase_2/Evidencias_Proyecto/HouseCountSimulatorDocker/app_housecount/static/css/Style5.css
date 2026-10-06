@@ -6,55 +6,6 @@ body {
     overflow: hidden; /* Bloqueamos el scroll de la página completa */
 }
 
-.navbar {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    background-color: #ffffff;
-    padding: 15px 50px;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-    z-index: 100;
-}
-
-.nav-links {
-    list-style: none;
-    display: flex;
-    flex-direction: row; /* Esto los pone en una sola línea horizontal */
-    gap: 20px;
-    align-items: center;
-    margin: 0;
-    padding: 0;
-}
-
-/* 1. Aplicar la fuente moderna a todo el documento */
-body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-}
-
-/* 2. Logo */
-.logo {
-    font-size: 22px;
-    font-weight: 700;
-    color: #2c3e50;
-    letter-spacing: 0.5px;
-}
-
-/* 3. Enlaces del menú (Inicio, Servicios, Proyectos) */
-.nav-links a {
-    text-decoration: none; /* Quita el subrayado azul */
-    color: #555555;
-    font-size: 15px;
-    font-weight: 600;
-    padding: 6px 12px;
-    border-radius: 6px;
-    transition: all 0.25s ease;
-}
-
-/* Efecto al pasar el ratón */
-.nav-links a:hover {
-    color: #e67e22; /* El naranja característico de tu web */
-}
-
 /* 4. Botón destacado de Contacto */
 .btn-contacto {
     background-color: #2c3e50 !important;
@@ -113,7 +64,7 @@ body.tema-oscuro .btn-contacto:hover {
     display: flex;
     justify-content: center;
     align-items: center;
-    gap: 15px; /* Separación entre botones */
+    gap: 10px;
     margin-bottom: 15px;
 }
 
@@ -195,28 +146,25 @@ body.tema-oscuro .btn-contacto:hover {
 }
 
 #btn-borrar-todo,
-#btn-modo-oscuro {
-    /* Dimensiones y forma circular */
+#btn-modo-oscuro,
+#btn-guardar-modelo,
+#btn-mis-modelos {
     width: 42px;
     height: 42px;
     border-radius: 50%;
-    
-    /* Centrar el icono internamente */
     display: flex;
     justify-content: center;
     align-items: center;
-    margin: 0 auto 15px auto; /* Lo centra horizontalmente y le da espacio abajo */
-    
-    /* Colores y bordes base */
+    margin: 0;
+    flex-shrink: 0;
     background-color: #f1f5f9;
     border: 1px solid #cbd5e1;
-    font-size: 18px; /* Tamaño del icono */
+    font-size: 18px;
     cursor: pointer;
-    position: relative; /* Necesario para posicionar el tooltip */
-    
-    /* Transición suave para las animaciones */
+    position: relative;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    color: inherit;
 }
 
 #btn-borrar-todo:hover {
@@ -234,18 +182,20 @@ body.tema-oscuro .btn-contacto:hover {
 }
 
 #btn-borrar-todo:active,
-#btn-modo-oscuro:active {
-    transform: scale(0.95); /* Se hunde un poco */
+#btn-modo-oscuro:active,
+#btn-guardar-modelo:active,
+#btn-mis-modelos:active {
+    transform: scale(0.95);
 }
 
 #btn-borrar-todo::after,
-#btn-modo-oscuro::after {
-    content: "Borrar modelo";
+#btn-modo-oscuro::after,
+#btn-guardar-modelo::after,
+#btn-mis-modelos::after {
     position: absolute;
-    top: 125%; /* Lo empuja hacia abajo del botón */
+    top: 125%;
     left: 50%;
-    z-index: 10; /* Asegura que no quede oculto detrás de otros elementos */
-    
+    z-index: 10;
     background-color: #1e293b;
     color: white;
     padding: 6px 10px;
@@ -253,8 +203,6 @@ body.tema-oscuro .btn-contacto:hover {
     font-size: 11px;
     font-weight: 600;
     white-space: nowrap;
-    
-    /* Animación de entrada desde arriba hacia abajo */
     opacity: 0;
     visibility: hidden;
     transform: translateX(-50%) translateY(-10px);
@@ -263,27 +211,23 @@ body.tema-oscuro .btn-contacto:hover {
     box-shadow: 0 3px 6px rgba(0,0,0,0.15);
 }
 
-#btn-borrar-todo::after {
-    content: "Borrar modelo";
-}
-#btn-modo-oscuro::after {
-    content: "Cambiar tema";
-}
+#btn-borrar-todo::after { content: "Borrar modelo"; }
+#btn-modo-oscuro::after { content: "Cambiar tema"; }
+#btn-guardar-modelo::after { content: "Guardar modelo"; }
+#btn-mis-modelos::after { content: "Mis diseños"; }
 
 #btn-borrar-todo::before,
-#btn-modo-oscuro::before {
+#btn-modo-oscuro::before,
+#btn-guardar-modelo::before,
+#btn-mis-modelos::before {
     content: "";
     position: absolute;
-    top: 105%; /* Se ubica justo debajo del botón */
+    top: 105%;
     left: 50%;
     z-index: 10;
-    
-    /* Bordes para que el triángulo apunte hacia arriba */
     border-width: 5px;
     border-style: solid;
     border-color: transparent transparent #1e293b transparent;
-    
-    /* Animación de entrada */
     opacity: 0;
     visibility: hidden;
     transform: translateX(-50%) translateY(-10px);
@@ -291,10 +235,28 @@ body.tema-oscuro .btn-contacto:hover {
     pointer-events: none;
 }
 
+#btn-guardar-modelo:hover {
+    background-color: #dcfce7; /* Verde clarito */
+    border-color: #4ade80;
+    transform: scale(1.1) rotate(8deg); 
+    box-shadow: 0 4px 8px rgba(74, 222, 128, 0.2);
+}
+
+#btn-mis-modelos:hover {
+    background-color: #fef9c3; /* Amarillo clarito */
+    border-color: #facc15;
+    transform: scale(1.1) rotate(-8deg); 
+    box-shadow: 0 4px 8px rgba(250, 204, 21, 0.2);
+}
+
 #btn-borrar-todo:hover::after,
 #btn-borrar-todo:hover::before,
 #btn-modo-oscuro:hover::after,
-#btn-modo-oscuro:hover::before {
+#btn-modo-oscuro:hover::before,
+#btn-guardar-modelo:hover::after,
+#btn-guardar-modelo:hover::before,
+#btn-mis-modelos:hover::after,
+#btn-mis-modelos:hover::before {
     opacity: 1;
     visibility: visible;
     transform: translateX(-50%) translateY(0);
@@ -833,4 +795,64 @@ body.tema-oscuro .texto-placeholder {
     border-left: none !important;
     padding-left: 0 !important;
     margin-left: 0 !important;
+}
+
+.separador-vertical {
+    width: 2px;
+    height: 30px;
+    background-color: #cbd5e1;
+    margin: 0 5px 15px 5px; /* Incluye 15px abajo para alinear con los botones circulares */
+    border-radius: 2px;
+}
+
+/* --- Botones de usuario en el panel 3D --- */
+.btn-panel-texto {
+    text-decoration: none;
+    height: 42px; /* Misma altura exacta que los botones circulares */
+    padding: 0 14px;
+    background-color: #f1f5f9; /* Mismo fondo que la papelera y el sol */
+    color: #2c3e50; /* Texto oscuro legible */
+    border: 1px solid #cbd5e1; /* Mismo borde claro */
+    border-radius: 10px; /* Esquinas redondeadas armoniosas */
+    font-size: 12px;
+    font-weight: 700;
+    line-height: 1.2;
+    text-align: center;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    font-family: inherit;
+    white-space: nowrap;
+}
+
+.btn-panel-texto:hover {
+    background-color: #ffffff;
+    color: #e67e22; /* Tu color naranja de marca al pasar el cursor */
+    border-color: #e67e22;
+    transform: scale(1.05); /* Mismo efecto de escala sutil */
+    box-shadow: 0 4px 8px rgba(230, 126, 34, 0.2);
+}
+
+/* --- Adaptación al modo oscuro de la UI Web --- */
+body.tema-oscuro .separador-vertical {
+    background-color: #444444; /* Borde sutil basado en tus reglas de titulo-desglose */
+}
+
+body.tema-oscuro .btn-panel-texto {
+    background-color: #2c3e50;
+    color: #ffffff;
+    border-color: #1a252f;
+}
+
+body.tema-oscuro .btn-panel-texto:hover {
+    background-color: #34495e;
+    color: #e67e22;
+    border-color: #e67e22;
+}
+
+.btn-panel-texto:active {
+    transform: scale(0.95);
 }
