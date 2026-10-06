@@ -280,21 +280,74 @@ def cerrar_sesion(request):
 
 # --- Guardar / Cargar Escenas 3D (Vinculado con el usuario activo) ---
 
+# Asegúrate de agregar estas importaciones al inicio de tu archivo views.py
+import base64
+from django.core.files.base import ContentFile
+
 @login_required
 def guardar_diseno(request):
     if request.method == 'POST':
         try:
+            # 1. Leer los datos enviados
             data = json.loads(request.body)
             
-            proyecto = Proyecto3D.objects.create(
-                usuario=request.user, 
-                nombre=data.get('nombre_proyecto', 'Sin nombre'),
-                costo_total=data.get('costo_total', 0),
-                datos_escena=data.get('datos_escena', []),
-                datos_camara=data.get('datos_camara', {})
-            )
+            # 2. Extraer información básica
+            proyecto_id = data.get('proyecto_id', None) # 🔑 NUEVO: Rescatamos el ID
+            nombre = data.get('nombre_proyecto', 'Sin nombre')
+            costo_total = data.get('costo_total', 0)
+            datos_escena = data.get('datos_escena', [])
+            datos_camara = data.get('datos_camara', {})
+            captura_base64 = data.get('captura_base64', None)
             
-            return JsonResponse({'estado': 'exito', 'mensaje': 'Proyecto guardado correctamente.', 'id': proyecto.id})
+            # 3. VERIFICAR SI ACTUALIZAMOS O CREAMOS
+            if proyecto_id:
+                # Buscamos el proyecto existente (asegurándonos de que pertenezca al usuario)
+                proyecto = Proyecto3D.objects.get(id=proyecto_id, usuario=request.user)
+                proyecto.nombre = nombre
+                proyecto.costo_total = costo_total
+                proyecto.datos_escena = datos_escena
+                proyecto.datos_camara = datos_camara
+            else:
+                # Si no hay ID, creamos un registro totalmente nuevo
+                proyecto = Proyecto3D(
+                    usuario=request.user, 
+                    nombre=nombre,
+                    costo_total=costo_total,
+                    datos_escena=datos_escena,
+                    datos_camara=datos_camara
+                )
+            
+            # 4. Decodificar la imagen Base64 y guardarla/sobrescribirla
+            if captura_base64 and ';base64,' in captura_base64:
+                # Separar el encabezado de los datos puros
+                formato, imgstr = captura_base64.split(';base64,') 
+                ext = formato.split('/')[-1] 
+                
+                # Generar un nombre de archivo
+                nombre_archivo = f"diseno_{request.user.username}_{nombre.replace(' ', '_')}.{ext}"
+                
+                # Opcional pero recomendado: Si estamos sobrescribiendo, borramos la imagen física anterior para no acumular basura
+                if proyecto_id and proyecto.imagen_captura:
+                    proyecto.imagen_captura.delete(save=False)
+                
+                # Guardar la nueva captura
+                proyecto.imagen_captura.save(
+                    nombre_archivo, 
+                    ContentFile(base64.b64decode(imgstr)), 
+                    save=False 
+                )
+            
+            # 5. Guardar definitivamente en la base de datos (Ejecuta UPDATE o INSERT según corresponda)
+            proyecto.save()
+            
+            return JsonResponse({
+                'estado': 'exito', 
+                'mensaje': 'Proyecto guardado/actualizado correctamente.', 
+                'id': proyecto.id
+            })
+            
+        except Proyecto3D.DoesNotExist:
+            return JsonResponse({'estado': 'error', 'mensaje': 'El proyecto a modificar no existe o no tienes permisos.'}, status=404)
         except Exception as e:
             return JsonResponse({'estado': 'error', 'mensaje': str(e)}, status=400)
             
@@ -313,7 +366,10 @@ def obtener_disenos(request):
             'costo_total': float(p.costo_total),
             'fecha': p.fecha_creacion.strftime('%d/%m/%Y %H:%M'),
             'datos_escena': p.datos_escena,
-            'datos_camara': p.datos_camara
+            'datos_camara': p.datos_camara,
+            # --- NUEVOS DATOS ---
+            'imagen_url': p.imagen_captura.url if p.imagen_captura else None,
+            'area_cuadrada': float(p.area_cuadrada) if p.area_cuadrada else 0.0
         }
         for p in proyectos
     ]

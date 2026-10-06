@@ -856,3 +856,76 @@ body.tema-oscuro .btn-panel-texto:hover {
 .btn-panel-texto:active {
     transform: scale(0.95);
 }
+
+/* --- Modal Background --- */
+.modal-oculto {
+    display: none; 
+    position: fixed; 
+    z-index: 2000; 
+    left: 0; top: 0; 
+    width: 100%; height: 100%; 
+    background-color: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(4px);
+}
+
+/* --- Contenedor del Modal --- */
+.modal-contenido {
+    background-color: #f8fafc;
+    margin: 5% auto;
+    padding: 25px;
+    width: 90%;
+    max-width: 1000px;
+    border-radius: 12px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+    max-height: 85vh;
+    overflow-y: auto;
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 2px solid #e2e8f0;
+    padding-bottom: 15px;
+    margin-bottom: 20px;
+}
+
+.modal-header h2 { margin: 0; color: #1e293b; }
+.cerrar-modal { font-size: 28px; font-weight: bold; cursor: pointer; color: #64748b; }
+.cerrar-modal:hover { color: #ef4444; }
+
+/* --- Cuadrícula de Tarjetas --- */
+.grid-disenos {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 20px;
+}
+
+/* --- Estilos de la Tarjeta --- */
+.tarjeta-diseno {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    overflow: hidden;
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.tarjeta-diseno:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 15px rgba(0,0,0,0.1);
+    border-color: #e67e22; /* Tu naranja corporativo */
+}
+
+.tarjeta-diseno img {
+    width: 100%;
+    height: 180px;
+    object-fit: cover;
+    background-color: #e2e8f0;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.tarjeta-info { padding: 15px; }
+.tarjeta-info h3 { margin: 0 0 8px 0; font-size: 16px; color: #334155; }
+.tarjeta-info p { margin: 4px 0; font-size: 13px; color: #64748b; }
+.tarjeta-info .precio-tarjeta { color: #e67e22; font-weight: bold; font-size: 15px; margin-top: 10px; }
