@@ -58,39 +58,43 @@ body {
 .auth-section {
     display: flex;
     align-items: center;
-    gap: 15px; /* Espacio entre el nombre y el botón */
+    gap: 12px;
+    background-color: rgba(0, 0, 0, 0.03); /* Fondo gris muy sutil */
+    border: 1px solid rgba(0, 0, 0, 0.08); /* Borde gris sutil */
+    padding: 5px 5px 5px 18px;
+    border-radius: 50px;
+    transition: all 0.3s ease;
 }
 
-/* Evita que el formulario del botón rompa la alineación */
 .auth-section form {
     margin: 0;
     display: flex;
-    align-items: center;
 }
 
-/* --- Texto de saludo ("Hola, Benjamin_N") --- */
+/* Texto de Saludo - Tema Claro */
 .saludo {
-    color: #3d3d3f; /* Color claro para que resalte en el fondo oscuro */
-    font-size: 15px;
+    color: #334155; /* Texto gris oscuro */
+    font-size: 14px;
+    white-space: nowrap;
 }
 
 .saludo strong {
-    color: #e67e22; /* Usa tu naranja corporativo para destacar el usuario */
+    color: #e67e22; /* Naranja */
     font-weight: 700;
 }
 
-/* --- Botón de Cerrar Sesión --- */
+/* --- Botón Cerrar Sesión (Estilo Píldora) --- */
 .btn-logout {
     background-color: transparent;
-    color: #ef4444; /* Rojo para denotar una acción de salida o peligro */
+    color: #ef4444;
     border: 1px solid #ef4444;
-    padding: 8px 16px;
-    border-radius: 6px; /* Mismo borde redondeado que tus otros botones */
-    font-size: 14px;
+    padding: 6px 18px;
+    border-radius: 50px; /* Curvatura máxima */
+    font-size: 13px;
     font-weight: 600;
-    font-family: inherit; /* Hereda tu fuente Segoe UI */
     cursor: pointer;
     transition: all 0.25s ease;
+    font-family: inherit;
 }
 
 .btn-logout:hover {
@@ -99,34 +103,50 @@ body {
     box-shadow: 0 2px 8px rgba(239, 68, 68, 0.3);
 }
 
-/* --- Enlace: Iniciar Sesión --- */
+/* --- Si el usuario NO ha iniciado sesión (Píldoras para Login/Registro) --- */
 .btn-login {
-    text-decoration: none; /* Elimina el subrayado por defecto */
-    color: #e2e8f0; /* Texto claro para contrastar con el fondo oscuro */
+    color: #475569; /* Texto gris oscuro legible */
+    text-decoration: none;
     font-size: 14px;
     font-weight: 600;
-    transition: color 0.25s ease;
+    transition: color 0.25s;
+    margin-right: 5px;
 }
 
 .btn-login:hover {
-    color: #e67e22; /* Cambia al naranja de tu marca al pasar el cursor */
+    color: #e67e22; /* Naranja al pasar el ratón */
 }
-
-/* --- Botón: Registrarse --- */
 .btn-registro {
-    text-decoration: none; /* Elimina el subrayado */
+    text-decoration: none;
     background-color: transparent;
-    color: #e67e22; /* Texto naranja */
-    border: 1px solid #e67e22; /* Borde naranja */
-    padding: 8px 16px;
-    border-radius: 6px;
-    font-size: 14px;
+    color: #e67e22;
+    border: 1px solid #e67e22;
+    padding: 6px 18px;
+    border-radius: 50px; /* Curvatura máxima */
+    font-size: 13px;
     font-weight: 600;
     transition: all 0.25s ease;
 }
 
 .btn-registro:hover {
-    background-color: #e67e22; /* Se rellena de naranja */
-    color: #ffffff; /* El texto pasa a blanco */
-    box-shadow: 0 2px 8px rgba(230, 126, 34, 0.3); /* Ligero resplandor */
+    background-color: #e67e22;
+    color: #ffffff;
+    box-shadow: 0 2px 8px rgba(230, 126, 34, 0.3);
+}
+
+body.tema-oscuro .auth-section {
+    background-color: rgba(255, 255, 255, 0.05); /* Fondo blanco semitransparente */
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+body.tema-oscuro .saludo {
+    color: #e2e8f0; /* Texto claro */
+}
+
+body.tema-oscuro .btn-login {
+    color: #e2e8f0; /* Texto claro */
+}
+
+body.tema-oscuro .btn-login:hover {
+    color: #e67e22;
 }
