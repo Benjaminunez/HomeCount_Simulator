@@ -88,7 +88,6 @@ async function cargarDisenosUsuario(scene, objetos, camera, controles, callbackA
         const grid = document.getElementById('grid-disenos');
         grid.innerHTML = ''; 
 
-        // 🔥 MAGIA ANTI-BLOQUEO: Forzamos que el modal esté por encima del 3D y reciba clics
         modal.style.position = 'fixed';
         modal.style.zIndex = '999999';
         modal.style.pointerEvents = 'auto';
@@ -97,16 +96,16 @@ async function cargarDisenosUsuario(scene, objetos, camera, controles, callbackA
             const card = document.createElement('div');
             card.className = 'tarjeta-diseno';
             
-            // 🔥 PROTECCIÓN DE LA TARJETA
             card.style.cursor = 'pointer'; 
-            card.style.pointerEvents = 'auto'; // Forzamos que el ratón la detecte
+            card.style.pointerEvents = 'auto'; 
             card.style.position = 'relative';
-            card.style.zIndex = '1000000';     // Aún más arriba que el modal
+            card.style.zIndex = '1000000';     
 
             const imgUrl = proyecto.imagen_url ? proyecto.imagen_url : 'data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs='; 
             const precioFormateado = Number(proyecto.costo_total).toLocaleString('es-CL');
 
             card.innerHTML = `
+                <div class="btn-eliminar-diseno" title="Eliminar diseño">🗑️</div>
                 <img src="${imgUrl}" alt="Diseño: ${proyecto.nombre}">
                 <div class="tarjeta-info">
                     <h3>${proyecto.nombre}</h3>
@@ -115,10 +114,19 @@ async function cargarDisenosUsuario(scene, objetos, camera, controles, callbackA
                 </div>
             `;
 
-            // Asignamos el clic protegiéndolo de Three.js
+            // EVENTO 1: Clic en el basurero (Eliminar)
+            const btnEliminar = card.querySelector('.btn-eliminar-diseno');
+            btnEliminar.onclick = async (e) => {
+                e.stopPropagation(); 
+                const confirmar = confirm(`¿Estás seguro de que deseas eliminar permanentemente el diseño "${proyecto.nombre}"?`);
+                if (confirmar) {
+                    await eliminarDisenoBD(proyecto.id, card); 
+                }
+            };
+
+            // EVENTO 2: Clic en la tarjeta (Cargar 3D)
             card.onclick = (e) => {
-                e.stopPropagation(); // 🛡️ Evita que el clic traspase hacia el lienzo 3D
-                console.log("✅ Clic exitoso. Cargando proyecto:", proyecto.nombre);
+                e.stopPropagation(); 
                 modal.style.display = 'none';
                 ejecutarCargaEscena3D(proyecto, scene, objetos, camera, controles, callbackActualizarUI);
             };
@@ -130,6 +138,31 @@ async function cargarDisenosUsuario(scene, objetos, camera, controles, callbackA
 
     } catch (err) {
         console.error("Error al cargar la galería de proyectos:", err);
+    }
+}
+
+async function eliminarDisenoBD(proyectoId, tarjetaHtml) {
+    try {
+        const response = await fetch('/api/eliminar-diseno/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': obtenerCookieCSRF('csrftoken') 
+            },
+            body: JSON.stringify({ proyecto_id: proyectoId })
+        });
+
+        const data = await response.json();
+        if (response.ok && data.estado === 'exito') {
+            tarjetaHtml.style.transition = "all 0.3s";
+            tarjetaHtml.style.opacity = "0";
+            tarjetaHtml.style.transform = "scale(0.8)";
+            setTimeout(() => tarjetaHtml.remove(), 300); 
+        } else {
+            alert("Error al eliminar: " + data.mensaje);
+        }
+    } catch (error) {
+        console.error("Error de red al eliminar:", error);
     }
 }
 

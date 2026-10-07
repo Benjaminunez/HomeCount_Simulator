@@ -375,3 +375,30 @@ def obtener_disenos(request):
     ]
         
     return JsonResponse({'estado': 'exito', 'disenos': lista})
+
+@login_required
+def eliminar_diseno(request):
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            proyecto_id = data.get('proyecto_id')
+            
+            if proyecto_id:
+                # Buscamos el proyecto (asegurándonos de que sea del usuario activo)
+                proyecto = Proyecto3D.objects.get(id=proyecto_id, usuario=request.user)
+                
+                # Borramos la imagen del disco duro del servidor para no acumular basura
+                if proyecto.imagen_captura:
+                    proyecto.imagen_captura.delete(save=False)
+                
+                # Borramos el registro de la base de datos
+                proyecto.delete()
+                
+                return JsonResponse({'estado': 'exito', 'mensaje': 'Proyecto eliminado correctamente'})
+                
+        except Proyecto3D.DoesNotExist:
+            return JsonResponse({'estado': 'error', 'mensaje': 'El proyecto no existe o no tienes permisos.'}, status=404)
+        except Exception as e:
+            return JsonResponse({'estado': 'error', 'mensaje': str(e)}, status=400)
+            
+    return JsonResponse({'estado': 'error', 'mensaje': 'Método no permitido'}, status=405)

@@ -8,12 +8,15 @@
     <script src="{% static 'js/script_casas1.js' %}" defer></script>
     <script src="{% static 'js/guardado_db.js'%}"></script>
     <link rel="icon" type="image/png" href="media/iconosPestana/martillo.ico"> <!--icono para pestaña de navegador-->
+    <style>
+    @import url('https://fonts.googleapis.com/css2?family=Henny+Penny&family=Monoton&display=swap');
+    </style>
 </head>
 
     <!-- Menú de Navegación -->
 <header class="navbar">
     <div class="logo">
-        <a href="{% url 'inicio' %}" style="text-decoration: none; color: inherit;">HomeCount Simulator</a>
+        <a href="{% url 'inicio' %}" class="monoton-regular">HouseCount Simulator</a>
     </div>
 
     <div class="auth-section">
@@ -122,7 +125,7 @@
                 <div id="lista-habitaciones" class="catalogo-scroll"></div>
             </div>
         </div>
-        
+
         <div id="modal-mis-disenos" class="modal-oculto">
             <div class="modal-contenido">
                 <div class="modal-header">

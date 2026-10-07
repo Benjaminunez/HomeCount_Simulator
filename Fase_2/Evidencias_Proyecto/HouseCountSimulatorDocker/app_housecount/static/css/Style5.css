@@ -929,3 +929,26 @@ body.tema-oscuro .btn-panel-texto:hover {
 .tarjeta-info h3 { margin: 0 0 8px 0; font-size: 16px; color: #334155; }
 .tarjeta-info p { margin: 4px 0; font-size: 13px; color: #64748b; }
 .tarjeta-info .precio-tarjeta { color: #e67e22; font-weight: bold; font-size: 15px; margin-top: 10px; }
+
+.btn-eliminar-diseno {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background-color: rgba(255, 0, 0, 0.8);
+    color: white;
+    font-size: 16px;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 50%;
+    cursor: pointer;
+    z-index: 10;
+    transition: background 0.2s;
+}
+
+.btn-eliminar-diseno:hover {
+    background-color: rgb(255, 0, 0);
+    transform: scale(1.1);
+}
