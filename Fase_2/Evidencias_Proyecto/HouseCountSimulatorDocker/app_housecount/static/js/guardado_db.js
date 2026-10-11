@@ -1,7 +1,7 @@
 // --- 1. FUNCIÓN DE GUARDADO ---
 async function procesarGuardado(objetos, camera, controles, costoTotal, miEscena, miRenderer, proyectoId = null, proyectoNombre = "") {
     if (!objetos || objetos.length <= 1) {
-        alert("La escena está vacía. Añade elementos antes de guardar.");
+        await DialogoUI.alert("La escena está vacía. Añade elementos antes de guardar.");
         return;
     }
 
@@ -9,15 +9,15 @@ async function procesarGuardado(objetos, camera, controles, costoTotal, miEscena
 
     // Lógica para Sobrescribir vs Guardar Nuevo
     if (proyectoId) {
-        const sobreescribir = confirm(`Actualmente estás editando "${proyectoNombre}".\n\n¿Deseas guardar los cambios en este mismo diseño?\n(Haz clic en "Cancelar" para guardarlo como un diseño totalmente nuevo)`);
+        const sobreescribir = await DialogoUI.confirm(`Actualmente estás editando "${proyectoNombre}".\n\n¿Deseas guardar los cambios en este mismo diseño?\n(Haz clic en "Cancelar" para guardarlo como un diseño totalmente nuevo)`);
         
         if (!sobreescribir) {
-            nombreProyecto = prompt("Ingresa un nombre para la nueva copia del proyecto:");
+            nombreProyecto = await DialogoUI.prompt("Ingresa un nombre para la nueva copia del proyecto:");
             if (!nombreProyecto) return;
             proyectoId = null; // Al ponerlo en null, forzamos al servidor a crear uno nuevo
         }
     } else {
-        nombreProyecto = prompt("Nombre para este proyecto:");
+        nombreProyecto = await DialogoUI.prompt("Nombre para este proyecto:");
         if (!nombreProyecto) return;
     }
 
@@ -41,7 +41,7 @@ async function procesarGuardado(objetos, camera, controles, costoTotal, miEscena
     }
 
     const payload = {
-        proyecto_id: proyectoId, // 🔑 ENVIAMOS EL ID AL SERVIDOR
+        proyecto_id: proyectoId, 
         nombre_proyecto: nombreProyecto,
         costo_total: costoTotal,
         datos_escena: datosEscena,
@@ -64,9 +64,9 @@ async function procesarGuardado(objetos, camera, controles, costoTotal, miEscena
 
         const data = await response.json();
         if (response.ok && data.estado === 'exito') {
-            alert("¡Proyecto guardado con éxito!");
+            await DialogoUI.alert("¡Proyecto guardado con éxito!");
         } else {
-            alert("Error al guardar: " + data.mensaje);
+            await DialogoUI.alert("Error al guardar: " + data.mensaje);
         }
     } catch (err) {
         console.error("Error de red al guardar:", err);
@@ -80,7 +80,7 @@ async function cargarDisenosUsuario(scene, objetos, camera, controles, callbackA
         const data = await response.json();
 
         if (!response.ok || !data.disenos || data.disenos.length === 0) {
-            alert("Aún no tienes proyectos guardados.");
+            await DialogoUI.alert("Aún no tienes proyectos guardados.");
             return;
         }
 
@@ -118,7 +118,7 @@ async function cargarDisenosUsuario(scene, objetos, camera, controles, callbackA
             const btnEliminar = card.querySelector('.btn-eliminar-diseno');
             btnEliminar.onclick = async (e) => {
                 e.stopPropagation(); 
-                const confirmar = confirm(`¿Estás seguro de que deseas eliminar permanentemente el diseño "${proyecto.nombre}"?`);
+                const confirmar = await DialogoUI.confirm(`¿Estás seguro de que deseas eliminar permanentemente el diseño "${proyecto.nombre}"?`);
                 if (confirmar) {
                     await eliminarDisenoBD(proyecto.id, card); 
                 }
@@ -159,7 +159,7 @@ async function eliminarDisenoBD(proyectoId, tarjetaHtml) {
             tarjetaHtml.style.transform = "scale(0.8)";
             setTimeout(() => tarjetaHtml.remove(), 300); 
         } else {
-            alert("Error al eliminar: " + data.mensaje);
+            await DialogoUI.alert("Error al eliminar: " + data.mensaje);
         }
     } catch (error) {
         console.error("Error de red al eliminar:", error);
@@ -280,12 +280,10 @@ function obtenerCookieCSRF(name) {
     return cookieValue;
 }
 
-// Escuchamos absolutamente todos los clics en la pantalla
 document.addEventListener("click", (e) => {
     const modal = document.getElementById('modal-mis-disenos');
     if (!modal) return;
 
-    // 1. Cerrar si hace clic en CUALQUIER botón que parezca una "X" o tenga la clase close
     if (
         e.target.id === 'btn-cerrar-modal' || 
         e.target.classList.contains('close') || 
@@ -293,13 +291,10 @@ document.addEventListener("click", (e) => {
         e.target.innerText.trim() === 'x' ||
         e.target.innerText.trim() === 'X'
     ) {
-        console.log("Clic detectado en el botón de cerrar");
         modal.style.display = "none";
     }
 
-    // 2. Cerrar si hace clic en la zona gris (fuera de la caja blanca)
     if (e.target === modal) {
-        console.log("Clic detectado fuera del modal");
         modal.style.display = "none";
     }
 });

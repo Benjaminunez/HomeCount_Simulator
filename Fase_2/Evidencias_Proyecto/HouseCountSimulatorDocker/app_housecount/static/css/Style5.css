@@ -582,9 +582,9 @@ footer {
 }
 
 /* --- ESTILOS DEL MODO OSCURO (UI Web) --- */
-body.tema-oscuro {
-    background-color: #121212;
-    color: #e0e0e0;
+body.tema-oscuro .titulo-desglose {
+    color: #e2e8f0;
+    border-bottom-color: #444444;
 }
 
 /* El botón en modo oscuro */
@@ -951,4 +951,110 @@ body.tema-oscuro .btn-panel-texto:hover {
 .btn-eliminar-diseno:hover {
     background-color: rgb(255, 0, 0);
     transform: scale(1.1);
+}
+
+
+body.tema-oscuro .panel-superior-derecho,
+body.tema-oscuro .panel-inferior-centro,
+body.tema-oscuro .panel-instrucciones {
+    background: rgba(30, 41, 59, 0.95);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+}
+
+body.tema-oscuro .titulo-desglose,
+body.tema-oscuro #lista-objetos-container h3, 
+body.tema-oscuro #lista-objetos-container h4 {
+    color: #ffffff !important;
+    border-bottom-color: #444444; /* Línea separadora sutil */
+}
+
+body.tema-oscuro .panel-instrucciones {
+    color: #ffffff;
+    /* Opcional: aseguramos que el fondo del panel también sea oscuro para buen contraste */
+    background: rgba(30, 41, 59, 0.85); 
+}
+
+body.tema-oscuro .presupuesto-total {
+    color: #e2e8f0;
+}
+
+/* Fondo oscuro unificado para el área de contenido de las pestañas */
+body.tema-oscuro .contenido-tab {
+    background-color: transparent;
+}
+
+
+
+/* --- Estlo para mensajes de confirmación de acciónes en vista 3D  --- */
+.modal-ui-overlay {
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(3px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10000000;
+    pointer-events: auto;
+}
+.modal-ui-caja {
+    background: #1a1a1a;
+    color: #ffffff;
+    padding: 24px;
+    border-radius: 12px;
+    width: 90%;
+    max-width: 400px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+    text-align: center;
+    font-family: sans-serif;
+}
+.modal-ui-caja h3 { 
+    margin-top: 0; 
+    margin-bottom: 12px; 
+    font-size: 1.2rem; 
+}
+.modal-ui-caja p { 
+    margin-bottom: 20px; 
+    font-size: 0.95rem; 
+    color: #dcdcdc; 
+    line-height: 1.5; 
+    white-space: pre-wrap; 
+}
+.modal-ui-input {
+    width: 100%; 
+    padding: 10px; 
+    margin-bottom: 20px;
+    border-radius: 6px; 
+    border: 1px solid #444;
+    background: #2a2a2a; 
+    color: white;
+    box-sizing: border-box;
+}
+.modal-ui-botones { 
+    display: flex; 
+    justify-content: center; 
+    gap: 12px; 
+}
+.modal-ui-botones button {
+    padding: 10px 20px; 
+    border: none; 
+    border-radius: 6px;
+    cursor: pointer; 
+    font-weight: bold; 
+    transition: all 0.2s;
+    pointer-events: auto;
+}
+.btn-primario { 
+    background: #f39c12; 
+    color: white; 
+}
+.btn-primario:hover { 
+    background: #e67e22; 
+}
+.btn-secundario { 
+    background: #555; 
+    color: white; 
+}
+.btn-secundario:hover { 
+    background: #444; 
 }
