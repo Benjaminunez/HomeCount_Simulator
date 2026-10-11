@@ -12,6 +12,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let rotacionActual = 0; 
     let urlActual = null;          
     let texturaActual = 'concreto';
+    let categoriaActual = ''; // Categoría del elemento seleccionado (para el cálculo de perímetro)
     let esModoOscuro = false; // Nueva variable de estado para el modo oscuro
     const uiTotal = document.getElementById('total-3d');
     
@@ -209,12 +210,13 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    function seleccionarElemento(url3D, precio, esHabitacion, nombreTextura, nombreElemento) {
+    function seleccionarElemento(url3D, precio, esHabitacion, nombreTextura, nombreElemento, categoria) {
         precioActual = precio;
         modoConstruccion = esHabitacion ? 'habitacion' : 'material';
         urlActual = url3D;                               
         texturaActual = nombreTextura || 'concreto';     
         nombreActual = nombreElemento || (esHabitacion ? 'Módulo Habitacional' : 'Material Base');
+        categoriaActual = categoria || (esHabitacion ? 'modulo_prehecho' : '');
         modeloActualGLTF = null;
         rotacionActual = 0;
         if (bloqueFantasma) bloqueFantasma.rotation.y = 0;
@@ -357,10 +359,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     btn.addEventListener('click', function() {
                         document.querySelectorAll('.btn-mat-3d, .btn-hab-3d').forEach(b => b.classList.remove('activo'));
                         this.classList.add('activo');
-                        seleccionarElemento(mat.archivo_3d, mat.coste, false, mat.textura_key, mat.nombre);
+                        seleccionarElemento(mat.archivo_3d, mat.coste, false, mat.textura_key, mat.nombre, mat.categoria);
                     });
                     if (contenedorMateriales) contenedorMateriales.appendChild(btn);
-                    if (index === 0) seleccionarElemento(mat.archivo_3d, mat.coste, false, mat.textura_key, mat.nombre);
+                    if (index === 0) seleccionarElemento(mat.archivo_3d, mat.coste, false, mat.textura_key, mat.nombre, mat.categoria);
                 });
             }
             // Renderizar las habitaciones (se mantiene igual que antes)...
@@ -388,7 +390,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     btn.addEventListener('click', function() {
                         document.querySelectorAll('.btn-mat-3d, .btn-hab-3d').forEach(b => b.classList.remove('activo'));
                         this.classList.add('activo');
-                        seleccionarElemento(hab.archivo_3d, hab.coste_total, true, 'concreto', hab.nombre);
+                        seleccionarElemento(hab.archivo_3d, hab.coste_total, true, 'concreto', hab.nombre, 'modulo_prehecho');
                     });
                     
                     if (contenedorHabitaciones) contenedorHabitaciones.appendChild(btn);
@@ -475,7 +477,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 tipo: obj.userData.tipo,
                 url3D: obj.userData.url3D,
                 textura: obj.userData.textura,
-                nombre: obj.userData.nombre
+                nombre: obj.userData.nombre,
+                categoria: obj.userData.categoria || ''
             });
         }
         localStorage.setItem('proyecto_homecount', JSON.stringify(datosGuardados));
@@ -530,7 +533,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     grupo.add(modelo);
                     grupo.position.set(item.posX, item.posY, item.posZ);
                     grupo.rotation.y = item.rotY;
-                    grupo.userData = { precio: item.precio, tipo: item.tipo, url3D: item.url3D, textura: item.textura, nombre: item.nombre };
+                    grupo.userData = { precio: item.precio, tipo: item.tipo, url3D: item.url3D, textura: item.textura, nombre: item.nombre, categoria: item.categoria || '' };
                     scene.add(grupo);
                     objetosInteractuables.push(grupo);
                     actualizarPresupuesto(item.precio);
@@ -542,7 +545,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const malla = new THREE.Mesh(geo, mat);
                 malla.position.set(item.posX, item.posY, item.posZ);
                 malla.rotation.y = item.rotY;
-                malla.userData = { precio: item.precio, tipo: item.tipo, url3D: null, textura: item.textura, nombre: item.nombre };
+                malla.userData = { precio: item.precio, tipo: item.tipo, url3D: null, textura: item.textura, nombre: item.nombre, categoria: item.categoria || '' };
                 scene.add(malla);
                 objetosInteractuables.push(malla);
                 actualizarPresupuesto(item.precio);
@@ -690,7 +693,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const pos = calcularPosicionSnappeada(interseccion, !event.altKey);
                 nuevoObjeto.position.set(pos.x, pos.y, pos.z);
                 nuevoObjeto.rotation.y = rotacionActual;
-                nuevoObjeto.userData = { precio: precioActual, tipo: modoConstruccion, url3D: urlActual, textura: texturaActual, nombre: nombreActual };
+                nuevoObjeto.userData = { precio: precioActual, tipo: modoConstruccion, url3D: urlActual, textura: texturaActual, nombre: nombreActual, categoria: categoriaActual };
                 
                 scene.add(nuevoObjeto);
                 objetosInteractuables.push(nuevoObjeto);
@@ -851,4 +854,83 @@ document.addEventListener('DOMContentLoaded', () => {
             elementoBoton.classList.add('activo');
         }
     };
+
+    // --- Calculo de Perimetro y Area Exterior ---
+    function mostrarResultadoDimensiones(perimetro, area) {
+        const contenedorDim = document.getElementById('tab-dimensiones');
+        if (!contenedorDim) return;
+
+        const hayDatos = perimetro > 0 || area > 0;
+
+        contenedorDim.innerHTML = `
+            <h4 class="titulo-desglose">\u{1F4D0} Dimensiones del Proyecto</h4>
+            ${hayDatos ? `
+            <div style="display: flex; flex-direction: column; gap: 12px; margin-top: 10px;">
+                <div style="background: #f1f5f9; border-radius: 8px; padding: 12px; text-align: center;">
+                    <div style="font-size: 11px; color: #64748b; font-weight: 600; text-transform: uppercase; letter-spacing: 1px;">Per\u00EDmetro Exterior</div>
+                    <div style="font-size: 28px; font-weight: 700; color: #e67e22; margin-top: 4px;">${perimetro} m</div>
+                </div>
+                <div style="background: #f1f5f9; border-radius: 8px; padding: 12px; text-align: center;">
+                    <div style="font-size: 11px; color: #64748b; font-weight: 600; text-transform: uppercase; letter-spacing: 1px;">\u00C1rea Total</div>
+                    <div style="font-size: 28px; font-weight: 700; color: #2c3e50; margin-top: 4px;">${area} m\u00B2</div>
+                </div>
+            </div>
+            ` : `<p class="texto-placeholder">Agrega elementos de <strong>Estructura</strong> o <strong>M\u00F3dulos Prehechos</strong> para calcular las dimensiones.</p>`}
+        `;
+    }
+
+    window.calcularYMostrarPerimetro = function() {
+        const TAMANO_CELDA = 50; // 50 unidades Three.js = 1 metro
+        const celdas = new Set();
+
+        // 1. Recopilar celdas ocupadas por Estructura y Modulos Prehechos
+        for (let i = 1; i < objetosInteractuables.length; i++) {
+            const obj = objetosInteractuables[i];
+            const cat = obj.userData.categoria || '';
+            const tipo = obj.userData.tipo || '';
+
+            const esEstructura = cat === 'Estructura';
+            const esModulo = cat === 'modulo_prehecho' || tipo === 'habitacion';
+
+            if (!esEstructura && !esModulo) continue; // Ignorar muebles, camas, etc.
+
+            // Modulos prehechos (200x200) = 4x4 celdas; bloques de estructura = 1x1
+            const tamCeldasOcupadas = esModulo ? 4 : 1;
+            const tamMundo = tamCeldasOcupadas * TAMANO_CELDA;
+
+            // Esquina inferior izquierda en coordenadas de grilla
+            const gridX = Math.round((obj.position.x - tamMundo / 2) / TAMANO_CELDA);
+            const gridZ = Math.round((obj.position.z - tamMundo / 2) / TAMANO_CELDA);
+
+            for (let dx = 0; dx < tamCeldasOcupadas; dx++) {
+                for (let dz = 0; dz < tamCeldasOcupadas; dz++) {
+                    celdas.add((gridX + dx) + ',' + (gridZ + dz));
+                }
+            }
+        }
+
+        if (celdas.size === 0) {
+            mostrarResultadoDimensiones(0, 0);
+            return;
+        }
+
+        // 2. Contar lados sin vecino = lados exteriores del perimetro
+        const vecinos = [[1, 0], [-1, 0], [0, 1], [0, -1]];
+        let ladosExteriores = 0;
+
+        for (const celda of celdas) {
+            const parts = celda.split(',');
+            const cx = parseInt(parts[0]);
+            const cz = parseInt(parts[1]);
+            for (const v of vecinos) {
+                if (!celdas.has((cx + v[0]) + ',' + (cz + v[1]))) {
+                    ladosExteriores++;
+                }
+            }
+        }
+
+        // 1 lado de celda = 1 metro; 1 celda = 1 m2
+        mostrarResultadoDimensiones(ladosExteriores, celdas.size);
+    };
+
 });

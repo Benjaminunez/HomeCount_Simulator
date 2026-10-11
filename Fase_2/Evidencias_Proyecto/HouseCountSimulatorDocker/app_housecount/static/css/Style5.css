@@ -1,9 +1,9 @@
 body {
     display: flex;
     flex-direction: column;
-    height: 100vh; /* La página ocupa exactamente el 100% del alto de la ventana */
+    height: 100vh; 
     margin: 0;
-    overflow: hidden; /* Bloqueamos el scroll de la página completa */
+    overflow: hidden; 
 }
 
 .navbar {
@@ -26,7 +26,7 @@ body {
     padding: 0;
 }
 
-/* 1. Aplicar la fuente moderna a todo el documento */
+/* fuente */
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
@@ -41,7 +41,7 @@ body {
 
 /* 3. Enlaces del menú (Inicio, Servicios, Proyectos) */
 .nav-links a {
-    text-decoration: none; /* Quita el subrayado azul */
+    text-decoration: none; 
     color: #555555;
     font-size: 15px;
     font-weight: 600;
@@ -52,10 +52,10 @@ body {
 
 /* Efecto al pasar el ratón */
 .nav-links a:hover {
-    color: #e67e22; /* El naranja característico de tu web */
+    color: #e67e22; 
 }
 
-/* 4. Botón destacado de Contacto */
+/* Botón destacado de Contacto */
 .btn-contacto {
     background-color: #2c3e50 !important;
     color: #ffffff !important;
