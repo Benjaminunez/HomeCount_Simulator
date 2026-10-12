@@ -4,7 +4,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Modalidades de Construcción</title>
     <link rel="stylesheet" href="{% static 'css/Style5.css' %}?v=3">
-    <link rel="stylesheet" href="{% static 'css/StyleNavbar.css' %}?v=3">
     <script src="{% static 'js/script_casas1.js' %}" defer></script>
     <script src="{% static 'js/guardado_db.js'%}"></script>
     <link rel="icon" type="image/png" href="media/iconosPestana/martillo.ico"> <!--icono para pestaña de navegador-->
@@ -13,37 +12,8 @@
     </style>
 </head>
 
-    <!-- Menú de Navegación -->
-<header class="navbar">
-    <div class="logo">
-        <a href="{% url 'inicio' %}" class="monoton-regular">HouseCount Simulator</a>
-    </div>
-
-    <div class="auth-section">
-        {% if user.is_authenticated %}
-            <!-- Se muestra si el usuario inició sesión -->
-            <span class="saludo">Hola, <strong>{{ user.username }}</strong></span>
-            
-            <form action="{% url 'logout' %}" method="post" style="display: inline;">
-                {% csrf_token %}
-                <button type="submit" class="btn-logout">Cerrar Sesión</button>
-            </form>
-        {% else %}
-            <!-- Se muestra si es un visitante anónimo -->
-            <a href="{% url 'login' %}" class="btn-login">Iniciar Sesión</a>
-            <a href="{% url 'registro' %}" class="btn-registro">Registrarse</a>
-        {% endif %}
-    </div>
-
-    <nav>
-        <ul class="nav-links">
-            <li><a href="{% url 'inicio' %}">Inicio</a></li>
-            <li><a href="{% url 'contrucion' %}">Servicios</a></li>
-            <li><a href="{% url 'casas_rapidas' %}">Proyectos</a></li>
-            <li><a href="{% url 'inicio' %}#contacto" class="btn-contacto">Contacto</a></li>
-        </ul>
-    </nav>
-</header>
+<!-- Menú de Navegación -->
+{% include 'Navbar.html' %}
 
 <!-- Importar Three.js -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>

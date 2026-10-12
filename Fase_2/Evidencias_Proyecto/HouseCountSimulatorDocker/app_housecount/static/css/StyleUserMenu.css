@@ -1,0 +1,111 @@
+/* --- Contenedor del Menú Desplegable --- */
+.menu-perfil-oculto {
+    display: none;
+    position: absolute;
+    top: 130%; 
+    left: 50%;
+    background-color: #ffffff;
+    min-width: 180px;
+    box-shadow: 0 10px 25px rgba(44, 62, 80, 0.15);
+    border-radius: 14px;
+    padding: 8px;
+    z-index: 2000;
+    border: 1px solid rgba(0,0,0,0.05);
+}
+
+/* La 'Flechita' apuntando hacia arriba */
+.menu-perfil-oculto::before {
+    content: '';
+    position: absolute;
+    top: -6px;
+    left: 50%;
+    width: 12px;
+    height: 12px;
+    background-color: #ffffff;
+    transform: translateX(-50%) rotate(45deg);
+    border-top: 1px solid rgba(0,0,0,0.05);
+    border-left: 1px solid rgba(0,0,0,0.05);
+}
+
+.menu-perfil-oculto.mostrar {
+    display: flex;
+    flex-direction: column;
+    animation: aparecerMenu 0.25s cubic-bezier(0.25, 0.8, 0.25, 1) forwards;
+}
+
+/* --- Botones (Enlaces) --- */
+.menu-perfil-oculto a {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 14px;
+    text-decoration: none;
+    color: #475569;
+    font-size: 14px;
+    font-weight: 600;
+    border-radius: 8px; /* Botones redondeados por dentro */
+    transition: all 0.2s ease;
+    position: relative;
+    z-index: 1; /* Para estar encima de la flecha */
+}
+
+/* Efecto al pasar el cursor (Hover normal) */
+.menu-perfil-oculto a:hover {
+    background-color: #fff7ed; /* Naranja ultra claro */
+    color: #e67e22; /* Tu naranja de marca */
+    transform: translateX(4px); /* Se mueve un poquito a la derecha */
+}
+
+/* Efecto especial para Cerrar Sesión */
+.menu-perfil-oculto a.btn-salir {
+    color: #ef4444; /* Rojo */
+}
+
+.menu-perfil-oculto a.btn-salir:hover {
+    background-color: #fef2f2; /* Rojo ultra claro */
+    color: #dc2626; /* Rojo más intenso */
+}
+
+/* --- Separador Interno --- */
+.separador-menu {
+    height: 1px;
+    background-color: #f1f5f9;
+    margin: 6px 4px;
+    border-radius: 10px;
+}
+
+@keyframes aparecerMenu {
+    0% { opacity: 0; transform: translate(-50%, -15px) scale(0.95); }
+    100% { opacity: 1; transform: translate(-50%, 0) scale(1); }
+}
+
+/* --- Adaptación Dinámica al Modo Oscuro --- */
+body.tema-oscuro .menu-perfil-oculto {
+    background-color: #1e293b;
+    border-color: #334155;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+}
+
+body.tema-oscuro .menu-perfil-oculto::before {
+    background-color: #1e293b;
+    border-top-color: #334155;
+    border-left-color: #334155;
+}
+
+body.tema-oscuro .menu-perfil-oculto a {
+    color: #cbd5e1;
+}
+
+body.tema-oscuro .menu-perfil-oculto a:hover {
+    background-color: rgba(230, 126, 34, 0.15); /* Fondo transparente naranja */
+    color: #e67e22;
+}
+
+body.tema-oscuro .separador-menu {
+    background-color: #334155;
+}
+
+body.tema-oscuro .menu-perfil-oculto a.btn-salir:hover {
+    background-color: rgba(239, 68, 68, 0.15); /* Fondo transparente rojo */
+    color: #ef4444;
+}

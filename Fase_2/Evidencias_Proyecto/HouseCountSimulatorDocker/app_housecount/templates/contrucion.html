@@ -6,42 +6,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Modalidades de Construcción</title>
     <link rel="stylesheet" href="{% static 'css/style2.css' %}">
-    <link rel="stylesheet" href="{% static 'css/StyleNavbar.css' %}">
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Henny+Penny&family=Monoton&display=swap');
     </style>
 </head>
 <body>
     <!-- Menú de Navegación -->
-<header class="navbar">
-    <div class="logo">
-        <img src="" alt="">
-    </div>
-    <div class="auth-section">
-        {% if user.is_authenticated %}
-            <!-- Se muestra si el usuario inició sesión -->
-            <span class="saludo">Hola, <strong>{{ user.username }}</strong></span>
-            
-            <form action="{% url 'logout' %}" method="post" style="display: inline;">
-                {% csrf_token %}
-                <button type="submit" class="btn-logout">Cerrar Sesión</button>
-            </form>
-        {% else %}
-            <!-- Se muestra si es un visitante anónimo -->
-            <a href="{% url 'login' %}" class="btn-login">Iniciar Sesión</a>
-            <a href="{% url 'registro' %}" class="btn-registro">Registrarse</a>
-        {% endif %}
-    </div>
-
-    <nav>
-        <ul class="nav-links">
-            <li><a href="{% url 'inicio' %}">Inicio</a></li>
-            <li><a href="{% url 'contrucion' %}">Servicios</a></li>
-            <li><a href="{% url 'casas_rapidas' %}">Proyectos</a></li>
-            <li><a href="{% url 'inicio' %}#contacto" class="btn-contacto">Contacto</a></li>
-        </ul>
-    </nav>
-</header>
+{% include 'Navbar.html' %}
 
     <!-- Sección Modalidades de Construcción -->
     <section id="modalidades" class="modalidades-seccion">

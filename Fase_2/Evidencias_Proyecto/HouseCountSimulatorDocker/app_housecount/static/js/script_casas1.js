@@ -884,7 +884,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     
     animar();
-
+    
     window.cambiarTab = function(tabId, elementoBoton) {
         const contenidos = document.querySelectorAll('.contenido-tab');
         contenidos.forEach(contenido => {

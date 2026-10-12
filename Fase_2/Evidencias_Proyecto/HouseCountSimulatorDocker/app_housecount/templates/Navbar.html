@@ -1,0 +1,56 @@
+{% load static %}
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{% static 'css/StyleNavbar.css' %}?v=3">
+    <link rel="stylesheet" href="{% static 'css/StyleUserMenu.css' %}?v=3">
+    <script src="{% static 'js/MenuUser.js'%}"></script>
+</head>
+<header class="navbar">
+    <div class="logo">
+        <a href="{% url 'inicio' %}" class="monoton-regular">HouseCount Simulator</a>
+    </div>
+
+    <div class="auth-section">
+        {% if user.is_authenticated %}
+            <div class="contenedor-dropdown-perfil" style="position: relative;">
+                <!-- Píldora del Usuario (Clickeable) -->
+                <div class="nav-link-perfil" id="btn-menu-perfil" style="display: flex; align-items: center; gap: 10px; cursor: pointer; padding: 0px 12px 4px 4px; border-radius: 25px; transition: background-color 0.2s;">
+                    {% if user.avatar_usuario.imagen %}
+                        <img src="{{ user.avatar_usuario.imagen.url }}" alt="Avatar" style="width: 35px; height: 35px; border-radius: 50%; object-fit: cover; border: 2px solid #e67e22;">
+                    {% else %}
+                        <div style="width: 35px; height: 35px; border-radius: 50%; background-color: #2c3e50; color: white; display: flex; justify-content: center; align-items: center; font-weight: bold; border: 2px solid #cbd5e1;">
+                            {{ user.username|make_list|first|upper }}
+                        </div>
+                    {% endif %}
+                    <span style="font-weight: bold;">{{ user.username }}</span>
+                </div>
+            
+                <div id="menu-desplegable-perfil" class="menu-perfil-oculto">
+                    <a href="#">
+                        <span style="font-size: 16px;">✏️</span>
+                        <span>Editar Perfil</span>
+                    </a>
+                    
+                    <div class="separador-menu"></div> <!-- Línea divisoria -->
+                    
+                    <a href="{% url 'logout' %}" class="btn-salir">
+                        <span style="font-size: 16px;">🚪</span>
+                        <span>Cerrar Sesión</span>
+                    </a>
+                </div>
+            </div>
+        {% else %}
+            <a href="{% url 'login' %}" class="btn-login">Iniciar Sesión</a>
+        {% endif %}
+    </div>
+
+    <nav>
+        <ul class="nav-links">
+            <li><a href="{% url 'inicio' %}">Inicio</a></li>
+            <li><a href="{% url 'contrucion' %}">Servicios</a></li>
+            <li><a href="{% url 'casas_rapidas' %}">Proyectos</a></li>
+            <li><a href="{% url 'inicio' %}#contacto" class="btn-contacto">Contacto</a></li>
+        </ul>
+    </nav>
+</header>
