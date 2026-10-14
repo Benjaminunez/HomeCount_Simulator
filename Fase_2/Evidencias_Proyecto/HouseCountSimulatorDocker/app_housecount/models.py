@@ -133,3 +133,11 @@ class Proyecto3D(models.Model):
 
     def __str__(self):
         return f"{self.nombre} - {self.usuario.username}"
+
+
+class Avatar(models.Model):
+    usuario = models.OneToOneField(User, on_delete=models.CASCADE, related_name='avatar_usuario')
+    imagen = models.ImageField(upload_to='avatares/', null=True, blank=True)
+
+    def __str__(self):
+        return f"Avatar de {self.usuario.username}"

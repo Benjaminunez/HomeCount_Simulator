@@ -1,3 +1,65 @@
+// --- CONTROLADOR GLOBAL DE MENSAJES (MODAL PERSONALIZADO) ---
+const DialogoUI = {
+    elementos: function() {
+        return {
+            overlay: document.getElementById('modal-personalizado-overlay'),
+            titulo: document.getElementById('modal-ui-titulo'),
+            mensaje: document.getElementById('modal-ui-mensaje'),
+            input: document.getElementById('modal-ui-input'),
+            btnAceptar: document.getElementById('modal-ui-btn-aceptar'),
+            btnCancelar: document.getElementById('modal-ui-btn-cancelar')
+        };
+    },
+    mostrar: function({ tipo, titulo, mensaje, placeholder = '' }) {
+        return new Promise((resolve) => {
+            const el = this.elementos();
+            if (!el.overlay) {
+                console.error("No se encontró el modal en el HTML");
+                resolve(null);
+                return;
+            }
+            
+            el.titulo.textContent = titulo;
+            el.mensaje.textContent = mensaje;
+            el.overlay.style.display = 'flex';
+
+            if (tipo === 'alert') {
+                el.btnCancelar.style.display = 'none';
+                el.input.style.display = 'none';
+            } else if (tipo === 'confirm') {
+                el.btnCancelar.style.display = 'block';
+                el.input.style.display = 'none';
+            } else if (tipo === 'prompt') {
+                el.btnCancelar.style.display = 'block';
+                el.input.style.display = 'block';
+                el.input.value = '';
+                el.input.placeholder = placeholder;
+                el.input.focus();
+            }
+
+            const nuevoBtnAceptar = el.btnAceptar.cloneNode(true);
+            const nuevoBtnCancelar = el.btnCancelar.cloneNode(true);
+            el.btnAceptar.replaceWith(nuevoBtnAceptar);
+            el.btnCancelar.replaceWith(nuevoBtnCancelar);
+
+            const cerrar = (valor) => {
+                el.overlay.style.display = 'none';
+                resolve(valor);
+            };
+
+            nuevoBtnAceptar.onclick = () => {
+                if (tipo === 'prompt') cerrar(el.input.value);
+                else cerrar(true);
+            };
+
+            nuevoBtnCancelar.onclick = () => cerrar(false);
+        });
+    },
+    alert: (mensaje) => DialogoUI.mostrar({ tipo: 'alert', titulo: 'Atención', mensaje }),
+    confirm: (mensaje) => DialogoUI.mostrar({ tipo: 'confirm', titulo: 'Confirmar Acción', mensaje }),
+    prompt: (mensaje, placeholder) => DialogoUI.mostrar({ tipo: 'prompt', titulo: 'Ingreso Requerido', mensaje, placeholder })
+};
+
 // Esperar a que el DOM cargue
 document.addEventListener('DOMContentLoaded', () => {
     const container = document.getElementById('canvas-3d-container');
@@ -10,20 +72,18 @@ document.addEventListener('DOMContentLoaded', () => {
     let costoTotal = 0;
     let modoConstruccion = 'material'; 
     let rotacionActual = 0;
-    let escalaActual = 1.0; // NUEVA VARIABLE PARA LA ESCALA
+    let escalaActual = 1.0; 
     let urlActual = null;          
     let texturaActual = 'concreto';
-    let esModoOscuro = false; // Nueva variable de estado para el modo oscuro
+    let esModoOscuro = false; 
     const uiTotal = document.getElementById('total-3d');
     
-    // Configurar materiales visuales de respaldo (Fallback)
     const texturas = {
         madera: new THREE.MeshLambertMaterial({ color: 0x8b5a2b }),
         ladrillo: new THREE.MeshLambertMaterial({ color: 0xb22222 }),
         concreto: new THREE.MeshLambertMaterial({ color: 0x7f8c8d })
     };
 
-    // --- Tooltip Flotante para Eliminación ---
     let tooltip = document.getElementById('tooltip-eliminar');
     if (!tooltip) {
         tooltip = document.createElement('div');
@@ -42,7 +102,6 @@ document.addEventListener('DOMContentLoaded', () => {
         document.body.appendChild(tooltip);
     }
 
-    // --- Tooltip Flotante para el Catálogo ---
     let tooltipCatalogo = document.getElementById('tooltip-catalogo');
     if (!tooltipCatalogo) {
         tooltipCatalogo = document.createElement('div');
@@ -62,7 +121,6 @@ document.addEventListener('DOMContentLoaded', () => {
         document.body.appendChild(tooltipCatalogo);
     }
 
-    // --- 1. Configuración Básica y Renderizador ---
     const scene = new THREE.Scene();
     const anchoSeguro = container.clientWidth || 800;
     const altoSeguro = container.clientHeight || 600;
@@ -76,7 +134,6 @@ document.addEventListener('DOMContentLoaded', () => {
     renderer.setClearColor(0xe0e0e0, 1); 
     container.appendChild(renderer.domElement);
 
-    // --- 2. Ajuste automático (Resize) ---
     window.addEventListener('resize', () => {
         if (!container) return;
         camera.aspect = container.clientWidth / container.clientHeight;
@@ -97,7 +154,6 @@ document.addEventListener('DOMContentLoaded', () => {
     directionalLight.position.set(1, 1, 0.5).normalize();
     scene.add(directionalLight);
 
-    // --- 5. Entorno y Herramientas 3D (Auto Expansión y Reducción) ---
     let tamanoTerreno = 1000;
     let gridHelper = new THREE.GridHelper(tamanoTerreno, tamanoTerreno / 50, 0x888888, 0x888888);
     scene.add(gridHelper);
@@ -121,7 +177,6 @@ document.addEventListener('DOMContentLoaded', () => {
         scene.remove(gridHelper);
         if (gridHelper.geometry) gridHelper.geometry.dispose();
         
-        // Mantener el color adecuado de la cuadrícula dependiendo del tema actual
         const colorGrid = esModoOscuro ? 0x444444 : 0x888888;
         gridHelper = new THREE.GridHelper(tamanoTerreno, Math.floor(tamanoTerreno / 50), colorGrid, colorGrid);
         scene.add(gridHelper);
@@ -218,7 +273,7 @@ document.addEventListener('DOMContentLoaded', () => {
         nombreActual = nombreElemento || (esHabitacion ? 'Módulo Habitacional' : 'Material Base');
         modeloActualGLTF = null;
         rotacionActual = 0;
-        escalaActual = 1.0; // Reiniciar escala
+        escalaActual = 1.0; 
         if (bloqueFantasma) {
             bloqueFantasma.rotation.y = 0;
             bloqueFantasma.scale.set(1, 1, 1);
@@ -258,11 +313,9 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // --- CARGA DINÁMICA DE LA API ---
     const contenedorMateriales = document.getElementById('lista-materiales');
     const contenedorHabitaciones = document.getElementById('lista-habitaciones');
 
-    // --- NUEVA MEJORA: Scroll horizontal con la rueda del ratón ---
     [contenedorMateriales, contenedorHabitaciones].forEach(contenedor => {
         if (!contenedor) return;
         contenedor.addEventListener('wheel', (evento) => {
@@ -270,8 +323,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 evento.preventDefault(); 
                 
                 contenedor.scrollBy({
-                    left: evento.deltaY * 1.2, // Multiplicador para ajustar la distancia por cada giro de rueda
-                    behavior: 'smooth'         // Magia para la fluidez
+                    left: evento.deltaY * 1.2, 
+                    behavior: 'smooth'         
                 });
             }
         }, { passive: false });
@@ -283,14 +336,11 @@ document.addEventListener('DOMContentLoaded', () => {
             if (contenedorMateriales) contenedorMateriales.innerHTML = ''; 
             if (contenedorHabitaciones) {
                 contenedorHabitaciones.innerHTML = '';
-                // 1. Inicia oculto para que no aparezca junto a "Todos"
                 contenedorHabitaciones.style.display = 'none'; 
             }
-            // --- LÓGICA DE PESTAÑAS (CATEGORÍAS) ---
             const contenedorFiltros = document.getElementById('filtros-categorias');
             if (data.materiales && data.materiales.length > 0) {
                 
-                // Extraer categorías de materiales
                 let categoriasDB = [...new Set(data.materiales.map(mat => mat.categoria))];
                 const otrasCategorias = categoriasDB.filter(c => c !== 'Estructura' && c !== 'Sin Categoría');
                 
@@ -298,11 +348,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (categoriasDB.includes('Estructura')) categoriasUnicas.push('Estructura');
                 categoriasUnicas.push(...otrasCategorias.sort()); 
                 if (categoriasDB.includes('Sin Categoría')) categoriasUnicas.push('Sin Categoría');
-                // 2. AGREGAR LA NUEVA PESTAÑA SI EXISTEN HABITACIONES
+                
                 if (data.habitaciones && data.habitaciones.length > 0) {
                     categoriasUnicas.push('Módulos Prehechos');
                 }
-                // Generar los botones de las pestañas
+                
                 if (contenedorFiltros) {
                     contenedorFiltros.innerHTML = '';
                     
@@ -311,19 +361,16 @@ document.addEventListener('DOMContentLoaded', () => {
                         btnTab.textContent = cat;
                         btnTab.className = `tab-categoria ${index === 0 ? 'activa' : ''}`;
                         btnTab.addEventListener('click', () => {
-                            // Cambiar clase activa en los botones de pestañas
                             document.querySelectorAll('.tab-categoria').forEach(b => b.classList.remove('activa'));
                             btnTab.classList.add('activa');
-                            // 3. LÓGICA DE VISIBILIDAD: ¿Es Módulos Prehechos o Materiales?
+                            
                             if (cat === 'Módulos Prehechos') {
-                                // Ocultar materiales y mostrar módulos de habitaciones
                                 if (contenedorMateriales) contenedorMateriales.style.display = 'none';
                                 if (contenedorHabitaciones) contenedorHabitaciones.style.display = 'flex';
                             } else {
-                                // Mostrar materiales y ocultar módulos de habitaciones
                                 if (contenedorMateriales) contenedorMateriales.style.display = 'flex';
                                 if (contenedorHabitaciones) contenedorHabitaciones.style.display = 'none';
-                                // Filtrar los materiales según la categoría seleccionada
+                                
                                 document.querySelectorAll('.btn-mat-3d').forEach(btnMat => {
                                     const categoriaMat = btnMat.dataset.categoria;
                                     if (cat === 'Todos' || categoriaMat === cat) {
@@ -337,7 +384,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         contenedorFiltros.appendChild(btnTab);
                     });
                 }
-                // Renderizar los materiales (se mantiene igual que antes)...
+                
                 data.materiales.forEach((mat, index) => {
                     const btn = document.createElement('button');
                     btn.className = `btn-mat-3d ${index === 0 ? 'activo' : ''}`;
@@ -368,7 +415,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (index === 0) seleccionarElemento(mat.archivo_3d, mat.coste, false, mat.textura_key, mat.nombre);
                 });
             }
-            // Renderizar las habitaciones (se mantiene igual que antes)...
+            
             if (data.habitaciones && data.habitaciones.length > 0) {
                 data.habitaciones.forEach(hab => {
                     const btn = document.createElement('button');
@@ -402,8 +449,6 @@ document.addEventListener('DOMContentLoaded', () => {
         })
         .catch(error => console.error("Error cargando el catálogo:", error));
 
-
-    // --- FUNCIÓN: Actualizar Desglose en la UI ---
     function actualizarListaUI() {
         const listaUI = document.getElementById('lista-objetos-ui');
         if (!listaUI) return; 
@@ -458,13 +503,12 @@ document.addEventListener('DOMContentLoaded', () => {
             rotacionActual -= Math.PI / 4;
             if (bloqueFantasma) bloqueFantasma.rotation.y = rotacionActual;
         }
-        // Controles de escala con + y -
         if (event.key === '+' || event.key === '=') {
             escalaActual += 0.1;
             if (bloqueFantasma) bloqueFantasma.scale.set(escalaActual, escalaActual, escalaActual);
         }
         if (event.key === '-') {
-            escalaActual = Math.max(0.1, escalaActual - 0.1); // Evitar que desaparezca o sea negativo
+            escalaActual = Math.max(0.1, escalaActual - 0.1); 
             if (bloqueFantasma) bloqueFantasma.scale.set(escalaActual, escalaActual, escalaActual);
         }
     });
@@ -490,7 +534,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 url3D: obj.userData.url3D,
                 textura: obj.userData.textura,
                 nombre: obj.userData.nombre,
-                escala: obj.userData.escala || 1.0 // Guarda la escala
+                escala: obj.userData.escala || 1.0
             });
         }
         localStorage.setItem('proyecto_homecount', JSON.stringify(datosGuardados));
@@ -534,7 +578,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     
                     if (maxDimension > 0) {
                         const escalaBase = (item.tipo === 'habitacion' ? 200 : 50) / maxDimension;
-                        const escalaFinal = escalaBase * (item.escala || 1.0); // Multiplica por la escala del usuario
+                        const escalaFinal = escalaBase * (item.escala || 1.0);
                         modelo.scale.set(escalaFinal, escalaFinal, escalaFinal);
                         modelo.updateMatrixWorld(true);
                     }
@@ -573,38 +617,29 @@ document.addEventListener('DOMContentLoaded', () => {
 
     let inicioX = 0, inicioY = 0;
 
-    // --- NUEVA MEJORA: Eje Y dinámico para apilar ---
     function calcularPosicionSnappeada(interseccion, usarGrid = true) {
         const gridTamXZ = (modoConstruccion === 'habitacion') ? 200 : 50;
         const gridTamY = (modoConstruccion === 'habitacion') ? 100 : 50;
         
-        // Obtener la normal para empujar el punto ligeramente hacia afuera (para calcular la posición correcta)
         const normal = interseccion.face ? interseccion.face.normal : new THREE.Vector3(0, 1, 0);
         const punto = interseccion.point.clone().add(normal.clone().multiplyScalar(0.1));
         
-        // La altura del suelo sigue siendo el mínimo
         const alturaMinima = modeloActualGLTF ? 0 : (gridTamY / 2);
 
         if (!usarGrid) {
-            // Si el grid está desactivado, tomamos la altura exacta, pero evitamos que pase debajo del piso
             return { x: punto.x, y: Math.max(punto.y, alturaMinima), z: punto.z };
         }
 
-        // Posicionamiento "encajado" (Grid Snapping) para X y Z
         const posX = Math.floor(punto.x / gridTamXZ) * gridTamXZ + (gridTamXZ / 2);
         const posZ = Math.floor(punto.z / gridTamXZ) * gridTamXZ + (gridTamXZ / 2);
         
-        // Posicionamiento para Y (Aquí está la mejora que permite apilar)
         let posY;
         if (modeloActualGLTF) {
-            // Si es un modelo 3D (su centro/pivote suele estar abajo)
             posY = Math.floor(punto.y / gridTamY) * gridTamY;
         } else {
-            // Si es un bloque geométrico nativo (su pivote está en el centro)
             posY = Math.floor(punto.y / gridTamY) * gridTamY + (gridTamY / 2);
         }
         
-        // Protegemos que no quede por debajo del suelo
         posY = Math.max(posY, alturaMinima);
         
         return { x: posX, y: posY, z: posZ };
@@ -674,7 +709,7 @@ document.addEventListener('DOMContentLoaded', () => {
         mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
         raycaster.setFromCamera(mouse, camera);
 
-        if (event.shiftKey) { // ELIMINAR
+        if (event.shiftKey) { 
             const objetosConstruidos = objetosInteractuables.filter(obj => obj !== plano);
             const intersecciones = raycaster.intersectObjects(objetosConstruidos, true);
 
@@ -691,7 +726,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 guardarEscenaLocal();
                 if (tooltip) tooltip.style.display = 'none';
             }
-        } else { // CONSTRUIR
+        } else { 
             const intersecciones = raycaster.intersectObjects(objetosInteractuables, true);
             if (intersecciones.length > 0) {
                 const interseccion = intersecciones[0];
@@ -708,7 +743,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const pos = calcularPosicionSnappeada(interseccion, !event.altKey);
                 nuevoObjeto.position.set(pos.x, pos.y, pos.z);
                 nuevoObjeto.rotation.y = rotacionActual;
-                nuevoObjeto.scale.set(escalaActual, escalaActual, escalaActual); // Aplica escala
+                nuevoObjeto.scale.set(escalaActual, escalaActual, escalaActual);
                 nuevoObjeto.userData = { precio: precioActual, tipo: modoConstruccion, url3D: urlActual, textura: texturaActual, nombre: nombreActual, escala: escalaActual };
                 
                 scene.add(nuevoObjeto);
@@ -721,20 +756,19 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // --- Lógica del Modo Claro / Oscuro ---
     const btnModoOscuro = document.getElementById('btn-modo-oscuro');
     esModoOscuro = localStorage.getItem('modo_oscuro_homecount') === 'true';
     function aplicarTemaVisual(oscuro) {
         document.body.classList.toggle('tema-oscuro', oscuro);
 
         if (oscuro) {
-            renderer.setClearColor(0x1a1a1a, 1); // Fondo oscuro
-            if (gridHelper && gridHelper.material) gridHelper.material.color.setHex(0x777777); // Grid oscuro
-            if (btnModoOscuro) btnModoOscuro.textContent = '☀️'; // Cambia el icono al sol
+            renderer.setClearColor(0x1a1a1a, 1); 
+            if (gridHelper && gridHelper.material) gridHelper.material.color.setHex(0x777777); 
+            if (btnModoOscuro) btnModoOscuro.textContent = '☀️'; 
         } else {
-            renderer.setClearColor(0xe0e0e0, 1); // Fondo gris claro (original)
-            if (gridHelper && gridHelper.material) gridHelper.material.color.setHex(0x888888); // Grid normal
-            if (btnModoOscuro) btnModoOscuro.textContent = '🌙'; // Vuelve al icono de luna
+            renderer.setClearColor(0xe0e0e0, 1); 
+            if (gridHelper && gridHelper.material) gridHelper.material.color.setHex(0x888888); 
+            if (btnModoOscuro) btnModoOscuro.textContent = '🌙'; 
         }
     }
     aplicarTemaVisual(esModoOscuro);
@@ -749,8 +783,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const btnBorrarTodo = document.getElementById('btn-borrar-todo');
     if (btnBorrarTodo) {
-        btnBorrarTodo.addEventListener('click', () => {
-            if (confirm("¿Estás seguro de que deseas borrar todo el diseño? Esta acción no se puede deshacer.")) {
+        btnBorrarTodo.addEventListener('click', async () => {
+            const seguro = await DialogoUI.confirm("¿Estás seguro de que deseas borrar todo el diseño? Esta acción no se puede deshacer.");
+            if (seguro) {
                 restaurarResaltado();
                 if (tooltip) tooltip.style.display = 'none';
                 for (let i = objetosInteractuables.length - 1; i > 0; i--) scene.remove(objetosInteractuables[i]);
@@ -772,32 +807,26 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-// --- VARIABLES GLOBALES PARA RECORDAR EL PROYECTO CARGADO ---
     let proyectoCargadoId = null;
     let proyectoCargadoNombre = "";
 
-    // --- EVENTOS DE GUARDADO Y CARGA CONECTADOS A GUARDADO_DB.JS ---
     const btnGuardarModelo = document.getElementById('btn-guardar-modelo');
     const btnMisModelos = document.getElementById('btn-mis-modelos');
 
-    // Botón Guardar (💾)
     if (btnGuardarModelo) {
         btnGuardarModelo.addEventListener('click', (e) => {
             e.preventDefault();
-            // Ahora le pasamos el ID y el Nombre a la función de guardado
             procesarGuardado(objetosInteractuables, camera, controles, costoTotal, scene, renderer, proyectoCargadoId, proyectoCargadoNombre);
         });
     }
 
-    // Botón Mis Diseños (📁)
     if (btnMisModelos) {
         btnMisModelos.addEventListener('click', (e) => {
             e.preventDefault();
-            // El callback ahora recibe el id y nombre desde la base de datos
             cargarDisenosUsuario(scene, objetosInteractuables, camera, controles, (nuevoCosto, idProyecto, nombreProyecto) => {
                 costoTotal = nuevoCosto; 
-                proyectoCargadoId = idProyecto;       // Memorizamos el ID
-                proyectoCargadoNombre = nombreProyecto; // Memorizamos el Nombre
+                proyectoCargadoId = idProyecto;       
+                proyectoCargadoNombre = nombreProyecto; 
                 
                 if (uiTotal) {
                     uiTotal.textContent = `$${new Intl.NumberFormat('es-CL').format(costoTotal)}`;
@@ -809,46 +838,37 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function ajustarYAgregarModelo(gltfScene, anchoDeseado, altoDeseado, profundoDeseado) {
-        // 1. Calcular tamaño original del archivo GLTF
         const boxOriginal = new THREE.Box3().setFromObject(gltfScene);
         const sizeOriginal = boxOriginal.getSize(new THREE.Vector3());
 
-        // 2. Calcular los factores de escala necesarios
         const factorX = anchoDeseado / sizeOriginal.x;
         const factorY = altoDeseado / sizeOriginal.y;
         const factorZ = profundoDeseado / sizeOriginal.z;
 
-        // 3. Aplicar escala al grupo principal
         gltfScene.scale.set(factorX, factorY, factorZ);
-
-        // 4. Forzar actualización de la matriz para que el Bounding Box se recalcule correctamente
         gltfScene.updateMatrixWorld(true);
 
-        // 5. Corregir altura para que no quede enterrado en el piso (Y = 0)
         const boxEscalado = new THREE.Box3().setFromObject(gltfScene);
-        gltfScene.position.y = -boxEscalado.min.y; // Ajusta la base exactamente al suelo
+        gltfScene.position.y = -boxEscalado.min.y; 
 
         return gltfScene;
     }
 
-    // --- Lógica del Botón Detalle ---
     const btnDetalle = document.getElementById('btn-detalle-materiales');
     const contenedorLista = document.getElementById('lista-objetos-container');
     const iconoDetalle = document.getElementById('icono-detalle');
 
     if (btnDetalle && contenedorLista) {
-        // Aseguramos que inicie cerrado al cargar la página
         contenedorLista.style.display = 'none';
         if (iconoDetalle) iconoDetalle.textContent = '▶';
 
-        // Lógica para abrir/cerrar al hacer clic
         btnDetalle.addEventListener('click', () => {
             if (contenedorLista.style.display === 'none' || contenedorLista.style.display === '') {
-                contenedorLista.style.display = 'block'; // Muestra la lista
-                if (iconoDetalle) iconoDetalle.textContent = '▼'; // Flecha abajo
+                contenedorLista.style.display = 'block'; 
+                if (iconoDetalle) iconoDetalle.textContent = '▼'; 
             } else {
-                contenedorLista.style.display = 'none'; // Oculta la lista
-                if (iconoDetalle) iconoDetalle.textContent = '▶'; // Flecha lateral
+                contenedorLista.style.display = 'none'; 
+                if (iconoDetalle) iconoDetalle.textContent = '▶'; 
             }
         });
     }
@@ -864,25 +884,20 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     
     animar();
-
+    
     window.cambiarTab = function(tabId, elementoBoton) {
-        // 1. Ocultar todos los contenidos
         const contenidos = document.querySelectorAll('.contenido-tab');
         contenidos.forEach(contenido => {
             contenido.style.display = 'none';
         });
-        // 2. Quitar la clase 'activo' de todos los botones
         const botones = document.querySelectorAll('.btn-tab');
         botones.forEach(boton => {
             boton.classList.remove('activo');
         });
-        // 3. Mostrar el tab seleccionado
         const tabSeleccionado = document.getElementById(tabId);
         if (tabSeleccionado) {
             tabSeleccionado.style.display = 'block';
         }
-        
-        // 4. Marcar el botón presionado como activo
         if (elementoBoton) {
             elementoBoton.classList.add('activo');
         }

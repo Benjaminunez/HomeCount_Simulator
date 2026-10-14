@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import ModeloCasa, Material, Habitacion, MaterialHabitacion, Proyecto3D, CategoriaMaterial
+from .models import ModeloCasa, Material, Habitacion, MaterialHabitacion, Proyecto3D, CategoriaMaterial, Avatar
 
 # Registra tus modelos aqui.
 admin.site.register(Proyecto3D)
@@ -51,3 +51,5 @@ class MaterialHabitacionAdmin(admin.ModelAdmin):
 @admin.register(CategoriaMaterial)
 class CategoriaMaterialAdmin(admin.ModelAdmin):
     list_display = ('nombre',)
+
+admin.site.register(Avatar)

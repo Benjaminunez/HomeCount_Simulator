@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mxfile host="app.diagrams.net">
+  <diagram name="Página-1" id="uYY8fG7uwAfdxsbgLvrI">
+    <mxGraphModel dx="1369" dy="803" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="NSnku1pCKWbmqGv0JPHW-6" parent="1" style="verticalAlign=top;align=left;spacingTop=8;spacingLeft=2;spacingRight=12;shape=cube;size=10;direction=south;fontStyle=4;html=1;whiteSpace=wrap;" value="Front-end (Cliente)" vertex="1">
+          <mxGeometry height="120" width="500" x="164" y="140" as="geometry" />
+        </mxCell>
+        <mxCell id="NSnku1pCKWbmqGv0JPHW-7" parent="1" style="html=1;dropTarget=0;whiteSpace=wrap;" value="Interfaz Gráfica (HTML/CSS/JS)" vertex="1">
+          <mxGeometry height="50" width="410" x="209" y="190" as="geometry" />
+        </mxCell>
+        <mxCell id="NSnku1pCKWbmqGv0JPHW-9" parent="1" style="verticalAlign=top;align=left;spacingTop=8;spacingLeft=2;spacingRight=12;shape=cube;size=10;direction=south;fontStyle=4;html=1;whiteSpace=wrap;" value="Back-end (Django)" vertex="1">
+          <mxGeometry height="390" width="500" x="164" y="320" as="geometry" />
+        </mxCell>
+        <mxCell id="NSnku1pCKWbmqGv0JPHW-11" parent="1" style="html=1;dropTarget=0;whiteSpace=wrap;" value="Motor de Simulación y Cálculo (App_housecount)" vertex="1">
+          <mxGeometry height="50" width="410" x="209" y="490" as="geometry" />
+        </mxCell>
+        <mxCell id="NSnku1pCKWbmqGv0JPHW-12" parent="1" style="html=1;dropTarget=0;whiteSpace=wrap;" value="Capa de Datos / ORM (models.py)" vertex="1">
+          <mxGeometry height="50" width="410" x="209" y="590" as="geometry" />
+        </mxCell>
+        <mxCell id="NSnku1pCKWbmqGv0JPHW-13" edge="1" parent="1" source="NSnku1pCKWbmqGv0JPHW-7" style="endArrow=open;endFill=1;endSize=12;html=1;rounded=0;exitX=0.5;exitY=1;exitDx=0;exitDy=0;" target="NSnku1pCKWbmqGv0JPHW-9" value="">
+          <mxGeometry relative="1" width="160" as="geometry">
+            <mxPoint x="50" y="290" as="sourcePoint" />
+            <mxPoint x="419" y="320" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="NSnku1pCKWbmqGv0JPHW-14" edge="1" parent="1" style="endArrow=open;endFill=1;endSize=12;html=1;rounded=0;exitX=0.5;exitY=1;exitDx=0;exitDy=0;" target="NSnku1pCKWbmqGv0JPHW-11" value="">
+          <mxGeometry relative="1" width="160" as="geometry">
+            <mxPoint x="414" y="440" as="sourcePoint" />
+            <mxPoint x="910" y="440" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="NSnku1pCKWbmqGv0JPHW-15" edge="1" parent="1" source="NSnku1pCKWbmqGv0JPHW-11" style="endArrow=open;endFill=1;endSize=12;html=1;rounded=0;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="NSnku1pCKWbmqGv0JPHW-12" value="">
+          <mxGeometry relative="1" width="160" as="geometry">
+            <mxPoint x="490" y="420" as="sourcePoint" />
+            <mxPoint x="490" y="470" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="NSnku1pCKWbmqGv0JPHW-17" parent="1" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;" value="(Solicitudes HTTP / JSON)" vertex="1">
+          <mxGeometry height="26" width="160" x="420" y="280" as="geometry" />
+        </mxCell>
+        <mxCell id="NSnku1pCKWbmqGv0JPHW-19" edge="1" parent="1" source="NSnku1pCKWbmqGv0JPHW-9" style="endArrow=open;endFill=1;endSize=12;html=1;rounded=0;exitX=0.995;exitY=0.499;exitDx=0;exitDy=0;exitPerimeter=0;" target="NSnku1pCKWbmqGv0JPHW-20" value="">
+          <mxGeometry relative="1" width="160" as="geometry">
+            <mxPoint x="414" y="720" as="sourcePoint" />
+            <mxPoint x="700" y="730" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="NSnku1pCKWbmqGv0JPHW-20" parent="1" style="verticalAlign=top;align=left;spacingTop=8;spacingLeft=2;spacingRight=12;shape=cube;size=10;direction=south;fontStyle=4;html=1;whiteSpace=wrap;" value="Capa de Datos" vertex="1">
+          <mxGeometry height="120" width="500" x="164" y="760" as="geometry" />
+        </mxCell>
+        <mxCell id="NSnku1pCKWbmqGv0JPHW-18" parent="1" style="html=1;dropTarget=0;whiteSpace=wrap;" value=" Base de Datos (db.sqlite3)" vertex="1">
+          <mxGeometry height="50" width="410" x="209" y="805" as="geometry" />
+        </mxCell>
+        <mxCell id="NSnku1pCKWbmqGv0JPHW-21" parent="1" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;" value="Operaciones SQL" vertex="1">
+          <mxGeometry height="26" width="160" x="430" y="720" as="geometry" />
+        </mxCell>
+        <mxCell id="NSnku1pCKWbmqGv0JPHW-24" parent="1" style="html=1;dropTarget=0;whiteSpace=wrap;" value="&lt;div&gt;Vistas y Controladores (views.py)&lt;/div&gt;" vertex="1">
+          <mxGeometry height="50" width="410" x="210" y="390" as="geometry" />
+        </mxCell>
+        <mxCell id="NSnku1pCKWbmqGv0JPHW-25" parent="NSnku1pCKWbmqGv0JPHW-24" style="shape=module;jettyWidth=8;jettyHeight=4;" value="" vertex="1">
+          <mxGeometry height="20" relative="1" width="20" x="1" as="geometry">
+            <mxPoint x="-30" y="15" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="NSnku1pCKWbmqGv0JPHW-26" parent="1" style="shape=module;jettyWidth=8;jettyHeight=4;" value="" vertex="1">
+          <mxGeometry height="20" width="20" x="590" y="505" as="geometry" />
+        </mxCell>
+        <mxCell id="NSnku1pCKWbmqGv0JPHW-27" parent="1" style="shape=module;jettyWidth=8;jettyHeight=4;" value="" vertex="1">
+          <mxGeometry height="20" width="20" x="590" y="605" as="geometry" />
+        </mxCell>
+        <mxCell id="NSnku1pCKWbmqGv0JPHW-28" parent="1" style="shape=module;jettyWidth=8;jettyHeight=4;" value="" vertex="1">
+          <mxGeometry height="20" width="20" x="590" y="205" as="geometry" />
+        </mxCell>
+        <mxCell id="NSnku1pCKWbmqGv0JPHW-29" parent="1" style="shape=module;jettyWidth=8;jettyHeight=4;" value="" vertex="1">
+          <mxGeometry height="20" width="20" x="590" y="820" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
