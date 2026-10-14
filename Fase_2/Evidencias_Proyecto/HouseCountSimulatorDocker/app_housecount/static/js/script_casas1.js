@@ -772,25 +772,38 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    const btnGuardarNube = document.getElementById('btn-guardar-nube');
-    if (btnGuardarNube) {
-        btnGuardarNube.addEventListener('click', () => {
-            // Llamamos a la función que vive en guardado_bd.js pasándole nuestras variables 3D
-            procesarGuardado(objetosInteractuables, camera, controles, costoTotal);
+// --- VARIABLES GLOBALES PARA RECORDAR EL PROYECTO CARGADO ---
+    let proyectoCargadoId = null;
+    let proyectoCargadoNombre = "";
+
+    // --- EVENTOS DE GUARDADO Y CARGA CONECTADOS A GUARDADO_DB.JS ---
+    const btnGuardarModelo = document.getElementById('btn-guardar-modelo');
+    const btnMisModelos = document.getElementById('btn-mis-modelos');
+
+    // Botón Guardar (💾)
+    if (btnGuardarModelo) {
+        btnGuardarModelo.addEventListener('click', (e) => {
+            e.preventDefault();
+            // Ahora le pasamos el ID y el Nombre a la función de guardado
+            procesarGuardado(objetosInteractuables, camera, controles, costoTotal, scene, renderer, proyectoCargadoId, proyectoCargadoNombre);
         });
     }
 
-    const btnCargar = document.getElementById('btn-cargar-nube');
-    if (btnCargar) {
-        btnCargar.addEventListener('click', () => {
-            // Pasamos un quinto argumento: una función que actualiza el estado interno
-            cargarDisenosUsuario(scene, objetosInteractuables, camera, controles, (nuevoCosto) => {
-                costoTotal = nuevoCosto; // Actualizamos la variable interna
+    // Botón Mis Diseños (📁)
+    if (btnMisModelos) {
+        btnMisModelos.addEventListener('click', (e) => {
+            e.preventDefault();
+            // El callback ahora recibe el id y nombre desde la base de datos
+            cargarDisenosUsuario(scene, objetosInteractuables, camera, controles, (nuevoCosto, idProyecto, nombreProyecto) => {
+                costoTotal = nuevoCosto; 
+                proyectoCargadoId = idProyecto;       // Memorizamos el ID
+                proyectoCargadoNombre = nombreProyecto; // Memorizamos el Nombre
+                
                 if (uiTotal) {
                     uiTotal.textContent = `$${new Intl.NumberFormat('es-CL').format(costoTotal)}`;
                 }
-                actualizarListaUI();       // Reconstruye la lista en HTML
-                recalcularTamanoTerreno(); // Ajusta la cuadrícula por si el proyecto es enorme
+                actualizarListaUI();       
+                recalcularTamanoTerreno(); 
             });
         });
     }

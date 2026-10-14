@@ -15,4 +15,5 @@ urlpatterns = [
     path('logout/', views.cerrar_sesion, name='logout'),
     path('api/guardar-diseno/', views.guardar_diseno, name='guardar_diseno'),
     path('api/obtener-disenos/', views.obtener_disenos, name='obtener_disenos'),
+    path('api/eliminar-diseno/', views.eliminar_diseno, name='eliminar_diseno'),
 ]

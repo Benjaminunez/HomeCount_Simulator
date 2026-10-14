@@ -9,13 +9,15 @@
     <link rel="stylesheet" href="{% static 'css/StyleNavbar.css' %}">
     <script src="{% static 'js/script.js' %}" defer></script>
     <link rel="icon" type="image/png" href="media/iconosPestana/casa.ico">
+    <style>
+    @import url('https://fonts.googleapis.com/css2?family=Henny+Penny&family=Monoton&display=swap');
+    </style>
 </head>
 <body>
-
     <!-- Menú de Navegación -->
 <header class="navbar">
     <div class="logo">
-        <a href="{% url 'inicio' %}" style="text-decoration: none; color: inherit;">HomeCount Simulator</a>
+        <a href="{% url 'inicio' %}" class="monoton-regular">HouseCount Simulator</a>
     </div>
 
     <div class="auth-section">
