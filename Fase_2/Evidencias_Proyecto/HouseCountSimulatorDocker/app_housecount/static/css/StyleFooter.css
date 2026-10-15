@@ -1,0 +1,183 @@
+/* --- Footer Estilo Limpio (4 Columnas) --- */
+.footer-limpio {
+    background-color: #111111; /* Fondo negro mate */
+    color: #ffffff;
+    font-family: var(--fuente-principal);
+    padding-top: 70px;
+}
+
+.footer-contenedor-limpio {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 1.5fr 1fr 1fr 1.5fr; /* Proporciones para dar más espacio a info y formulario */
+    gap: 40px;
+    padding: 0 40px 60px 40px;
+}
+
+/* --- Títulos Pequeños --- */
+.footer-titulo-pequeno {
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    margin-bottom: 25px;
+    color: #ffffff;
+}
+
+/* --- Columna 1: Logo e Info --- */
+.footer-logo {
+    margin-bottom: 25px;
+}
+
+.footer-logo img {
+    max-width: 100px; /* Ajusta el tamaño de tu logo */
+    height: auto;
+}
+
+.lista-info {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.lista-info li {
+    font-size: 14px;
+    color: #cccccc;
+    margin-bottom: 15px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.lista-info i {
+    color: var(--color-acento); /* Íconos con el color del proyecto */
+    font-size: 16px;
+    width: 20px;
+    text-align: center;
+}
+
+/* --- Columna 2: Enlaces --- */
+.lista-enlaces {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.lista-enlaces li {
+    margin-bottom: 12px;
+}
+
+.lista-enlaces a {
+    color: #cccccc;
+    text-decoration: none;
+    font-size: 14px;
+    transition: color 0.3s ease;
+}
+
+.lista-enlaces a:hover {
+    color: var(--color-acento);
+}
+
+/* --- Columna 3: Redes Sociales --- */
+.iconos-sociales {
+    display: flex;
+    gap: 15px;
+}
+
+.iconos-sociales a {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 35px;
+    height: 35px;
+    background-color: transparent;
+    color: #ffffff;
+    font-size: 18px;
+    border-radius: 5px;
+    transition: background-color 0.3s, transform 0.3s;
+}
+
+.iconos-sociales a:hover {
+    background-color: #333333;
+    transform: translateY(-2px);
+}
+
+/* --- Columna 4: Newsletter --- */
+.formulario-newsletter {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.formulario-newsletter input {
+    background-color: #222222;
+    border: none;
+    padding: 14px 15px;
+    color: #ffffff;
+    font-size: 14px;
+    border-radius: 4px;
+    outline: none;
+    transition: background-color 0.3s;
+}
+
+.formulario-newsletter input:focus {
+    background-color: #333333;
+}
+
+.formulario-newsletter input::placeholder {
+    color: #888888;
+}
+
+.formulario-newsletter button {
+    background-color: var(--color-acento); /* Color naranja de tu proyecto */
+    color: #ffffff;
+    border: none;
+    padding: 15px;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    margin-top: 5px;
+}
+
+.formulario-newsletter button:hover {
+    background-color: var(--color-acento-hover);
+}
+
+/* --- Barra Inferior --- */
+.footer-inferior {
+    background-color: #35353d; /* Tono gris violáceo similar al de la imagen */
+    text-align: center;
+    padding: 20px;
+}
+
+.footer-inferior p {
+    margin: 0;
+    color: #bbbbbb;
+    font-size: 12px;
+}
+
+/* --- Responsive para Tablets y Celulares --- */
+@media (max-width: 992px) {
+    .footer-contenedor-limpio {
+        grid-template-columns: repeat(2, 1fr); /* 2 columnas en tablet */
+    }
+}
+
+@media (max-width: 576px) {
+    .footer-contenedor-limpio {
+        grid-template-columns: 1fr; /* 1 columna en celular */
+        gap: 50px;
+        text-align: center;
+    }
+    
+    .lista-info li {
+        justify-content: center;
+    }
+    
+    .iconos-sociales {
+        justify-content: center;
+    }
+}

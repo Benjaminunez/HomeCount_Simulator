@@ -1,0 +1,51 @@
+{% load static %}
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{% static 'css/StyleFooter.css' %}?v=3">
+</head>
+<footer class="footer-limpio">
+    <div class="footer-contenedor-limpio">
+        
+        <!-- Columna 1: Logo e Info de Contacto -->
+        <div class="footer-columna">
+            <div class="footer-logo">
+                <!-- Reemplaza con la ruta real de tu logo -->
+                <img src="{% static 'media/iconosPestana/casa.png' %}" alt="Logo ArquiCasa">
+            </div>
+            <ul class="lista-info">
+                <li><i class="fa-solid fa-phone"></i> +56 9 1234 5678</li>
+                <li><i class="fa-solid fa-envelope"></i> contacto@arquicasa.cl</li>
+                <li><i class="fa-solid fa-location-dot"></i> Av. Construcción 123, Santiago, RM</li>
+            </ul>
+        </div>
+
+        <!-- Columna 2: Enlaces Rápidos -->
+        <div class="footer-columna">
+            <h4 class="footer-titulo-pequeno">ENLACES</h4>
+            <ul class="lista-enlaces">
+                <li><a href="#inicio">Inicio</a></li>
+                <li><a href="#nosotros">Nosotros</a></li>
+                <li><a href="#proyectos">Proyectos</a></li>
+                <li><a href="#contacto">Contacto</a></li>
+            </ul>
+        </div>
+
+        <!-- Columna 3: Redes Sociales -->
+        <div class="footer-columna">
+            <h4 class="footer-titulo-pequeno">REDES SOCIALES</h4>
+            <div class="iconos-sociales">
+                <a href="#"><i class="fa-brands fa-facebook-f"></i></a>
+                <a href="#"><i class="fa-brands fa-twitter"></i></a>
+                <a href="#"><i class="fa-brands fa-whatsapp"></i></a>
+                <a href="#"><i class="fa-brands fa-instagram"></i></a>
+            </div>
+        </div>
+
+    </div>
+    
+    <!-- Barra Inferior -->
+    <div class="footer-inferior">
+        <p>&copy; Todos los derechos reservados 2026</p>
+    </div>
+</footer>

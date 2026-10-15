@@ -1,334 +1,604 @@
-/* Configuraciones generales */
+/* --- Variables y Reset Estilo Moderno --- */
+:root {
+    --color-fondo: #ffffff;
+    --color-fondo-claro: #f5f5f7;
+    --color-texto: #1d1d1f;
+    --color-texto-secundario: #86868b;
+    --color-acento: #e67e22; /* El naranja del proyecto HouseCountSimulator */
+    --color-acento-hover: #d35400;
+    --fuente-principal: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
 * {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-family: var(--fuente-principal);
+    -webkit-font-smoothing: antialiased;
 }
 
 body {
-    background-color: #f9f9f9;
-    color: #333;
-    line-height: 1.6;
+    background-color: var(--color-fondo);
+    color: var(--color-texto);
+    line-height: 1.47059;
+    letter-spacing: -0.022em;
 }
 
-/* Sección Hero (Inicio) */
-.hero {
-    /* Aquí puedes poner la URL de una foto real de una casa */
-    background: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)), url('https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80') center/cover;
-    height: 80vh;
+.fondo-claro {
+    background-color: var(--color-fondo-claro);
+}
+
+.texto-centrado {
+    text-align: center;
+}
+
+/* --- Hero Carrusel (Estilo Moderno) --- */
+.hero-carousel {
+    position: relative;
+    height: 85vh;
+    width: 100%;
+    overflow: hidden;
+    background-color: var(--color-texto);
+}
+
+.carousel-container {
+    width: 100%;
+    height: 100%;
+    position: relative;
+}
+
+.carousel-slide {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-position: center;
+    background-size: cover;
+    background-repeat: no-repeat;
+    opacity: 0;
+    transition: opacity 0.8s ease-in-out;
     display: flex;
     justify-content: center;
     align-items: center;
     text-align: center;
     color: #fff;
     padding: 0 20px;
-}
-
-.hero-content h1 {
-    font-size: 48px;
-    margin-bottom: 20px;
-}
-
-.hero-content p {
-    font-size: 20px;
-    margin-bottom: 30px;
-    max-width: 600px;
-    margin-left: auto;
-    margin-right: auto;
-}
-
-.btn-primario {
-    background-color: #e67e22;
-    color: #fff;
-    padding: 15px 30px;
-    text-decoration: none;
-    font-size: 18px;
-    border-radius: 5px;
-    font-weight: bold;
-    transition: background 0.3s;
-}
-
-.btn-primario:hover {
-    background-color: #d35400;
-}
-
-/* Sección de Servicios */
-.servicios {
-    padding: 80px 50px;
-    text-align: center;
-}
-
-.servicios h2 {
-    font-size: 36px;
-    margin-bottom: 50px;
-    color: #2c3e50;
-}
-
-.grid-servicios {
-    display: flex;
-    justify-content: center;
-    gap: 30px;
-    flex-wrap: wrap;
-}
-
-.tarjeta {
-    background-color: #fff;
-    padding: 40px 30px;
-    border-radius: 8px;
-    box-shadow: 0 4px 8px rgba(0,0,0,0.05);
-    width: 300px;
-    transition: transform 0.3s;
-}
-
-.tarjeta:hover {
-    transform: translateY(-10px);
-}
-
-.tarjeta h3 {
-    margin-bottom: 15px;
-    color: #2c3e50;
-}
-
-/* --- Sección Presupuesto --- */
-.presupuesto-seccion {
-    padding: 80px 50px;
-    text-align: center;
-    background-color: #ecf0f1; /* Un gris muy claro para diferenciar la sección */
-}
-
-.presupuesto-seccion h2 {
-    font-size: 36px;
-    margin-bottom: 30px;
-    color: #2c3e50;
-}
-
-.contenedor-presupuesto {
-    background-color: #fff;
-    padding: 40px;
-    border-radius: 8px;
-    box-shadow: 0 4px 8px rgba(0,0,0,0.05);
-    max-width: 600px;
-    margin: 0 auto; /* Centra el cuadro */
-}
-
-/* Estilo de la barra deslizable */
-input[type="range"] {
-    width: 100%;
-    margin: 30px 0;
-    cursor: pointer;
-    accent-color: #e67e22; /* Le da el color naranjo a la barra */
-}
-
-/* Texto del precio */
-.valor-mostrado {
-    font-size: 28px;
-    font-weight: bold;
-    color: #2c3e50;
-}
-
-#valor-pantalla {
-    color: #e67e22; /* Destaca solo el número en naranjo */
-}
-
-/* --- Sección Galería --- */
-.galeria-seccion {
-    padding: 80px 50px;
-    background-color: #ffffff;
-    text-align: center;
-}
-
-.galeria-seccion h2 {
-    font-size: 36px;
-    color: #2c3e50;
-    margin-bottom: 10px;
-}
-
-.galeria-intro {
-    font-size: 18px;
-    color: #7f8c8d;
-    margin-bottom: 50px;
-}
-
-.galeria-categoria {
-    margin-bottom: 60px;
-    text-align: left;
-}
-
-.galeria-categoria h3 {
-    font-size: 28px;
-    color: #e67e22; /* Naranjo para resaltar */
-    margin-bottom: 25px;
-    border-bottom: 2px solid #ecf0f1;
-    padding-bottom: 10px;
-}
-
-/* La cuadrícula que ordena las fotos */
-.grid-imagenes {
-    display: grid;
-    /* Esto hace que se adapten a la pantalla solas */
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); 
-    gap: 25px;
-}
-
-/* El recuadro donde irá la foto */
-.espacio-imagen {
-    background-color: #f4f6f7;
-    border: 2px dashed #bdc3c7; /* Línea punteada como placeholder */
-    border-radius: 10px;
-    height: 250px;
-    position: relative;
-    overflow: hidden;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-}
-
-/* Efecto al pasar el ratón */
-.espacio-imagen:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 10px 20px rgba(0,0,0,0.1);
-}
-
-/* Texto temporal de fondo */
-.texto-imagen {
-    color: #95a5a6;
-    font-weight: 500;
-    position: absolute;
     z-index: 1;
 }
 
-/* La imagen real (cuando la agregues) */
+.carousel-slide.active {
+    opacity: 1;
+    z-index: 2;
+}
+
+.carousel-slide .hero-content {
+    transform: translateY(30px);
+    opacity: 0;
+    transition: all 0.8s cubic-bezier(0.5, 0, 0, 1) 0.3s;
+}
+
+.carousel-slide.active .hero-content {
+    transform: translateY(0);
+    opacity: 1;
+}
+
+.titulo-principal {
+    font-size: 56px;
+    font-weight: 700;
+    letter-spacing: -0.005em;
+    margin-bottom: 20px;
+    line-height: 1.07143;
+}
+
+.subtitulo-principal {
+    font-size: 24px;
+    font-weight: 400;
+    margin-bottom: 40px;
+    max-width: 700px;
+    margin-left: auto;
+    margin-right: auto;
+    color: #f5f5f7;
+}
+
+/* --- Controles (Flechas del Carrusel) --- */
+.carousel-control {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background-color: rgba(255, 255, 255, 0.15);
+    color: white;
+    border: none;
+    font-size: 24px;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    cursor: pointer;
+    z-index: 10;
+    backdrop-filter: blur(5px);
+    transition: background-color 0.3s ease, transform 0.3s ease;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.carousel-control:hover {
+    background-color: rgba(255, 255, 255, 0.4);
+    transform: translateY(-50%) scale(1.1);
+}
+
+.carousel-control.prev { left: 30px; }
+.carousel-control.next { right: 30px; }
+
+/* --- Indicadores (Puntitos del Carrusel) --- */
+.carousel-indicators {
+    position: absolute;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 10;
+    display: flex;
+    gap: 12px;
+}
+
+.dot {
+    height: 10px;
+    width: 10px;
+    background-color: rgba(255, 255, 255, 0.4);
+    border-radius: 50%;
+    cursor: pointer;
+    transition: background-color 0.3s, transform 0.3s;
+}
+
+.dot.active, .dot:hover {
+    background-color: white;
+    transform: scale(1.3);
+}
+
+/* --- Botones --- */
+.btn-principal {
+    background-color: var(--color-acento);
+    color: #fff;
+    padding: 14px 28px;
+    text-decoration: none;
+    font-size: 17px;
+    border-radius: 980px;
+    font-weight: 400;
+    transition: all 0.3s ease;
+    display: inline-block;
+    border: none;
+    cursor: pointer;
+}
+
+.btn-principal:hover {
+    background-color: var(--color-acento-hover);
+    transform: scale(1.02);
+}
+
+.btn-secundario {
+    background-color: transparent;
+    color: var(--color-acento);
+    border: 1px solid var(--color-acento);
+}
+
+.btn-secundario:hover {
+    background-color: var(--color-acento);
+    color: #fff;
+}
+
+.btn-secundario-blanco {
+    background-color: transparent;
+    color: #fff;
+    border: 1px solid #fff;
+}
+
+.btn-secundario-blanco:hover {
+    background-color: #fff;
+    color: var(--color-texto);
+}
+
+/* --- Secciones Generales --- */
+.seccion-moderna {
+    padding: 100px 50px;
+}
+
+.contenedor-centrado {
+    text-align: center;
+    margin-bottom: 60px;
+}
+
+.seccion-titulo {
+    font-size: 48px;
+    font-weight: 700;
+    letter-spacing: -0.003em;
+    color: var(--color-texto);
+    margin-bottom: 15px;
+}
+
+.seccion-subtitulo {
+    font-size: 21px;
+    color: var(--color-texto-secundario);
+    font-weight: 400;
+}
+
+/* --- Lista de Servicios Secuencial --- */
+.lista-servicios {
+    display: flex;
+    flex-direction: column;
+    gap: 80px; 
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+/* --- Tarjeta Horizontal --- */
+.tarjeta-horizontal {
+    background-color: #fff;
+    border-radius: 24px; 
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.05);
+    overflow: hidden; 
+    display: flex;
+    flex-direction: row; 
+    align-items: stretch; 
+    transition: transform 0.4s cubic-bezier(0.165, 0.84, 0.44, 1), box-shadow 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+}
+
+.tarjeta-horizontal:hover {
+    transform: translateY(-8px); 
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.1);
+}
+
+.tarjeta-horizontal.reversa {
+    flex-direction: row-reverse;
+}
+
+.tarjeta-horizontal .tarjeta-imagen {
+    width: 50%; 
+    min-height: 350px;
+    background-color: #f5f5f7;
+    position: relative;
+    overflow: hidden;
+}
+
+.tarjeta-horizontal .tarjeta-imagen img {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    top: 0;
+    left: 0;
+    object-fit: cover;
+    object-position: center top; 
+    transition: transform 0.8s ease;
+}
+
+.tarjeta-horizontal:hover .tarjeta-imagen img {
+    transform: scale(1.05);
+}
+
+.tarjeta-horizontal .tarjeta-cuerpo {
+    width: 50%; 
+    padding: 60px 50px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center; 
+    text-align: left; 
+}
+
+.tarjeta-horizontal .tarjeta-cuerpo h3 {
+    font-size: 32px;
+    font-weight: 700;
+    margin-bottom: 20px;
+    color: var(--color-texto);
+    line-height: 1.2;
+    letter-spacing: -0.01em;
+}
+
+.tarjeta-horizontal .tarjeta-cuerpo p {
+    font-size: 18px;
+    color: var(--color-texto-secundario);
+    line-height: 1.6;
+    margin: 0;
+}
+
+/* --- Presupuesto --- */
+.contenedor-presupuesto {
+    background-color: #fff;
+    padding: 60px 40px;
+    border-radius: 24px;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.04);
+    max-width: 700px;
+    margin: 0 auto;
+    text-align: center;
+}
+
+input[type="range"] {
+    -webkit-appearance: none;
+    width: 100%;
+    margin: 40px 0;
+    height: 6px;
+    background: #e5e5ea;
+    border-radius: 5px;
+    outline: none;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: var(--color-acento);
+    cursor: pointer;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+    transition: transform 0.2s;
+}
+
+input[type="range"]::-webkit-slider-thumb:hover {
+    transform: scale(1.15);
+}
+
+.valor-mostrado {
+    font-size: 40px;
+    font-weight: 700;
+    color: var(--color-texto);
+    margin-bottom: 30px;
+}
+
+#valor-pantalla {
+    color: var(--color-acento);
+}
+
+/* --- Galería --- */
+.galeria-seccion {
+    padding: 100px 50px;
+}
+
+.categoria-titulo {
+    font-size: 28px;
+    font-weight: 600;
+    margin-bottom: 30px;
+    color: var(--color-texto);
+    text-align: center;
+}
+
+.grid-imagenes {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); 
+    gap: 24px;
+    max-width: 1200px;
+    margin: 0 auto 60px auto;
+}
+
+.espacio-imagen {
+    background-color: #fff;
+    border-radius: 18px;
+    height: 300px;
+    overflow: hidden;
+    cursor: pointer;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.04);
+    transition: transform 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+}
+
+.espacio-imagen:hover {
+    transform: scale(1.02);
+    box-shadow: 0 12px 40px rgba(0,0,0,0.1);
+}
+
 .imagen-galeria {
     width: 100%;
     height: 100%;
-    object-fit: cover; /* Evita que la foto se estire o deforme */
-    position: absolute;
-    z-index: 2; /* Para que tape el texto temporal */
+    object-fit: cover;
+    transition: transform 0.8s cubic-bezier(0.165, 0.84, 0.44, 1);
 }
 
-/* Adaptación para celulares */
-@media (max-width: 768px) {
-    .galeria-seccion {
-        padding: 50px 20px;
-    }
+.espacio-imagen:hover .imagen-galeria {
+    transform: scale(1.05);
 }
 
-/* --- Ventana Modal para Imágenes --- */
+/* --- Modal --- */
 .modal {
-    display: none; /* Oculto por defecto hasta que se hace clic */
+    display: none;
     position: fixed;
-    z-index: 1000; /* Asegura que quede por encima de todo */
+    z-index: 9999;
     left: 0;
     top: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(0, 0, 0, 0.85); /* Fondo negro semitransparente */
-    justify-content: center; /* Centra horizontalmente */
-    align-items: center; /* Centra verticalmente */
+    background-color: rgba(29, 29, 31, 0.9);
+    backdrop-filter: blur(10px);
+    justify-content: center;
+    align-items: center;
 }
 
-/* La imagen dentro del modal */
 .modal-contenido {
-    /* Muestra la resolución original, pero evita que se salga de la pantalla si es gigante */
-    max-width: 90%;
-    max-height: 90%;
-    object-fit: contain; /* Nunca deforma la imagen */
-    border-radius: 5px;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+    max-width: 85%;
+    max-height: 85%;
+    border-radius: 12px;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.5);
 }
 
-/* Botón de cerrar "X" */
 .cerrar-modal {
     position: absolute;
-    top: 20px;
+    top: 30px;
     right: 40px;
-    color: #fff;
-    font-size: 50px;
-    font-weight: bold;
+    color: #f5f5f7;
+    font-size: 40px;
     cursor: pointer;
     transition: color 0.3s;
 }
 
-.cerrar-modal:hover {
-    color: #e67e22; /* Se pone naranjo al pasar el mouse */
-}
-
-/* Cambiar el cursor a una "manito" en la galería para que el usuario sepa que puede hacer clic */
-.espacio-imagen {
-    cursor: pointer;
-}
-
-/* --- Sección de Contacto --- */
-.contacto-seccion {
-    padding: 80px 50px;
-    background-color: #ecf0f1;
-    text-align: center;
-}
-
-.contacto-seccion h2 {
-    font-size: 36px;
-    color: #2c3e50;
-    margin-bottom: 10px;
-}
-
-.contacto-seccion p {
-    margin-bottom: 30px;
-    color: #7f8c8d;
-}
-
-.formulario {
+/* --- Formulario --- */
+.formulario-moderno {
     max-width: 500px;
     margin: 0 auto;
     display: flex;
     flex-direction: column;
-    gap: 15px; /* Espacio entre las cajas */
+    gap: 16px;
 }
 
-.formulario input, 
-.formulario textarea {
-    padding: 15px;
-    border: 1px solid #bdc3c7;
-    border-radius: 5px;
-    font-size: 16px;
-    font-family: inherit;
+.formulario-moderno input, 
+.formulario-moderno textarea {
+    padding: 16px;
+    border: 1px solid #d2d2d7;
+    border-radius: 12px;
+    font-size: 17px;
+    background-color: rgba(255,255,255,0.8);
+    transition: all 0.3s ease;
+}
+
+.formulario-moderno input:focus, 
+.formulario-moderno textarea:focus {
     outline: none;
-    transition: border-color 0.3s;
+    border-color: var(--color-acento);
+    background-color: #fff;
+    box-shadow: 0 0 0 4px rgba(230, 126, 34, 0.1);
 }
 
-.formulario input:focus, 
-.formulario textarea:focus {
-    border-color: #e67e22; /* Se pone naranjo al escribir */
-}
-
-/* El texto de éxito o error */
-#mensaje-estado {
-    margin-top: 15px;
-    font-weight: bold;
-}
-
-/* Footer */
-footer {
-    background-color: #2c3e50;
-    color: #fff;
+/* --- Footer --- */
+.footer-moderno {
+    background-color: var(--color-fondo-claro);
+    color: var(--color-texto-secundario);
     text-align: center;
-    padding: 20px;
-    margin-top: 40px;
+    padding: 30px 20px;
+    font-size: 12px;
+    border-top: 1px solid #d2d2d7;
 }
 
-/* Adaptación para pantallas pequeñas (Celulares) */
+/* --- Animaciones Reveal (Scroll) --- */
+.reveal {
+    opacity: 0;
+    transform: translateY(30px);
+    transition: opacity 0.8s cubic-bezier(0.5, 0, 0, 1), transform 0.8s cubic-bezier(0.5, 0, 0, 1);
+}
+
+.reveal.active {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.delay-1 { transition-delay: 0.1s; }
+.delay-2 { transition-delay: 0.2s; }
+
+/* --- Responsive (Tablets y Celulares) --- */
+@media (max-width: 900px) {
+    /* Ajustes Servicios (Secuencial a Vertical) */
+    .lista-servicios {
+        gap: 50px;
+    }
+    .tarjeta-horizontal, 
+    .tarjeta-horizontal.reversa {
+        flex-direction: column; 
+    }
+    .tarjeta-horizontal .tarjeta-imagen,
+    .tarjeta-horizontal .tarjeta-cuerpo {
+        width: 100%; 
+    }
+    .tarjeta-horizontal .tarjeta-imagen {
+        min-height: 250px;
+    }
+    .tarjeta-horizontal .tarjeta-cuerpo {
+        padding: 40px 30px;
+        text-align: center;
+    }
+    .tarjeta-horizontal .tarjeta-cuerpo h3 {
+        font-size: 26px;
+    }
+}
+
 @media (max-width: 768px) {
-    .navbar {
-        flex-direction: column;
-        gap: 15px;
-    }
-    .hero-content h1 {
-        font-size: 36px;
-    }
-    .grid-servicios {
-        flex-direction: column;
-        align-items: center;
+    /* Ajustes Generales para Celulares */
+    .titulo-principal { font-size: 40px; }
+    .subtitulo-principal { font-size: 19px; }
+    .seccion-titulo { font-size: 36px; }
+    .seccion-moderna { padding: 60px 20px; }
+    
+    .carousel-control {
+        display: none;
     }
 }
 
+.tarjeta-accion {
+    margin-top: 30px;
+    display: flex;
+    justify-content: flex-start; /* Alinea el botón a la izquierda en PC */
+}
+
+/* En dispositivos móviles, centramos el botón para mantener la armonía */
+@media (max-width: 900px) {
+    .tarjeta-accion {
+        justify-content: center;
+        margin-top: 25px;
+    }
+}
+
+/*contenedor formulario para correo*/
+.contenedor-formulario {
+    max-width: 600px;
+    margin: 0 auto;
+    background-color: #ffffff;
+    padding: 50px;
+    border-radius: 24px;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.05); /* Sombra elegante para dar profundidad */
+}
+
+.formulario-personalidad {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.grupo-input input, 
+.grupo-input textarea {
+    width: 100%;
+    padding: 18px 20px;
+    border: 1px solid #d2d2d7;
+    border-radius: 12px;
+    font-size: 16px;
+    color: var(--color-texto);
+    background-color: #fcfcfc;
+    transition: all 0.3s ease;
+    resize: vertical; /* Permite cambiar el tamaño solo hacia abajo */
+}
+
+/* Efecto al hacer clic en los campos */
+.grupo-input input:focus, 
+.grupo-input textarea:focus {
+    outline: none;
+    border-color: var(--color-acento);
+    background-color: #ffffff;
+    box-shadow: 0 0 0 4px rgba(230, 126, 34, 0.15); /* Halo naranja suave */
+}
+
+.grupo-input input::placeholder, 
+.grupo-input textarea::placeholder {
+    color: #a1a1a6;
+}
+
+/* Botón Ancho Completo */
+.btn-enviar-full {
+    width: 100%;
+    background-color: var(--color-acento);
+    color: #fff;
+    padding: 18px;
+    font-size: 18px;
+    font-weight: 500;
+    border: none;
+    border-radius: 980px; /* Estilo píldora */
+    cursor: pointer;
+    transition: transform 0.3s ease, background-color 0.3s ease, box-shadow 0.3s ease;
+    margin-top: 10px;
+}
+
+.btn-enviar-full:hover {
+    background-color: var(--color-acento-hover);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(230, 126, 34, 0.3); /* Sombra naranja al pasar el mouse */
+}
+
+/* --- Responsive Contacto --- */
+@media (max-width: 768px) {
+    .contenedor-formulario {
+        padding: 30px 20px;
+        border-radius: 16px;
+    }
+}

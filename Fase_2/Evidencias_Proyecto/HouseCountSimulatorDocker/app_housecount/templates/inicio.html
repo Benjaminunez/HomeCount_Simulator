@@ -4,141 +4,203 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Construye Tu Casa Ideal</title>
+    <title>Construye Tu Casa Ideal | ArquiCasa</title>
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
     <link rel="stylesheet" href="{% static 'css/StyleNavbar.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="{% static 'js/script.js' %}" defer></script>
+    <script src="{% static 'js/inicio.js' %}" defer></script>
     <link rel="icon" type="image/png" href="media/iconosPestana/casa.ico">
-    <style>
-    @import url('https://fonts.googleapis.com/css2?family=Henny+Penny&family=Monoton&display=swap');
-    </style>
 </head>
 <body>
     <!-- Menú de Navegación -->
-{% include 'navbar.html' %}
+    {% include 'navbar.html' %}
 
-    <!-- Sección Principal (Hero) -->
-<section id="inicio" class="hero">
-    <div class="hero-content">
-        <h1>Diseñamos y construimos la casa de tus sueños</h1>
-        <p>Desde los primeros planos hasta la entrega de llaves. Materializamos tus ideas con los mejores estándares de calidad.</p>
-        <a href="{% url 'casas_modelo_1' %}" class="btn-primario">Comenzar mi proyecto</a>
-    </div>
-</section>
+    <!-- Sección Principal (Hero Carrusel) -->
+    <section id="inicio" class="hero-carousel">
+        <div class="carousel-container">
+            
+            <!-- Slide 1 -->
+            <div class="carousel-slide active" style="background-image: linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4)), url('https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80');">
+                <div class="hero-content">
+                    <h1 class="titulo-principal">Diseñamos y construimos<br>la casa de tus sueños.</h1>
+                    <p class="subtitulo-principal">Desde los primeros planos hasta la entrega de llaves. Materializamos tus ideas con los mejores estándares de calidad.</p>
+                    <a href="{% url 'casas_modelo_1' %}" class="btn-principal">Comenzar mi proyecto</a>
+                </div>
+            </div>
 
-<!-- Sección de Servicios -->
-<section id="servicios" class="servicios">
-    <h2>Lo que hacemos</h2>
-    <div class="grid-servicios">
-        <div class="tarjeta">
-            <h3>Diseño Arquitectónico</h3>
-            <p>Planos en 2D y modelos en 3D para que visualices tu futuro hogar antes de poner el primer ladrillo.</p>
-        </div>
-        <div class="tarjeta">
-            <h3>Construcción</h3>
-            <p>Obras desde cero con materiales de primera calidad y un equipo de profesionales experimentados.</p>
-        </div>
-        <div class="tarjeta">
-            <h3>Remodelación</h3>
-            <p>Dale una nueva vida a tus espacios. Ampliaciones, rediseño de interiores y modernización.</p>
-        </div>
-    </div>
-</section>
+            <!-- Slide 2 -->
+            <div class="carousel-slide" style="background-image: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url('https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80');">
+                <div class="hero-content">
+                    <h1 class="titulo-principal">Innovación y Diseño<br>en cada detalle.</h1>
+                    <p class="subtitulo-principal">Espacios pensados para tu comodidad y estilo de vida moderno.</p>
+                    <!-- Botón secundario para variar el diseño -->
+                    <a href="{% url 'casas_modelo_1' %}" class="btn-principal btn-secundario-blanco">Ver galería de casas</a>
+                </div>
+            </div>
 
-<!-- Sección de Proyectos y Presupuesto -->
-<section id="proyectos" class="presupuesto-seccion">
-    <h2>Ajusta tu Presupuesto</h2>
-    <div class="contenedor-presupuesto">
-        <p>Desliza la barra para indicar cuánto planeas invertir:</p>
+            <!-- Slide 3 -->
+            <div class="carousel-slide" style="background-image: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url('https://images.unsplash.com/photo-1512917774080-9991f1c4c750?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80');">
+                <div class="hero-content">
+                    <h1 class="titulo-principal">Construcción Sostenible<br>y Eficiente.</h1>
+                    <p class="subtitulo-principal">Utilizamos materiales de primera calidad, amigables con el medio ambiente.</p>
+                    <a href="#contacto" class="btn-principal">Contáctanos ahora</a>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Controles (Flechas tipo Bootstrap) -->
+        <button class="carousel-control prev" onclick="moverSlide(-1)">&#10094;</button>
+        <button class="carousel-control next" onclick="moverSlide(1)">&#10095;</button>
+
+        <!-- Indicadores (Puntitos tipo Bootstrap) -->
+        <div class="carousel-indicators">
+            <span class="dot active" onclick="irASlide(1)"></span>
+            <span class="dot" onclick="irASlide(2)"></span>
+            <span class="dot" onclick="irASlide(3)"></span>
+        </div>
+    </section>
+
+    <!-- Sección de Servicios -->
+   <section id="servicios" class="seccion-moderna fondo-claro">
+        <div class="contenedor-centrado reveal">
+            <h2 class="seccion-titulo">Lo que hacemos.</h2>
+            <p class="seccion-subtitulo">Herramientas digitales y precisión en cada etapa de tu proyecto.</p>
+        </div>
         
-        <!-- Barra deslizable (Slider) -->
-        <input type="range" id="barra-presupuesto" min="0" max="2000000000" step="10000" value="500000">
-        
-        <!-- Aquí se mostrará el número que cambia -->
-        <p class="valor-mostrado">$<span id="valor-pantalla">500.000</span> CLP</p>
-        <a href="{% url 'contrucion' %}" class="Contrucion">Construcción</a>
-    </div>
-</section>
-
-<!-- Sección de Galería (Planos y Casas) -->
-<section class="galeria-seccion">
-    <h2>Nuestros Diseños y Obras</h2>
-    <p class="galeria-intro">Explora nuestra colección de planos y los resultados finales de nuestras casas.</p>
-
-    <!-- Sub-sección: Planos -->
-    <div class="galeria-categoria">
-        <h3>Planos Arquitectónicos</h3>
-        <div class="grid-imagenes">
-            <!-- Espacio 1 -->
-            <div class="espacio-imagen">
-                <span class="texto-imagen">Inserta aquí la foto de tu plano</span>
-                <img src="{% static 'imagen-galeria/plano 1.jpg' %}" alt="Plano 1" class="imagen-galeria">
+        <div class="lista-servicios">
+            <!-- Funcionalidad 1: Simulador 3D -->
+            <div class="tarjeta-horizontal reveal delay-1">
+                <div class="tarjeta-imagen">
+                    <img src="{% static 'imagen-galeria/menu_3d.png' %}" alt="Simulador 3D Interactivo">
+                </div>
+                <div class="tarjeta-cuerpo">
+                    <h3>Simulador 3D Interactivo</h3>
+                    <p>Construye tu casa módulo a módulo de forma intuitiva. El sistema calcula el área, perímetro y costo total de tu proyecto en tiempo real mientras diseñas.</p>
+                    <!-- Botón agregado -->
+                    <div class="tarjeta-accion">
+                        <a href="{% url 'casas_modelo_1' %}" class="btn-principal">Probar Simulador</a>
+                    </div>
+                </div>
             </div>
-            <!-- Espacio 2 -->
-            <div class="espacio-imagen">
-                <span class="texto-imagen">Inserta aquí la foto de tu plano</span>
-                <img src="{% static 'imagen-galeria/plano 2.jpg' %}" alt="Plano 2" class="imagen-galeria">
+            
+            <!-- Funcionalidad 2: Catálogo -->
+            <div class="tarjeta-horizontal reversa reveal delay-1">
+                <div class="tarjeta-imagen">
+                    <img src="{% static 'imagen-galeria/catalogo.png' %}" alt="Catálogo de Construcción Rápida">
+                </div>
+                <div class="tarjeta-cuerpo">
+                    <h3>Catálogo de Construcción Rápida</h3>
+                    <p>Ahorra tiempo eligiendo diseños optimizados y pre-calculados. Filtra rápidamente por tu presupuesto, metros cuadrados y número de habitaciones.</p>
+                    <!-- Botón agregado -->
+                    <div class="tarjeta-accion">
+                        <a href="{% url 'casas_rapidas' %}" class="btn-principal btn-secundario">Ver Catálogo</a>
+                    </div>
+                </div>
             </div>
-            <!-- Espacio 3 -->
-            <div class="espacio-imagen">
-                <span class="texto-imagen">Inserta aquí la foto de tu plano</span>
-                <img src="{% static 'imagen-galeria/plano 3.png' %}" alt="Plano 3" class="imagen-galeria">
-            </div>
-        </div>
-    </div>
-
-    <!-- Sub-sección: Casas -->
-    <div class="galeria-categoria">
-        <h3>Casas Terminadas</h3>
-        <div class="grid-imagenes">
-            <!-- Espacio 1 -->
-            <div class="espacio-imagen">
-                <span class="texto-imagen">Inserta aquí la foto de la casa</span>
-                <img src="{% static 'imagen-galeria/casa1.jpg' %}" alt="Casa 1" class="imagen-galeria">
-            </div>
-            <!-- Espacio 2 -->
-            <div class="espacio-imagen">
-                <span class="texto-imagen">Inserta aquí la foto de la casa</span>
-                <img src="{% static 'imagen-galeria/casa2.jpg' %}" alt="Casa 2" class="imagen-galeria">
-            </div>
-            <!-- Espacio 3 -->
-            <div class="espacio-imagen">
-                <span class="texto-imagen">Inserta aquí la foto de la casa</span>
-                <img src="{% static 'imagen-galeria/casa3.jpg' %}" alt="Casa 3" class="imagen-galeria">
+            
+            <!-- Funcionalidad 3: Contacto -->
+            <div class="tarjeta-horizontal reveal delay-1">
+                <div class="tarjeta-imagen">
+                    <img src="{% static 'img/contacto.png' %}" alt="Formulario de Contacto">
+                </div>
+                <div class="tarjeta-cuerpo">
+                    <h3>Asesoría y Contacto</h3>
+                    <p>¿Tienes un proyecto completamente personalizado en mente? Cuéntanos tu idea a través de nuestra plataforma y te responderemos a la brevedad para hacerlo realidad.</p>
+                    <!-- Botón agregado -->
+                    <div class="tarjeta-accion">
+                        <a href="#contacto" class="btn-principal btn-secundario">Ir a Contacto</a>
+                    </div>
+                </div>
             </div>
         </div>
-    </div>
-    <div id="modal-imagen" class="modal">
-    <span class="cerrar-modal">&times;</span>
-    <img class="modal-contenido" id="imagen-ampliada">
-    </div>
-</section>
-    
 
-<!-- Sección de Contacto -->
-<section id="contacto" class="contacto-seccion">
-    <h2>Contáctanos</h2>
-    <p>Cuéntanos sobre tu proyecto y te responderemos a la brevedad.</p>
-    
-    <form id="formulario-contacto" class="formulario">
-        <!-- Los atributos 'name' son vitales para que la API sepa qué dato es cuál -->
-        <input type="text" name="user_name" placeholder="Tu Nombre" required>
-        <input type="email" name="user_email" placeholder="Tu Correo" required>
-        <textarea name="message" placeholder="Escribe tu mensaje aquí..." rows="5" required></textarea>
+    </section>
+    <!-- Sección de Proyectos y Presupuesto -->
+    <section id="proyectos" class="seccion-moderna">
+        <div class="contenedor-presupuesto reveal">
+            <h2 class="seccion-titulo">Ajusta tu presupuesto.</h2>
+            <p class="seccion-subtitulo">Desliza la barra para indicar cuánto planeas invertir.</p>
+            
+            <input type="range" id="barra-presupuesto" min="0" max="2000000000" step="10000" value="500000">
+            
+            <p class="valor-mostrado">$<span id="valor-pantalla">500.000</span> CLP</p>
+            <a href="{% url 'contrucion' %}" class="btn-principal btn-secundario">Ver opciones de construcción</a>
+        </div>
+    </section>
+
+    <!-- Sección de Galería -->
+    <section class="seccion-moderna fondo-claro galeria-seccion">
+        <div class="contenedor-centrado reveal">
+            <h2 class="seccion-titulo">Nuestros Diseños y Obras.</h2>
+            <p class="galeria-intro seccion-subtitulo">Explora nuestra colección de planos y los resultados finales.</p>
+        </div>
+
+        <div class="galeria-categoria reveal delay-1">
+            <h3 class="categoria-titulo">Planos Arquitectónicos</h3>
+            <div class="grid-imagenes">
+                <div class="espacio-imagen">
+                    <img src="{% static 'imagen-galeria/plano 1.jpg' %}" alt="Plano 1" class="imagen-galeria">
+                </div>
+                <div class="espacio-imagen">
+                    <img src="{% static 'imagen-galeria/plano 2.jpg' %}" alt="Plano 2" class="imagen-galeria">
+                </div>
+                <div class="espacio-imagen">
+                    <img src="{% static 'imagen-galeria/plano 3.png' %}" alt="Plano 3" class="imagen-galeria">
+                </div>
+            </div>
+        </div>
+
+        <div class="galeria-categoria reveal delay-2">
+            <h3 class="categoria-titulo">Casas Terminadas</h3>
+            <div class="grid-imagenes">
+                <div class="espacio-imagen">
+                    <img src="{% static 'imagen-galeria/casa1.jpg' %}" alt="Casa 1" class="imagen-galeria">
+                </div>
+                <div class="espacio-imagen">
+                    <img src="{% static 'imagen-galeria/casa2.jpg' %}" alt="Casa 2" class="imagen-galeria">
+                </div>
+                <div class="espacio-imagen">
+                    <img src="{% static 'imagen-galeria/casa3.jpg' %}" alt="Casa 3" class="imagen-galeria">
+                </div>
+            </div>
+        </div>
         
-        <button type="submit" class="btn-primario">Enviar Mensaje</button>
-    </form>
-    <!-- Mensaje que aparecerá al enviar (éxito o error) -->
-    <p id="mensaje-estado"></p>
-</section>
+        <div id="modal-imagen" class="modal">
+            <span class="cerrar-modal">&times;</span>
+            <img class="modal-contenido" id="imagen-ampliada">
+        </div>
+    </section>
 
-    <!-- Importar la API de EmailJS (Pon esto justo antes de tus propios <script>) -->
-<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+    <!-- Sección de Contacto -->
+    <section id="contacto" class="seccion-moderna fondo-claro">
+        <div class="contenedor-centrado reveal">
+            <h2 class="seccion-titulo">Contáctanos.</h2>
+            <p class="seccion-subtitulo">Cuéntanos sobre tu proyecto y te responderemos a la brevedad.</p>
+        </div>
+        
+        <div class="contenedor-formulario reveal delay-1">
+            <form id="formulario-contacto" class="formulario-personalidad">
+                <div class="grupo-input">
+                    <input type="text" name="user_name" placeholder="Tu Nombre" required>
+                </div>
+                <div class="grupo-input">
+                    <input type="email" name="user_email" placeholder="Tu Correo" required>
+                </div>
+                <div class="grupo-input">
+                    <textarea name="message" placeholder="Escribe tu mensaje aquí..." rows="6" required></textarea>
+                </div>
+                
+                <button type="submit" class="btn-enviar-full">Enviar Mensaje</button>
+            </form>
+            <p id="mensaje-estado" class="texto-centrado"></p>
+        </div>
+    </section>
 
-<!-- Pie de página -->
-<footer>
-    <p>&copy; 2026 ArquiCasa - Todos los derechos reservados.</p>
-</footer>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
 
+    <!-- Pie de página -->
+    {% include 'footer.html' %}
 </body>
 </html>
