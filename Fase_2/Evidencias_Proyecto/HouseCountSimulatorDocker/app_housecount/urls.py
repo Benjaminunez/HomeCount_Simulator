@@ -1,5 +1,6 @@
 from django.urls import path
 from . import views
+from django.contrib.auth import views as auth_views
 
 urlpatterns = [
     path('', views.inicio, name='inicio'), #vista inicial de la pagina al iniciar con localhost (este queda como main)
@@ -16,4 +17,9 @@ urlpatterns = [
     path('api/guardar-diseno/', views.guardar_diseno, name='guardar_diseno'),
     path('api/obtener-disenos/', views.obtener_disenos, name='obtener_disenos'),
     path('api/eliminar-diseno/', views.eliminar_diseno, name='eliminar_diseno'),
+
+    path('recuperar-clave/', views.recuperar_clave_correo, name='recuperar_clave_correo'),
+    path('recuperar-clave/codigo/', views.recuperar_clave_codigo, name='recuperar_clave_codigo'),
+    path('recuperar-clave/nueva-clave/', views.recuperar_clave_nueva, name='recuperar_clave_nueva'),
 ]
+

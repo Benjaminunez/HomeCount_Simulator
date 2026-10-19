@@ -117,3 +117,22 @@ body {
     font-size: 14px;
     border-left: 4px solid #ef4444;
 }
+
+.alerta.success {
+    background-color: #f0fdf4;
+    color: #166534;
+    border-left: 4px solid #22c55e;
+    padding: 10px;
+    margin-bottom: 15px;
+    border-radius: 4px;
+}
+
+/* Mensajes de error (Rojo) */
+.alerta.error {
+    background-color: #fef2f2;
+    color: #991b1b;
+    border-left: 4px solid #ef4444;
+    padding: 10px;
+    margin-bottom: 15px;
+    border-radius: 4px;
+}

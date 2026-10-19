@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <title>Registro - HomeCount Simulator</title>
     <link rel="stylesheet" href="{% static 'css/StyleRegistro.css' %}">
-    <link rel="icon" type="image/png" href="media/iconosPestana/Register.ico"> <!--icono para pestaña de navegador-->
+    <link rel="icon" type="image/png" href="media/iconosPestana/Register.ico">
 </head>
 <body>
 
@@ -19,12 +19,70 @@
                         <li>{{ error }}</li>
                     {% endfor %}
                 {% endfor %}
+                {% for error in form.non_field_errors %}
+                    <li>{{ error }}</li>
+                {% endfor %}
             </ul>
         {% endif %}
 
-        <form method="POST" class="login-form">
+        <form method="POST" enctype="multipart/form-data" class="login-form">
             {% csrf_token %}
-            {{ form.as_p }}
+
+            <!-- Sección Superior: Avatar centrado -->
+            <div class="avatar-upload-container">
+                <label for="id_avatar_input" class="avatar-preview-label" title="Haz clic para subir un avatar">
+                    <div id="default-avatar-icon" class="default-avatar">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                            <circle cx="12" cy="7" r="4"></circle>
+                        </svg>
+                    </div>
+                    <img id="avatar-preview" src="" alt="Avatar" style="display: none;">
+                    <div class="avatar-overlay">
+                        <span>📷 Cambiar</span>
+                    </div>
+                </label>
+                <input type="file" name="avatar_file" id="id_avatar_input" accept=".png, .jpg, .jpeg" style="display: none;">
+                <input type="hidden" name="avatar_base64" id="id_avatar_base64" value="{{ avatar_base64|safe }}">
+                <small class="avatar-help-text">Formatos: .PNG, .JPG, .JPEG</small>
+            </div>
+
+            <!-- Formulario en Cuadrícula (2 columnas) -->
+            <div class="form-grid">
+                
+                <!-- Nombre de Usuario -->
+                <div class="form-group">
+                    <label for="id_username">Nombre de usuario:</label>
+                    <input type="text" name="username" id="id_username" 
+                           value="{{ form.username.value|default:'' }}" required placeholder="Ej. Benjamin_C">
+                </div>
+
+                <!-- Correo Electrónico -->
+                <div class="form-group">
+                    <label for="id_email">Correo electrónico:</label>
+                    <input type="email" name="email" id="id_email" 
+                           value="{{ email_ingresado|default:'' }}" required placeholder="ejemplo@correo.com">
+                </div>
+
+                <!-- Contraseña 1 -->
+                <div class="form-group">
+                    <label for="id_password1">Contraseña:</label>
+                    <input type="password" name="password1" id="id_password1" required placeholder="••••••••">
+                </div>
+
+                <!-- Confirmación de Contraseña -->
+                <div class="form-group">
+                    <label for="id_password2">Confirmar contraseña:</label>
+                    <input type="password" name="password2" id="id_password2" required placeholder="••••••••">
+                </div>
+
+            </div>
+
+            <!-- Ayuda compacta de contraseñas -->
+            <div class="password-info">
+                ℹ️ La contraseña debe tener al menos 8 caracteres y no ser común.
+            </div>
+
             <button type="submit" class="btn-ingresar">Registrarme</button>
         </form>
 
@@ -33,5 +91,6 @@
         </div>
     </div>
 
+    <script src="{% static 'js/Registro.js' %}"></script>
 </body>
 </html>

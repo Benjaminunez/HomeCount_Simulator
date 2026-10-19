@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
+from django.utils import timezone
 
 class CategoriaMaterial(models.Model):
     nombre = models.CharField(max_length=100, unique=True)
@@ -141,3 +142,11 @@ class Avatar(models.Model):
 
     def __str__(self):
         return f"Avatar de {self.usuario.username}"
+
+class CodigoRecuperacion(models.Model):
+    usuario = models.ForeignKey(User, on_delete=models.CASCADE)
+    codigo = models.CharField(max_length=6)
+    creado_en = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.usuario.username} - {self.codigo}"

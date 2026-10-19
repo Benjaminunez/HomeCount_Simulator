@@ -5,97 +5,161 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
-    background-color: #1a202c; /* Fondo oscuro */
+    background-color: #1a202c; /* Fondo oscuro elegante */
+    padding: 20px;
+    box-sizing: border-box;
 }
 
-/* --- Tarjeta blanca central --- */
+/* --- Tarjeta Principal Blanca --- */
 .login-card {
     background-color: #ffffff;
-    padding: 40px;
-    border-radius: 12px;
+    padding: 35px 40px;
+    border-radius: 14px;
     box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
     width: 100%;
-    max-width: 400px;
+    max-width: 580px; 
     box-sizing: border-box;
     text-align: center;
 }
 
-/* --- Título principal --- */
 .login-card h2 {
-    margin: 0 0 25px 0;
+    margin: 0 0 20px 0;
     color: #1e293b;
-    font-size: 26px;
+    font-size: 24px;
     font-weight: 700;
 }
 
-/* --- Forzar que los campos de Django se apilen verticalmente --- */
-.login-form p {
+/* --- Subida de Avatar (Registro) --- */
+.avatar-upload-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.avatar-preview-label {
+    position: relative;
+    width: 90px;
+    height: 90px;
+    border-radius: 50%;
+    cursor: pointer;
+    overflow: hidden;
+    background-color: #f1f5f9;
+    border: 2px dashed #cbd5e1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: all 0.3s ease;
+}
+
+.avatar-preview-label.has-image {
+    border: 3px solid #f97316;
+}
+
+.avatar-preview-label:hover {
+    border-color: #f97316;
+    background-color: #e2e8f0;
+}
+
+.default-avatar svg {
+    width: 42px;
+    height: 42px;
+    color: #94a3b8;
+}
+
+#avatar-preview {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.avatar-overlay {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    background: rgba(0, 0, 0, 0.6);
+    color: #ffffff;
+    font-size: 11px;
+    font-weight: 600;
+    text-align: center;
+    padding: 4px 0;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+
+.avatar-preview-label:hover .avatar-overlay {
+    opacity: 1;
+}
+
+.avatar-help-text {
+    font-size: 11px;
+    color: #64748b;
+    margin-top: 6px;
+}
+
+/* --- Layout de Formularios --- */
+.form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px 20px;
+    text-align: left;
+}
+
+.form-group {
     display: flex;
     flex-direction: column;
     text-align: left;
-    margin-bottom: 18px;
+    width: 100%;
 }
 
-/* --- Etiquetas del formulario --- */
-.login-form label {
+.form-group label {
     margin-bottom: 6px;
     color: #475569;
-    font-size: 14px;
+    font-size: 13px;
     font-weight: 600;
 }
 
-/* --- Inputs de texto y contraseñas --- */
-.login-form input {
+.form-group input {
     width: 100%;
     padding: 12px;
     border: 1px solid #cbd5e1;
     border-radius: 6px;
-    font-size: 15px;
+    font-size: 14px;
     box-sizing: border-box;
     transition: all 0.3s ease;
     background-color: #f8fafc;
     color: #1e293b;
 }
 
-.login-form input:focus {
+.form-group input:focus {
     outline: none;
-    border-color: #f97316; /* Color naranja corporativo */
+    border-color: #f97316;
     background-color: #ffffff;
     box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.15);
 }
 
-/* --- Lista de ayuda de contraseñas de Django (ul) --- */
-.login-form ul.helptext {
-    color: #64748b;
-    font-size: 12px;
-    padding-left: 15px;
-    margin-top: 5px;
-    margin-bottom: 0;
-}
-
-/* --- Botón Registrarme --- */
+/* --- Botones --- */
 .btn-ingresar {
     width: 100%;
-    padding: 14px;
+    padding: 12px;
     background-color: #f97316;
     color: white;
     border: none;
     border-radius: 6px;
-    font-size: 16px;
+    font-size: 15px;
     font-weight: bold;
     cursor: pointer;
     transition: background-color 0.2s;
-    margin-top: 10px;
+    margin-top: 20px;
 }
 
 .btn-ingresar:hover {
     background-color: #ea580c;
 }
 
-/* --- Enlace inferior --- */
+/* --- Enlaces y Footers --- */
 .login-footer {
     margin-top: 25px;
-    font-size: 14px;
+    font-size: 13px;
     color: #64748b;
 }
 
@@ -113,16 +177,56 @@ body {
 .mensajes-alerta {
     list-style: none;
     padding: 0;
-    margin: 0 0 20px 0;
+    margin: 0 0 18px 0;
     text-align: left;
 }
 
 .mensajes-alerta li {
     background-color: #fef2f2;
     color: #ef4444;
-    padding: 10px;
+    padding: 10px 14px;
     border-radius: 6px;
-    font-size: 14px;
+    font-size: 13px;
     border-left: 4px solid #ef4444;
-    margin-bottom: 5px;
+    margin-bottom: 8px;
+}
+
+/* --- Información de contraseñas --- */
+.password-info {
+    margin-top: 15px;
+    font-size: 12px;
+    color: #64748b;
+    background-color: #f1f5f9;
+    padding: 10px 12px;
+    border-radius: 6px;
+    text-align: left;
+}
+
+.alerta.success {
+    background-color: #f0fdf4;
+    color: #166534;
+    border-left: 4px solid #22c55e;
+    padding: 10px;
+    margin-bottom: 15px;
+    border-radius: 4px;
+}
+
+/* Mensajes de error (Rojo) */
+.alerta.error {
+    background-color: #fef2f2;
+    color: #991b1b;
+    border-left: 4px solid #ef4444;
+    padding: 10px;
+    margin-bottom: 15px;
+    border-radius: 4px;
+}
+
+/* Adaptación para móviles */
+@media (max-width: 520px) {
+    .form-grid {
+        grid-template-columns: 1fr;
+    }
+    .login-card {
+        padding: 25px 20px;
+    }
 }

@@ -1,5 +1,6 @@
 import json
 import requests
+import random
 from django.shortcuts import render, redirect
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.contrib.auth import login, logout, authenticate
@@ -7,8 +8,12 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt, ensure_csrf_cookie
+from django.utils import timezone
+from django.core.mail import send_mail
+from django.conf import settings
+from django.contrib.auth.models import User
 
-from .models import ModeloCasa, Material, Habitacion, Proyecto3D, CategoriaMaterial
+from .models import ModeloCasa, Material, Habitacion, Proyecto3D, CategoriaMaterial, Avatar, CodigoRecuperacion
 
 
 # --- Vistas de Navegación HTML ---
@@ -246,13 +251,48 @@ def api_materiales_3d(request):
 def registro(request):
     if request.method == 'POST':
         form = UserCreationForm(request.POST)
+        correo = request.POST.get('email', '')
+        avatar_base64 = request.POST.get('avatar_base64', '') # Capturamos el texto Base64
+        
         if form.is_valid():
-            user = form.save()
+            user = form.save(commit=False)
+            if correo:
+                user.email = correo
+            user.save()
+            
+            # Guardado del Avatar
+            avatar_file = request.FILES.get('avatar_file')
+            
+            # Si envió el archivo de forma normal
+            if avatar_file:
+                if avatar_file.name.lower().endswith(('.png', '.jpg', '.jpeg')):
+                    Avatar.objects.create(usuario=user, imagen=avatar_file)
+            
+            # Si el archivo se perdió por una recarga, pero recuperamos el Base64 oculto
+            elif avatar_base64 and ';base64,' in avatar_base64:
+                try:
+                    formato, imgstr = avatar_base64.split(';base64,')
+                    ext = formato.split('/')[-1]
+                    nombre_archivo = f"avatar_{user.username}.{ext}"
+                    # Decodificamos el texto de vuelta a un archivo físico
+                    archivo_recuperado = ContentFile(base64.b64decode(imgstr), name=nombre_archivo)
+                    Avatar.objects.create(usuario=user, imagen=archivo_recuperado)
+                except Exception:
+                    pass # Si ocurre un error decodificando, se queda con avatar por defecto
+            
             login(request, user)
             messages.success(request, f"¡Bienvenido {user.username}! Tu cuenta ha sido creada.")
             return redirect('inicio')
+        else:
+            # SI HAY ERRORES: Devolvemos el correo y el Base64 de la imagen para que NO se borren
+            return render(request, 'registroUser.html', {
+                'form': form,
+                'email_ingresado': correo,
+                'avatar_base64': avatar_base64
+            })
     else:
         form = UserCreationForm()
+        
     return render(request, 'registroUser.html', {'form': form})
 
 def iniciar_sesion(request):
@@ -402,3 +442,92 @@ def eliminar_diseno(request):
             return JsonResponse({'estado': 'error', 'mensaje': str(e)}, status=400)
             
     return JsonResponse({'estado': 'error', 'mensaje': 'Método no permitido'}, status=405)
+
+
+def recuperar_clave_correo(request):
+    if request.method == 'POST':
+        email = request.POST.get('email')
+        try:
+            user = User.objects.get(email=email)
+            
+            # Generar código aleatorio de 6 dígitos
+            codigo = str(random.randint(100000, 999999))
+            
+            # Borrar códigos anteriores de este usuario por seguridad y guardar el nuevo
+            CodigoRecuperacion.objects.filter(usuario=user).delete()
+            CodigoRecuperacion.objects.create(usuario=user, codigo=codigo)
+            
+            # Enviar el correo
+            send_mail(
+                'Código de Recuperación - HouseCount',
+                f'Hola {user.username},\n\nTu código de recuperación es: {codigo}\n\nEste código expirará en 15 minutos.',
+                settings.DEFAULT_FROM_EMAIL,
+                [email],
+                fail_silently=False,
+            )
+            
+            # Guardamos el correo en la sesión para el siguiente paso
+            request.session['reset_email'] = email
+            return redirect('recuperar_clave_codigo')
+            
+        except User.DoesNotExist:
+            messages.error(request, "No encontramos ninguna cuenta con ese correo electrónico.")
+            
+    return render(request, 'recuperacion/solicitar_correo.html')
+
+def recuperar_clave_codigo(request):
+    # Si no hay un correo en sesión, lo devolvemos al paso 1
+    email = request.session.get('reset_email')
+    if not email:
+        return redirect('recuperar_clave_correo')
+
+    if request.method == 'POST':
+        codigo_ingresado = request.POST.get('codigo')
+        try:
+            user = User.objects.get(email=email)
+            # Buscamos si existe ese código exacto para ese usuario
+            registro = CodigoRecuperacion.objects.get(usuario=user, codigo=codigo_ingresado)
+            
+            # Validar que no hayan pasado más de 15 minutos (900 segundos)
+            tiempo_transcurrido = timezone.now() - registro.creado_en
+            if tiempo_transcurrido.total_seconds() > 900:
+                messages.error(request, "El código ha expirado. Solicita uno nuevo.")
+                return redirect('recuperar_clave_correo')
+                
+            # Si todo está bien, habilitamos el permiso para cambiar la clave
+            request.session['codigo_valido'] = True
+            return redirect('recuperar_clave_nueva')
+            
+        except (User.DoesNotExist, CodigoRecuperacion.DoesNotExist):
+            messages.error(request, "El código ingresado es incorrecto.")
+
+    return render(request, 'recuperacion/ingresar_codigo.html', {'email': email})
+
+def recuperar_clave_nueva(request):
+    email = request.session.get('reset_email')
+    
+    # Validamos que haya pasado el paso del código exitosamente
+    if not email or not request.session.get('codigo_valido'):
+        return redirect('recuperar_clave_correo')
+
+    if request.method == 'POST':
+        pass1 = request.POST.get('pass1')
+        pass2 = request.POST.get('pass2')
+        
+        if pass1 == pass2 and len(pass1) >= 8:
+            user = User.objects.get(email=email)
+            # set_password es el método nativo de Django para encriptar la nueva clave
+            user.set_password(pass1)
+            user.save()
+            
+            # Limpiamos la base de datos y la sesión
+            CodigoRecuperacion.objects.filter(usuario=user).delete()
+            del request.session['reset_email']
+            del request.session['codigo_valido']
+            
+            messages.success(request, "¡Tu contraseña ha sido actualizada exitosamente! Ya puedes iniciar sesión.")
+            return redirect('login')
+        else:
+            messages.error(request, "Las contraseñas no coinciden o tienen menos de 8 caracteres.")
+
+    return render(request, 'recuperacion/nueva_clave.html')

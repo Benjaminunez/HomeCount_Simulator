@@ -1,0 +1,38 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Recuperar Clave - HouseCount</title>
+    <link rel="stylesheet" href="{% static 'css/StyleRegistro.css' %}">
+</head>
+<body>
+    <div class="login-card" style="max-width: 450px;">
+        <h2>Recuperar Contraseña</h2>
+        <p style="color: #64748b; font-size: 14px; margin-bottom: 20px;">
+            Ingresa tu correo y te enviaremos un código de 6 dígitos para verificar tu identidad.
+        </p>
+        
+        {% if messages %}
+            <ul class="mensajes-alerta">
+                {% for message in messages %}
+                    <li>{{ message }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+
+        <form method="POST" class="login-form">
+            {% csrf_token %}
+            <div class="form-group">
+                <label for="email">Correo electrónico:</label>
+                <input type="email" name="email" id="email" required placeholder="ejemplo@correo.com">
+            </div>
+            <button type="submit" class="btn-ingresar" style="margin-top: 15px;">Enviar Código</button>
+        </form>
+
+        <div class="login-footer">
+            <a href="{% url 'login' %}">Volver al inicio de sesión</a>
+        </div>
+    </div>
+</body>
+</html>

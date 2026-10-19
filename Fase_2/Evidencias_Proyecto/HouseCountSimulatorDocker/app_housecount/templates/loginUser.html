@@ -28,8 +28,13 @@
         </form>
 
         <div class="login-footer">
-            ¿No tienes cuenta? <a href="{% url 'registro' %}">Regístrate aquí</a>
+            <p>¿No tienes cuenta? <a href="{% url 'registro' %}">Regístrate aquí</a></p>
+            <!-- Agregamos el enlace de recuperar contraseña -->
+            <p style="margin-top: 10px;">
+                <a href="{% url 'recuperar_clave_correo' %}">¿Olvidaste tu contraseña?</a>
+            </p>
         </div>
+
     </div>
 
 </body>
