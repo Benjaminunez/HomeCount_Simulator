@@ -293,7 +293,7 @@ def registro(request):
     else:
         form = UserCreationForm()
         
-    return render(request, 'registroUser.html', {'form': form})
+    return render(request, 'inicioSesion/registroUser.html', {'form': form})
 
 def iniciar_sesion(request):
     if request.method == 'POST':
@@ -310,7 +310,7 @@ def iniciar_sesion(request):
             messages.error(request, "Usuario o contraseña incorrectos.")
     else:
         form = AuthenticationForm()
-    return render(request, 'loginUser.html', {'form': form})
+    return render(request, 'inicioSesion/loginUser.html', {'form': form})
 
 def cerrar_sesion(request):
     logout(request)
@@ -531,3 +531,26 @@ def recuperar_clave_nueva(request):
             messages.error(request, "Las contraseñas no coinciden o tienen menos de 8 caracteres.")
 
     return render(request, 'recuperacion/nueva_clave.html')
+
+@login_required # Obliga a que el usuario haya iniciado sesión
+def editar_perfil(request):
+    if request.method == 'POST':
+        nuevo_username = request.POST.get('username')
+        nuevo_email = request.POST.get('email')
+        nuevo_avatar = request.FILES.get('avatar') # request.FILES porque es una imagen
+
+        usuario = request.user
+        
+        usuario.username = nuevo_username
+        usuario.email = nuevo_email
+        
+        if nuevo_avatar:
+            usuario.avatar = nuevo_avatar
+            
+        usuario.save()
+        
+        messages.success(request, '¡Tu información ha sido actualizada exitosamente!', extra_tags='success')
+        return redirect('editar_perfil')
+        
+    # Si entra por el método GET (solo ver la página), le mostramos el HTML
+    return render(request, 'inicioSesion/editarPerfil.html')
