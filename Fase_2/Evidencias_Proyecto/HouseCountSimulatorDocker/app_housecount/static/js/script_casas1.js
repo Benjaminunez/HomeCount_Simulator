@@ -256,6 +256,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // --- CARGA DINÁMICA DE LA API ---
+    const mapaCategoriasMateriales = {};
+    let catalogoHabitacionesGlobal = [];
     const contenedorMateriales = document.getElementById('lista-materiales');
     const contenedorHabitaciones = document.getElementById('lista-habitaciones');
 
@@ -283,6 +285,19 @@ document.addEventListener('DOMContentLoaded', () => {
                 // 1. Inicia oculto para que no aparezca junto a "Todos"
                 contenedorHabitaciones.style.display = 'none'; 
             }
+
+            if (data.habitaciones) {
+                catalogoHabitacionesGlobal = data.habitaciones;
+            }
+
+            // Registrar categorías de materiales en mapa de búsqueda
+            if (data.materiales && data.materiales.length > 0) {
+                data.materiales.forEach(mat => {
+                    if (mat.nombre) mapaCategoriasMateriales[mat.nombre] = mat.categoria;
+                    if (mat.archivo_3d) mapaCategoriasMateriales[mat.archivo_3d] = mat.categoria;
+                });
+            }
+
             // --- LÓGICA DE PESTAÑAS (CATEGORÍAS) ---
             const contenedorFiltros = document.getElementById('filtros-categorias');
             if (data.materiales && data.materiales.length > 0) {
@@ -316,19 +331,26 @@ document.addEventListener('DOMContentLoaded', () => {
                                 // Ocultar materiales y mostrar módulos de habitaciones
                                 if (contenedorMateriales) contenedorMateriales.style.display = 'none';
                                 if (contenedorHabitaciones) contenedorHabitaciones.style.display = 'flex';
+                                const primerHab = contenedorHabitaciones ? contenedorHabitaciones.querySelector('.btn-hab-3d') : null;
+                                if (primerHab) primerHab.click();
                             } else {
                                 // Mostrar materiales y ocultar módulos de habitaciones
                                 if (contenedorMateriales) contenedorMateriales.style.display = 'flex';
                                 if (contenedorHabitaciones) contenedorHabitaciones.style.display = 'none';
-                                // Filtrar los materiales según la categoría seleccionada
+                                // Filtrar los materiales según la categoría seleccionada y seleccionar el primero
+                                let primerBotonVisible = null;
                                 document.querySelectorAll('.btn-mat-3d').forEach(btnMat => {
                                     const categoriaMat = btnMat.dataset.categoria;
                                     if (cat === 'Todos' || categoriaMat === cat) {
                                         btnMat.style.display = 'inline-block';
+                                        if (!primerBotonVisible) primerBotonVisible = btnMat;
                                     } else {
                                         btnMat.style.display = 'none';
                                     }
                                 });
+                                if (primerBotonVisible) {
+                                    primerBotonVisible.click();
+                                }
                             }
                         });
                         contenedorFiltros.appendChild(btnTab);
@@ -442,12 +464,51 @@ document.addEventListener('DOMContentLoaded', () => {
             `;
             listaUI.appendChild(li);
         });
+
+        // Actualizar también el Tab 3: Módulos Utilizados
+        const listaModulosUI = document.getElementById('lista-modulos-ui');
+        if (listaModulosUI) {
+            const modulosConteo = {};
+            for (let i = 1; i < objetosInteractuables.length; i++) {
+                const obj = objetosInteractuables[i];
+                if (obj.userData && (obj.userData.tipo === 'habitacion' || obj.userData.categoria === 'modulo_prehecho')) {
+                    const nombre = obj.userData.nombre || 'Módulo Habitacional';
+                    const precio = obj.userData.precio || 0;
+                    if (!modulosConteo[nombre]) {
+                        modulosConteo[nombre] = { cantidad: 0, subtotal: 0 };
+                    }
+                    modulosConteo[nombre].cantidad += 1;
+                    modulosConteo[nombre].subtotal += precio;
+                }
+            }
+            listaModulosUI.innerHTML = '';
+            const nombresModulos = Object.keys(modulosConteo);
+            if (nombresModulos.length === 0) {
+                listaModulosUI.innerHTML = '<li class="item-vacio">No hay módulos prehechos en la escena</li>';
+            } else {
+                nombresModulos.forEach(nombre => {
+                    const datos = modulosConteo[nombre];
+                    const subtotalFormateado = new Intl.NumberFormat('es-CL').format(datos.subtotal);
+                    const li = document.createElement('li');
+                    li.className = 'item-lista-objeto';
+                    li.innerHTML = `
+                        <div>
+                            <span class="nombre-item">🏠 ${nombre}</span>
+                            <span class="cantidad-item">x${datos.cantidad}</span>
+                        </div>
+                        <span class="subtotal-item">$${subtotalFormateado}</span>
+                    `;
+                    listaModulosUI.appendChild(li);
+                });
+            }
+        }
     }
 
     function actualizarPresupuesto(valor) {
         costoTotal += valor;
         if (uiTotal) uiTotal.textContent = `$${new Intl.NumberFormat('es-CL').format(costoTotal)}`;
         actualizarListaUI();
+        calcularYMostrarPerimetro();
     }
 
     document.addEventListener('keydown', (event) => {
@@ -739,6 +800,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 costoTotal = 0;
                 if (uiTotal) uiTotal.textContent = '$0';
                 actualizarListaUI();
+                calcularYMostrarPerimetro();
                 
                 localStorage.removeItem('proyecto_homecount');
                 localStorage.removeItem('camara_homecount');
@@ -770,6 +832,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     uiTotal.textContent = `$${new Intl.NumberFormat('es-CL').format(costoTotal)}`;
                 }
                 actualizarListaUI();       // Reconstruye la lista en HTML
+                calcularYMostrarPerimetro(); // Recalcula perímetro y área
                 recalcularTamanoTerreno(); // Ajusta la cuadrícula por si el proyecto es enorme
             });
         });
@@ -823,6 +886,7 @@ document.addEventListener('DOMContentLoaded', () => {
     cargarEscenaLocal();
     cargarCamaraLocal();
     actualizarListaUI(); 
+    calcularYMostrarPerimetro(); 
 
     function animar() {
         requestAnimationFrame(animar);
@@ -855,7 +919,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    // --- Calculo de Perimetro y Area Exterior ---
+    // --- Cálculo de Perímetro y Área Exterior ---
     function mostrarResultadoDimensiones(perimetro, area) {
         const contenedorDim = document.getElementById('tab-dimensiones');
         if (!contenedorDim) return;
@@ -863,38 +927,50 @@ document.addEventListener('DOMContentLoaded', () => {
         const hayDatos = perimetro > 0 || area > 0;
 
         contenedorDim.innerHTML = `
-            <h4 class="titulo-desglose">\u{1F4D0} Dimensiones del Proyecto</h4>
+            <h4 class="titulo-desglose">📐 Dimensiones del Proyecto</h4>
             ${hayDatos ? `
-            <div style="display: flex; flex-direction: column; gap: 12px; margin-top: 10px;">
-                <div style="background: #f1f5f9; border-radius: 8px; padding: 12px; text-align: center;">
-                    <div style="font-size: 11px; color: #64748b; font-weight: 600; text-transform: uppercase; letter-spacing: 1px;">Per\u00EDmetro Exterior</div>
-                    <div style="font-size: 28px; font-weight: 700; color: #e67e22; margin-top: 4px;">${perimetro} m</div>
+            <div class="caja-dimensiones-grid">
+                <div class="tarjeta-dimensiones">
+                    <div class="etiqueta-dimensiones">Perímetro Exterior</div>
+                    <div class="valor-dimensiones valor-perimetro">${perimetro} m</div>
                 </div>
-                <div style="background: #f1f5f9; border-radius: 8px; padding: 12px; text-align: center;">
-                    <div style="font-size: 11px; color: #64748b; font-weight: 600; text-transform: uppercase; letter-spacing: 1px;">\u00C1rea Total</div>
-                    <div style="font-size: 28px; font-weight: 700; color: #2c3e50; margin-top: 4px;">${area} m\u00B2</div>
+                <div class="tarjeta-dimensiones">
+                    <div class="etiqueta-dimensiones">Área Total</div>
+                    <div class="valor-dimensiones valor-area">${area} m²</div>
                 </div>
             </div>
-            ` : `<p class="texto-placeholder">Agrega elementos de <strong>Estructura</strong> o <strong>M\u00F3dulos Prehechos</strong> para calcular las dimensiones.</p>`}
+            ` : `<p class="texto-placeholder">Agrega elementos de <strong>Estructura</strong> o <strong>Módulos Prehechos</strong> para calcular las dimensiones.</p>`}
         `;
     }
+    window.mostrarResultadoDimensiones = mostrarResultadoDimensiones;
 
-    window.calcularYMostrarPerimetro = function() {
+    // --- Cálculo de Perímetro y Área Exterior ---
+    function obtenerCalculoDimensiones() {
         const TAMANO_CELDA = 50; // 50 unidades Three.js = 1 metro
         const celdas = new Set();
 
-        // 1. Recopilar celdas ocupadas por Estructura y Modulos Prehechos
+        // 1. Recopilar celdas ocupadas por Estructura y Módulos Prehechos
         for (let i = 1; i < objetosInteractuables.length; i++) {
             const obj = objetosInteractuables[i];
-            const cat = obj.userData.categoria || '';
-            const tipo = obj.userData.tipo || '';
+            if (!obj || !obj.userData) continue;
 
-            const esEstructura = cat === 'Estructura';
+            let cat = obj.userData.categoria || '';
+            const tipo = obj.userData.tipo || '';
+            const nombre = (obj.userData.nombre || '').toLowerCase();
+
+            // Recuperar categoría si no estaba guardada
+            if (!cat && obj.userData.nombre && mapaCategoriasMateriales[obj.userData.nombre]) {
+                cat = mapaCategoriasMateriales[obj.userData.nombre];
+                obj.userData.categoria = cat;
+            }
+
             const esModulo = cat === 'modulo_prehecho' || tipo === 'habitacion';
+            const esEstructura = cat.toLowerCase() === 'estructura' ||
+                (!cat && (nombre.includes('wall') || nombre.includes('doorway') || nombre.includes('paneling') || nombre.includes('stairs') || nombre.includes('floor')));
 
             if (!esEstructura && !esModulo) continue; // Ignorar muebles, camas, etc.
 
-            // Modulos prehechos (200x200) = 4x4 celdas; bloques de estructura = 1x1
+            // Módulos prehechos (200x200) = 4x4 celdas; bloques de estructura = 1x1
             const tamCeldasOcupadas = esModulo ? 4 : 1;
             const tamMundo = tamCeldasOcupadas * TAMANO_CELDA;
 
@@ -904,33 +980,528 @@ document.addEventListener('DOMContentLoaded', () => {
 
             for (let dx = 0; dx < tamCeldasOcupadas; dx++) {
                 for (let dz = 0; dz < tamCeldasOcupadas; dz++) {
-                    celdas.add((gridX + dx) + ',' + (gridZ + dz));
+                    celdas.add(`${gridX + dx},${gridZ + dz}`);
                 }
             }
         }
 
         if (celdas.size === 0) {
-            mostrarResultadoDimensiones(0, 0);
-            return;
+            return { perimetro: 0, area: 0 };
         }
 
-        // 2. Contar lados sin vecino = lados exteriores del perimetro
+        // 2. Contar lados sin vecino = lados exteriores del perímetro
         const vecinos = [[1, 0], [-1, 0], [0, 1], [0, -1]];
         let ladosExteriores = 0;
 
         for (const celda of celdas) {
             const parts = celda.split(',');
-            const cx = parseInt(parts[0]);
-            const cz = parseInt(parts[1]);
-            for (const v of vecinos) {
-                if (!celdas.has((cx + v[0]) + ',' + (cz + v[1]))) {
+            const cx = parseInt(parts[0], 10);
+            const cz = parseInt(parts[1], 10);
+            for (const [vx, vz] of vecinos) {
+                if (!celdas.has(`${cx + vx},${cz + vz}`)) {
                     ladosExteriores++;
                 }
             }
         }
 
-        // 1 lado de celda = 1 metro; 1 celda = 1 m2
-        mostrarResultadoDimensiones(ladosExteriores, celdas.size);
+        return { perimetro: ladosExteriores, area: celdas.size };
+    }
+    window.obtenerCalculoDimensiones = obtenerCalculoDimensiones;
+
+    function calcularYMostrarPerimetro() {
+        const dim = obtenerCalculoDimensiones();
+        mostrarResultadoDimensiones(dim.perimetro, dim.area);
+    }
+    window.calcularYMostrarPerimetro = calcularYMostrarPerimetro;
+
+    // --- RECOPILACIÓN DE DATOS PARA EL INFORME ---
+    function obtenerDatosInforme() {
+        const dim = obtenerCalculoDimensiones();
+        const conteo = {};
+        let totalPiezas = 0;
+
+        for (let i = 1; i < objetosInteractuables.length; i++) {
+            const obj = objetosInteractuables[i];
+            if (!obj || !obj.userData) continue;
+
+            totalPiezas++;
+            const nombre = obj.userData.nombre || (obj.userData.tipo === 'habitacion' ? 'Módulo Habitacional' : 'Material');
+            const precio = Number(obj.userData.precio) || 0;
+            let categoria = obj.userData.categoria || '';
+
+            if (!categoria && mapaCategoriasMateriales[nombre]) {
+                categoria = mapaCategoriasMateriales[nombre];
+            }
+            if (!categoria) {
+                categoria = obj.userData.tipo === 'habitacion' ? 'Módulos Prehechos' : 'General';
+            }
+
+            if (!conteo[nombre]) {
+                conteo[nombre] = {
+                    nombre: nombre,
+                    categoria: categoria,
+                    tipo: obj.userData.tipo || 'material',
+                    cantidad: 0,
+                    precioUnitario: precio,
+                    subtotal: 0
+                };
+            }
+            conteo[nombre].cantidad += 1;
+            conteo[nombre].subtotal += precio;
+        }
+
+        const ahora = new Date();
+        const fechaFormateada = ahora.toLocaleDateString('es-CL', {
+            day: '2-digit',
+            month: 'long',
+            year: 'numeric'
+        });
+        const horaFormateada = ahora.toLocaleTimeString('es-CL', {
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+
+        const folio = 'HC-' + ahora.getFullYear() + '-' + Math.floor(1000 + Math.random() * 9000);
+
+        return {
+            folio: folio,
+            fecha: `${fechaFormateada}, ${horaFormateada} hrs`,
+            fechaArchivo: ahora.toISOString().slice(0, 10),
+            perimetro: dim.perimetro,
+            area: dim.area,
+            costoTotal: costoTotal,
+            totalPiezas: totalPiezas,
+            items: Object.values(conteo)
+        };
+    }
+
+    // --- GENERADOR DE HTML PROFESIONAL PARA EL INFORME ---
+    function generarHTMLInforme(datos, paraPDF = false) {
+        const formatear = (valor) => new Intl.NumberFormat('es-CL').format(valor);
+
+        // Filas de materiales
+        const filasTabla = datos.items.map((item, idx) => {
+            const esEstructura = item.categoria.toLowerCase() === 'estructura';
+            const esModulo = item.tipo === 'habitacion' || item.categoria === 'modulo_prehecho';
+            const badgeClass = esEstructura ? 'badge-estructura' : (esModulo ? 'badge-modulo' : 'badge-general');
+
+            return `
+                <tr>
+                    <td style="text-align: center; color: #64748b;">${idx + 1}</td>
+                    <td><strong>${item.nombre}</strong></td>
+                    <td><span class="badge ${badgeClass}">${item.categoria}</span></td>
+                    <td class="td-num"><strong>${item.cantidad}</strong></td>
+                    <td class="td-num">$${formatear(item.precioUnitario)} CLP</td>
+                    <td class="td-num" style="color: #2c3e50; font-weight: 700;">$${formatear(item.subtotal)} CLP</td>
+                </tr>
+            `;
+        }).join('');
+
+        return `<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Informe de Construcción - Folio ${datos.folio}</title>
+    <style>
+        * { box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+            color: #1e293b;
+            background: #ffffff;
+            margin: 0;
+            padding: ${paraPDF ? '16px' : '32px 24px'};
+            line-height: 1.5;
+        }
+        .informe-wrapper {
+            max-width: 820px;
+            margin: 0 auto;
+        }
+        .barra-superior-acciones {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 12px 18px;
+            margin-bottom: 24px;
+        }
+        .btn-accion-print {
+            background: #e67e22;
+            color: #ffffff;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+        .btn-accion-print:hover { background: #d35400; }
+        .header-informe {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            border-bottom: 3px solid #e67e22;
+            padding-bottom: 18px;
+            margin-bottom: 24px;
+        }
+        .logo-box h1 {
+            margin: 0;
+            font-size: 24px;
+            color: #2c3e50;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+        }
+        .logo-box h1 span { color: #e67e22; }
+        .logo-box p {
+            margin: 4px 0 0 0;
+            font-size: 13px;
+            color: #64748b;
+        }
+        .meta-box {
+            text-align: right;
+            font-size: 12px;
+            color: #475569;
+        }
+        .meta-folio {
+            font-size: 15px;
+            font-weight: 800;
+            color: #e67e22;
+            margin-bottom: 4px;
+        }
+        .grid-metricas {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 14px;
+            margin-bottom: 28px;
+        }
+        .tarjeta-metrica {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 14px;
+            text-align: center;
+        }
+        .metrica-label {
+            font-size: 11px;
+            font-weight: 700;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+        }
+        .metrica-valor {
+            font-size: 22px;
+            font-weight: 800;
+            margin-top: 4px;
+        }
+        .val-perimetro { color: #e67e22; }
+        .val-area { color: #2c3e50; }
+        .val-costo { color: #27ae60; }
+        .seccion-titulo {
+            font-size: 15px;
+            font-weight: 700;
+            color: #2c3e50;
+            border-bottom: 2px solid #f1f5f9;
+            padding-bottom: 8px;
+            margin-top: 24px;
+            margin-bottom: 14px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        table.tabla-informe {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 12px;
+            margin-bottom: 24px;
+        }
+        table.tabla-informe th {
+            background: #f1f5f9;
+            color: #475569;
+            font-weight: 700;
+            text-align: left;
+            padding: 10px 12px;
+            border-bottom: 2px solid #cbd5e1;
+            text-transform: uppercase;
+            font-size: 11px;
+            letter-spacing: 0.5px;
+        }
+        table.tabla-informe td {
+            padding: 9px 12px;
+            border-bottom: 1px solid #f1f5f9;
+        }
+        table.tabla-informe tr:nth-child(even) td {
+            background: #fafafa;
+        }
+        .td-num {
+            text-align: right;
+            font-variant-numeric: tabular-nums;
+        }
+        .badge {
+            display: inline-block;
+            font-size: 10px;
+            font-weight: 600;
+            padding: 2px 8px;
+            border-radius: 10px;
+        }
+        .badge-estructura { background: #ffedd5; color: #c2410c; }
+        .badge-modulo { background: #e0e7ff; color: #4338ca; }
+        .badge-general { background: #f1f5f9; color: #475569; }
+        .fila-total td {
+            background: #f8fafc !important;
+            border-top: 2px solid #cbd5e1;
+            border-bottom: 2px solid #cbd5e1;
+            font-size: 14px;
+            font-weight: 800;
+            color: #0f172a;
+            padding: 12px;
+        }
+        .seccion-notas {
+            background: #fefce8;
+            border: 1px solid #fef08a;
+            border-radius: 8px;
+            padding: 14px 18px;
+            margin-top: 24px;
+            font-size: 12px;
+            color: #854d0e;
+        }
+        .seccion-notas strong { color: #713f12; }
+        .seccion-firmas {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 40px;
+            margin-top: 48px;
+            padding-top: 10px;
+        }
+        .linea-firma {
+            border-top: 1px solid #94a3b8;
+            text-align: center;
+            padding-top: 8px;
+            font-size: 11px;
+            color: #64748b;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        @media print {
+            .no-print { display: none !important; }
+            body { padding: 0; }
+        }
+    </style>
+</head>
+<body>
+    <div class="informe-wrapper">
+        ${!paraPDF ? `
+        <div class="barra-superior-acciones no-print">
+            <span style="font-size: 13px; color: #475569;">📄 Vista previa lista para imprimir o guardar.</span>
+            <button class="btn-accion-print" onclick="window.print()">🖨️ Imprimir / Guardar en PDF</button>
+        </div>
+        ` : ''}
+
+        <div class="header-informe">
+            <div class="logo-box">
+                <h1>HomeCount <span>Simulator</span></h1>
+                <p>Informe Técnico de Construcción y Presupuesto de Obra</p>
+            </div>
+            <div class="meta-box">
+                <div class="meta-folio">FOLIO: ${datos.folio}</div>
+                <div>Fecha: <strong>${datos.fecha}</strong></div>
+                <div>Moneda: <strong>Pesos Chilenos (CLP)</strong></div>
+            </div>
+        </div>
+
+        <div class="grid-metricas">
+            <div class="tarjeta-metrica">
+                <div class="metrica-label">Perímetro Exterior</div>
+                <div class="metrica-valor val-perimetro">${datos.perimetro} m</div>
+            </div>
+            <div class="tarjeta-metrica">
+                <div class="metrica-label">Área Construida</div>
+                <div class="metrica-valor val-area">${datos.area} m²</div>
+            </div>
+            <div class="tarjeta-metrica">
+                <div class="metrica-label">Presupuesto Estimado</div>
+                <div class="metrica-valor val-costo">$${formatear(datos.costoTotal)}</div>
+            </div>
+        </div>
+
+        <div class="seccion-titulo">📋 Lista de Materiales y Artículos a Comprar</div>
+        <table class="tabla-informe">
+            <thead>
+                <tr>
+                    <th style="width: 36px; text-align: center;">#</th>
+                    <th>Artículo / Material</th>
+                    <th>Categoría</th>
+                    <th class="td-num">Cant.</th>
+                    <th class="td-num">Precio Unit.</th>
+                    <th class="td-num">Subtotal</th>
+                </tr>
+            </thead>
+            <tbody>
+                ${filasTabla}
+                <tr class="fila-total">
+                    <td colspan="3" style="text-align: right; text-transform: uppercase;">Total General (${datos.totalPiezas} piezas):</td>
+                    <td class="td-num">${datos.totalPiezas}</td>
+                    <td></td>
+                    <td class="td-num" style="color: #27ae60;">$${formatear(datos.costoTotal)} CLP</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="seccion-notas">
+            <strong>📌 Observaciones para la compra y ejecución:</strong><br>
+            • Las medidas de perímetro y área corresponden a la envolvente estructural en cuadrícula de escala 1m x 1m.<br>
+            • Lista de compra sugerida para presentar en tiendas de mejoramiento del hogar, ferreterías o a su contratista de confianza.<br>
+            • Los valores unitarios son referenciales según el catálogo activo de HomeCount Simulator.
+        </div>
+
+        <div class="seccion-firmas">
+            <div class="linea-firma">Firma del Propietario / Cliente</div>
+            <div class="linea-firma">Firma del Constructor / Proveedor</div>
+        </div>
+    </div>
+</body>
+</html>`;
+    }
+
+    // --- ACCIONES DEL MODAL Y DESCARGA ---
+    window.abrirModalInforme = function() {
+        const datos = obtenerDatosInforme();
+        if (datos.totalPiezas === 0) {
+            alert("No hay elementos construidos en la escena para generar un informe. ¡Agrega muros, módulos o materiales primero!");
+            return;
+        }
+
+        const contenedorResumen = document.getElementById('resumen-modal-informe');
+        if (contenedorResumen) {
+            contenedorResumen.innerHTML = `
+                <div class="resumen-item">
+                    <span class="resumen-label">Perímetro Exterior</span>
+                    <span class="resumen-valor valor-perimetro">${datos.perimetro} m</span>
+                </div>
+                <div class="resumen-item">
+                    <span class="resumen-label">Área Construida</span>
+                    <span class="resumen-valor valor-area">${datos.area} m²</span>
+                </div>
+                <div class="resumen-item">
+                    <span class="resumen-label">Total Artículos</span>
+                    <span class="resumen-valor">${datos.totalPiezas} piezas</span>
+                </div>
+                <div class="resumen-item">
+                    <span class="resumen-label">Presupuesto</span>
+                    <span class="resumen-valor valor-costo">$${new Intl.NumberFormat('es-CL').format(datos.costoTotal)}</span>
+                </div>
+            `;
+        }
+
+        const modal = document.getElementById('modal-informe');
+        if (modal) {
+            modal.style.display = 'flex';
+        }
     };
+
+    window.cerrarModalInforme = function() {
+        const modal = document.getElementById('modal-informe');
+        if (modal) {
+            modal.style.display = 'none';
+        }
+    };
+
+    window.descargarInformePDF = function() {
+        const datos = obtenerDatosInforme();
+        if (datos.totalPiezas === 0) {
+            alert("No hay elementos en la escena.");
+            return;
+        }
+
+        if (typeof html2pdf !== 'undefined') {
+            const tempDiv = document.createElement('div');
+            tempDiv.innerHTML = generarHTMLInforme(datos, true);
+            tempDiv.style.position = 'fixed';
+            tempDiv.style.left = '-9999px';
+            tempDiv.style.top = '0';
+            tempDiv.style.width = '780px';
+            tempDiv.style.background = '#ffffff';
+            document.body.appendChild(tempDiv);
+
+            const btnPdf = document.querySelector('.btn-descarga-pdf strong');
+            const textoOriginal = btnPdf ? btnPdf.textContent : '';
+            if (btnPdf) btnPdf.textContent = 'Generando archivo PDF...';
+
+            const opt = {
+                margin: [8, 8, 8, 8],
+                filename: `Informe_Construccion_HomeCount_${datos.folio}.pdf`,
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2, useCORS: true, logging: false },
+                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+            };
+
+            html2pdf().set(opt).from(tempDiv).save()
+                .then(() => {
+                    if (btnPdf) btnPdf.textContent = textoOriginal;
+                    if (tempDiv.parentNode) tempDiv.parentNode.removeChild(tempDiv);
+                    cerrarModalInforme();
+                })
+                .catch(err => {
+                    console.error("Error generando PDF con html2pdf:", err);
+                    if (btnPdf) btnPdf.textContent = textoOriginal;
+                    if (tempDiv.parentNode) tempDiv.parentNode.removeChild(tempDiv);
+                    // Respaldo inmediato a descarga HTML
+                    descargarInformeHTML();
+                });
+        } else {
+            descargarInformeHTML();
+        }
+    };
+
+    window.descargarInformeHTML = function() {
+        const datos = obtenerDatosInforme();
+        if (datos.totalPiezas === 0) {
+            alert("No hay elementos en la escena.");
+            return;
+        }
+
+        const contenidoHTML = generarHTMLInforme(datos, false);
+        const blob = new Blob([contenidoHTML], { type: 'text/html;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        const enlace = document.createElement('a');
+        enlace.href = url;
+        enlace.download = `Informe_Construccion_HomeCount_${datos.folio}.html`;
+        document.body.appendChild(enlace);
+        enlace.click();
+        document.body.removeChild(enlace);
+        URL.revokeObjectURL(url);
+        cerrarModalInforme();
+    };
+
+    window.imprimirInforme = function() {
+        const datos = obtenerDatosInforme();
+        if (datos.totalPiezas === 0) {
+            alert("No hay elementos en la escena.");
+            return;
+        }
+
+        const ventana = window.open('', '_blank');
+        if (ventana) {
+            ventana.document.write(generarHTMLInforme(datos, false));
+            ventana.document.close();
+            ventana.focus();
+            setTimeout(() => {
+                ventana.print();
+            }, 350);
+        } else {
+            alert("El navegador bloqueó la ventana emergente. Usa el botón 'Descargar en PDF'.");
+        }
+    };
+
+    // Cerrar modal con clic fuera o con tecla Escape
+    const modalInformeEl = document.getElementById('modal-informe');
+    if (modalInformeEl) {
+        modalInformeEl.addEventListener('click', (e) => {
+            if (e.target === modalInformeEl) cerrarModalInforme();
+        });
+    }
+
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') cerrarModalInforme();
+    });
 
 });

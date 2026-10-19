@@ -26,7 +26,8 @@ async function procesarGuardado(objetos, camera, controles, costoTotal) {
             tipo: obj.userData.tipo || "material",
             url3D: obj.userData.url3D || null,
             textura: obj.userData.textura || "concreto",
-            nombre: obj.userData.nombre || "Bloque"
+            nombre: obj.userData.nombre || "Bloque",
+            categoria: obj.userData.categoria || ""
         });
     }
 
@@ -152,7 +153,8 @@ async function cargarDisenosUsuario(scene, objetos, camera, controles, callbackA
                                 tipo: item.tipo || "material",
                                 url3D: item.url3D,
                                 textura: item.textura || "concreto",
-                                nombre: item.nombre || "Modelo 3D"
+                                nombre: item.nombre || "Modelo 3D",
+                                categoria: item.categoria || ""
                             };
 
                             scene.add(modelo);
@@ -180,7 +182,8 @@ async function cargarDisenosUsuario(scene, objetos, camera, controles, callbackA
                         tipo: item.tipo, 
                         url3D: null, 
                         textura: item.textura, 
-                        nombre: item.nombre 
+                        nombre: item.nombre,
+                        categoria: item.categoria || ""
                     };
                     
                     scene.add(malla);

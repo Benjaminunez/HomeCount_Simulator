@@ -29,6 +29,8 @@
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/DRACOLoader.js"></script>
 <!-- 2. NUEVO: Agregar OrbitControls para poder rotar la cámara -->
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+<!-- 3. NUEVO: Agregar html2pdf para descargar el informe en PDF -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 
 <section id="constructor-3d" class="seccion-3d">
     
@@ -59,8 +61,8 @@
                 
                 <!-- 1. Tab: Dimensiones -->
                 <div id="tab-dimensiones" class="contenido-tab" style="display: block;">
-                    <h4 class="titulo-desglose">Dimensiones del Proyecto</h4>
-                    <p class="texto-placeholder">Área y perímetro de la construcción se mostrarán aquí.</p>
+                    <h4 class="titulo-desglose">📐 Dimensiones del Proyecto</h4>
+                    <p class="texto-placeholder">Agrega elementos de <strong>Estructura</strong> o <strong>Módulos Prehechos</strong> para calcular las dimensiones.</p>
                 </div>
 
                 <!-- 2. Tab: Detalle (Materiales) -->
@@ -84,6 +86,10 @@
             <div class="presupuesto-total">
                 Costo Total: <strong id="total-3d">$0</strong> CLP
             </div>
+
+            <button id="btn-descargar-informe" class="btn-descargar-informe" onclick="abrirModalInforme()">
+                📥 Descargar Informe
+            </button>
         </div>
 
             <!-- Instrucciones (Flotantes arriba al centro) -->
@@ -100,6 +106,45 @@
             </div>
         </div>
         
+    </div>
+
+    <!-- 3. Modal de Descarga de Informe -->
+    <div id="modal-informe" class="modal-informe-overlay" style="display: none;">
+        <div class="modal-informe-contenido">
+            <div class="modal-informe-header">
+                <h3>📑 Informe del Proyecto</h3>
+                <button class="modal-btn-cerrar" onclick="cerrarModalInforme()">✕</button>
+            </div>
+            <div class="modal-informe-body">
+                <p class="modal-descripcion">
+                    Genera un informe detallado con el cálculo de perímetro, área construida, desglose de materiales y presupuesto para llevar a ferreterías, cotizar o presentar a tu constructor.
+                </p>
+                <div id="resumen-modal-informe" class="resumen-modal-grid"></div>
+                <div class="modal-opciones-descarga">
+                    <button class="btn-opcion-descarga btn-descarga-pdf" onclick="descargarInformePDF()">
+                        <span class="icono-opcion">📄</span>
+                        <div class="texto-opcion">
+                            <strong>Descargar en PDF</strong>
+                            <small>Formato oficial listo para guardar o llevar en tu celular</small>
+                        </div>
+                    </button>
+                    <button class="btn-opcion-descarga btn-descarga-html" onclick="descargarInformeHTML()">
+                        <span class="icono-opcion">🌐</span>
+                        <div class="texto-opcion">
+                            <strong>Descargar en HTML</strong>
+                            <small>Documento web interactivo completo</small>
+                        </div>
+                    </button>
+                    <button class="btn-opcion-descarga btn-descarga-print" onclick="imprimirInforme()">
+                        <span class="icono-opcion">🖨️</span>
+                        <div class="texto-opcion">
+                            <strong>Imprimir directamente</strong>
+                            <small>Abre la ventana de impresión de tu navegador</small>
+                        </div>
+                    </button>
+                </div>
+            </div>
+        </div>
     </div>
     
 </section>
