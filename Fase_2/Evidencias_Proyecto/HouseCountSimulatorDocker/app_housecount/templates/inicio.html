@@ -182,11 +182,12 @@
         
         <div class="contenedor-formulario reveal delay-1">
             <form id="formulario-contacto" class="formulario-personalidad">
+                {% csrf_token %}
                 <div class="grupo-input">
-                    <input type="text" name="user_name" placeholder="Tu Nombre" required>
+                    <input type="text" name="user_name" placeholder="Tu Nombre" value="{% if user.is_authenticated %}{{ user.username }}{% endif %}" required>
                 </div>
                 <div class="grupo-input">
-                    <input type="email" name="user_email" placeholder="Tu Correo" required>
+                    <input type="email" name="user_email" placeholder="Tu Correo" value="{% if user.is_authenticated %}{{ user.email }}{% endif %}" required>
                 </div>
                 <div class="grupo-input">
                     <textarea name="message" placeholder="Escribe tu mensaje aquí..." rows="6" required></textarea>
@@ -197,8 +198,6 @@
             <p id="mensaje-estado" class="texto-centrado"></p>
         </div>
     </section>
-
-    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
 
     <!-- Pie de página -->
     {% include 'footer.html' %}

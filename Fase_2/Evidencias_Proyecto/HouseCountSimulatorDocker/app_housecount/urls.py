@@ -22,5 +22,6 @@ urlpatterns = [
     path('recuperar-clave/codigo/', views.recuperar_clave_codigo, name='recuperar_clave_codigo'),
     path('recuperar-clave/nueva-clave/', views.recuperar_clave_nueva, name='recuperar_clave_nueva'),
     path('mi-perfil/', views.editar_perfil, name='editarPerfil'),
+    path('contacto/enviar/', views.enviar_contacto, name='enviar_contacto'),
 ]
 

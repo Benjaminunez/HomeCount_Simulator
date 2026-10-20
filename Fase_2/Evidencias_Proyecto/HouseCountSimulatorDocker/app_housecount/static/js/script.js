@@ -71,30 +71,50 @@ if (botonCerrar && modal) {
 const formulario = document.getElementById('formulario-contacto');
 const mensajeEstado = document.getElementById('mensaje-estado');
 
-if (formulario && typeof emailjs !== 'undefined') {
-    emailjs.init("RPP6ZVaRqZIgtCPjZ");
-
+if (formulario) {
     formulario.addEventListener('submit', function(evento) {
-        evento.preventDefault(); 
+        evento.preventDefault(); // Evita recargar la página
         
         const boton = formulario.querySelector('button');
         boton.textContent = "Enviando...";
 
-        // Usamos explícitamente la variable 'formulario' (no 'this')
-        emailjs.sendForm('service_njorcvc', 'template_ox65m79', formulario)
-            .then(function() {
-                mensajeEstado.textContent = "¡Mensaje enviado con éxito! Te contactaremos pronto.";
+        // 1. Extraemos los datos automáticamente del formulario
+        const formData = new FormData(formulario);
+        
+        // 2. Extraemos el token CSRF para que Django nos permita la entrada
+        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+        // 3. Enviamos los datos a la URL de Python
+        fetch('/contacto/enviar/', {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': csrfToken
+            },
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            // Manejamos la respuesta de Django (éxito o error)
+            mensajeEstado.textContent = data.mensaje;
+            if (data.status === 'success') {
                 mensajeEstado.style.color = "green";
                 formulario.reset(); 
-                boton.textContent = "Enviar Mensaje";
-            }, function(error) {
-                mensajeEstado.textContent = "Hubo un error. Revisa la consola.";
+            } else {
                 mensajeEstado.style.color = "red";
-                boton.textContent = "Enviar Mensaje";
-                console.log("Error detallado de EmailJS:", error);
-            });
+            }
+            boton.textContent = "Enviar Mensaje";
+            
+        })
+        
+        .catch(error => {
+            mensajeEstado.textContent = "Hubo un problema de conexión con el servidor.";
+            mensajeEstado.style.color = "red";
+            boton.textContent = "Enviar Mensaje";
+            console.error("Error Fetch:", error);
+        });
     });
 }
+
 // --- FUNCIONALIDAD 4: Calculadora de Materiales desde Cero ---
 const inputMetros = document.getElementById('metros-cuadrados');
 const contenedorResultado = document.getElementById('resultado-presupuesto');

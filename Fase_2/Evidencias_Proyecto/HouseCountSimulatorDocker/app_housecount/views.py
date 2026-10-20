@@ -9,7 +9,7 @@ from django.contrib import messages
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt, ensure_csrf_cookie
 from django.utils import timezone
-from django.core.mail import send_mail
+from django.core.mail import send_mail, EmailMultiAlternatives
 from django.conf import settings
 from django.contrib.auth.models import User
 
@@ -457,14 +457,52 @@ def recuperar_clave_correo(request):
             CodigoRecuperacion.objects.filter(usuario=user).delete()
             CodigoRecuperacion.objects.create(usuario=user, codigo=codigo)
             
-            # Enviar el correo
+            # --- INICIO DEL DISEÑO DEL CORREO ---
+            asunto = 'Código de Recuperación - HouseCount Simulator'
+            cuerpo_texto = f'Hola {user.username},\n\nTu código de recuperación es: {codigo}\n\nEste código expirará en 15 minutos.'
+
+            cuerpo_html = f"""
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #ddd; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                <div style="background-color: #f97316; padding: 20px; text-align: center; color: white;">
+                    <h2 style="margin: 0; font-size: 24px;">HouseCount Simulator</h2>
+                    <p style="margin: 5px 0 0 0; font-size: 14px; opacity: 0.9;">Recuperación de Contraseña</p>
+                </div>
+                <div style="padding: 30px; background-color: #ffffff; color: #333;">
+                    <p style="font-size: 16px; margin-top: 0;">Hola <strong>{user.username}</strong>,</p>
+                    <p style="font-size: 16px; line-height: 1.5;">Hemos recibido una solicitud para restablecer la contraseña de tu cuenta. Por favor, ingresa el siguiente código en el simulador para continuar:</p>
+                    
+                    <!-- Caja del Código de 6 dígitos -->
+                    <div style="text-align: center; margin: 35px 0;">
+                        <span style="display: inline-block; background-color: #fff7ed; border: 2px dashed #f97316; color: #ea580c; font-size: 36px; font-weight: bold; letter-spacing: 8px; padding: 15px 30px; border-radius: 8px;">
+                            {codigo}
+                        </span>
+                    </div>
+                    
+                    <p style="text-align: center; font-size: 14px; color: #f97316; font-weight: bold; margin-bottom: 25px;">
+                        ⏳ Este código expirará en 15 minutos.
+                    </p>
+                    
+                    <p style="font-size: 14px; color: #64748b; line-height: 1.5; margin-top: 30px; border-top: 1px solid #e2e8f0; padding-top: 15px;">
+                        ⚠️ Si no solicitaste cambiar tu contraseña, puedes ignorar este correo con tranquilidad. Tu cuenta sigue estando protegida.
+                    </p>
+                </div>
+                <div style="background-color: #1e293b; color: #94a3b8; text-align: center; padding: 15px; font-size: 12px;">
+                    © 2026 HouseCount Simulator.<br>
+                    Este es un mensaje de seguridad automático, por favor no respondas a este correo.
+                </div>
+            </div>
+            """
+
+            # Enviar el correo con el nuevo diseño
             send_mail(
-                'Código de Recuperación - HouseCount',
-                f'Hola {user.username},\n\nTu código de recuperación es: {codigo}\n\nEste código expirará en 15 minutos.',
-                settings.DEFAULT_FROM_EMAIL,
+                asunto,
+                cuerpo_texto,
+                settings.DEFAULT_FROM_EMAIL, # Usa la variable que ya tenías configurada
                 [email],
                 fail_silently=False,
+                html_message=cuerpo_html # <--- Aquí se inyecta el diseño visual
             )
+            # --- FIN DEL DISEÑO DEL CORREO ---
             
             # Guardamos el correo en la sesión para el siguiente paso
             request.session['reset_email'] = email
@@ -474,7 +512,6 @@ def recuperar_clave_correo(request):
             messages.error(request, "No encontramos ninguna cuenta con ese correo electrónico.")
             
     return render(request, 'recuperacion/solicitar_correo.html')
-
 def recuperar_clave_codigo(request):
     # Si no hay un correo en sesión, lo devolvemos al paso 1
     email = request.session.get('reset_email')
@@ -554,3 +591,59 @@ def editar_perfil(request):
         
     # Si entra por el método GET (solo ver la página), le mostramos el HTML
     return render(request, 'inicioSesion/editarPerfil.html')
+
+def enviar_contacto(request):
+    if request.method == 'POST':
+        nombre = request.POST.get('user_name')
+        correo_usuario = request.POST.get('user_email')
+        mensaje = request.POST.get('message')
+
+        asunto = f"Nuevo mensaje desde la Web de: {nombre}"
+        cuerpo_texto = f"Mensaje de: {nombre}\nCorreo: {correo_usuario}\n\nMensaje:\n{mensaje}"
+
+        cuerpo_html = f"""
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #ddd; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+            <div style="background-color: #f97316; padding: 20px; text-align: center; color: white;">
+                <h2 style="margin: 0; font-size: 24px;">HouseCount Simulator</h2>
+                <p style="margin: 5px 0 0 0; font-size: 14px; opacity: 0.9;">Nuevo mensaje de contacto</p>
+            </div>
+            <div style="padding: 25px; background-color: #ffffff; color: #333;">
+                <p style="font-size: 16px; margin-top: 0;">Hola Equipo,</p>
+                <p style="font-size: 16px;">Has recibido una nueva consulta a través del formulario de la web:</p>
+                <div style="background-color: #f8fafc; padding: 15px; border-radius: 5px; margin: 20px 0; border: 1px solid #e2e8f0;">
+                    <p style="margin: 0 0 10px 0; font-size: 15px;"><strong>👤 Nombre:</strong> {nombre}</p>
+                    <p style="margin: 0; font-size: 15px;"><strong>✉️ Correo:</strong> <a href="mailto:{correo_usuario}" style="color: #f97316; text-decoration: none;">{correo_usuario}</a></p>
+                </div>
+                <h3 style="margin-bottom: 10px; color: #1e293b; border-bottom: 2px solid #f1f5f9; padding-bottom: 5px; font-size: 16px;">📝 Mensaje del cliente:</h3>
+                <div style="background-color: #f8fafc; padding: 15px; border-left: 4px solid #f97316; border-radius: 0 4px 4px 0;">
+                    <p style="margin: 0; font-size: 15px; line-height: 1.6; white-space: pre-wrap;">{mensaje}</p>
+                </div>
+            </div>
+            <div style="background-color: #1e293b; color: #94a3b8; text-align: center; padding: 15px; font-size: 12px;">
+                © 2026 HouseCount Simulator.<br>
+                Este es un mensaje automático generado por el sistema.
+            </div>
+        </div>
+        """
+
+        try:
+            # 1. Creamos el objeto del correo
+            correo = EmailMultiAlternatives(
+                subject=asunto,
+                body=cuerpo_texto,
+                from_email=settings.EMAIL_HOST_USER, # El 'De:' debe seguir siendo tu servidor para no ir a Spam
+                to=['housecountsimulator@gmail.com'], # Llega a tu bandeja
+                reply_to=[correo_usuario] # <--- ESTA ES LA MAGIA: Al darle a "Responder", se dirige al cliente
+            )
+            
+            # 2. Le adjuntamos el diseño HTML
+            correo.attach_alternative(cuerpo_html, "text/html")
+            
+            # 3. Lo enviamos
+            correo.send(fail_silently=False)
+            
+            return JsonResponse({'status': 'success', 'mensaje': '¡Mensaje enviado con éxito! Te contactaremos pronto.'})
+        except Exception as e:
+            return JsonResponse({'status': 'error', 'mensaje': 'Hubo un error al enviar el mensaje. Intenta más tarde.'})
+            
+    return JsonResponse({'status': 'invalid', 'mensaje': 'Método no permitido.'})
