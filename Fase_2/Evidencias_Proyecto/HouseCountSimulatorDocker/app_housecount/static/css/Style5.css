@@ -983,8 +983,6 @@ body.tema-oscuro .contenido-tab {
     background-color: transparent;
 }
 
-
-
 /* --- Estlo para mensajes de confirmación de acciónes en vista 3D  --- */
 .modal-ui-overlay {
     position: fixed;
@@ -1057,4 +1055,326 @@ body.tema-oscuro .contenido-tab {
 }
 .btn-secundario:hover { 
     background: #444; 
+}
+
+/* --- Tarjetas del Tab Dimensiones --- */
+.caja-dimensiones-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 10px;
+}
+
+.tarjeta-dimensiones {
+    background: #f1f5f9;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 12px;
+    text-align: center;
+    transition: all 0.2s ease;
+}
+
+.etiqueta-dimensiones {
+    font-size: 11px;
+    color: #64748b;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.valor-dimensiones {
+    font-size: 28px;
+    font-weight: 700;
+    margin-top: 4px;
+}
+
+.valor-perimetro {
+    color: #e67e22;
+}
+
+.valor-area {
+    color: #2c3e50;
+}
+
+/* Modo oscuro para Dimensiones */
+body.tema-oscuro .tarjeta-dimensiones {
+    background: #1e293b;
+    border-color: #334155;
+}
+
+body.tema-oscuro .etiqueta-dimensiones {
+    color: #94a3b8;
+}
+
+body.tema-oscuro .valor-area {
+    color: #e2e8f0;
+}
+
+/* --- Botón Descargar Informe en Panel Superior --- */
+.btn-descargar-informe {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+    margin-top: 12px;
+    padding: 10px 14px;
+    background: linear-gradient(135deg, #e67e22, #d35400);
+    color: #ffffff;
+    border: none;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 4px 10px rgba(230, 126, 34, 0.25);
+    transition: all 0.2s ease;
+    user-select: none;
+}
+
+.btn-descargar-informe:hover {
+    background: linear-gradient(135deg, #d35400, #c0392b);
+    transform: translateY(-1px);
+    box-shadow: 0 6px 14px rgba(230, 126, 34, 0.35);
+}
+
+.btn-descargar-informe:active {
+    transform: translateY(0);
+}
+
+body.tema-oscuro .btn-descargar-informe {
+    background: linear-gradient(135deg, #f39c12, #e67e22);
+    box-shadow: 0 4px 12px rgba(243, 156, 18, 0.3);
+}
+
+/* --- Modal de Descarga de Informe --- */
+.modal-informe-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(15, 23, 42, 0.65);
+    backdrop-filter: blur(5px);
+    z-index: 10000000; /* Aseguramos que esté por encima de cualquier elemento 3D */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    box-sizing: border-box;
+    pointer-events: auto; /* <-- ESTO REACTIVA LOS CLICS EN EL MODAL REPORTE */
+}
+
+.modal-informe-contenido {
+    background: #ffffff;
+    border-radius: 16px;
+    width: 100%;
+    max-width: 520px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+    overflow: hidden;
+    animation: aparecerModal 0.25s ease-out;
+    border: 1px solid #e2e8f0;
+}
+
+@keyframes aparecerModal {
+    from {
+        opacity: 0;
+        transform: scale(0.92) translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+.modal-informe-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 20px;
+    border-bottom: 1px solid #e2e8f0;
+    background: #f8fafc;
+}
+
+.modal-informe-header h3 {
+    margin: 0;
+    font-size: 16px;
+    color: #1e293b;
+    font-weight: 700;
+}
+
+.modal-btn-cerrar {
+    background: transparent;
+    border: none;
+    font-size: 18px;
+    color: #64748b;
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: 6px;
+    transition: all 0.15s ease;
+    pointer-events: auto;
+}
+
+.modal-btn-cerrar:hover {
+    background: #e2e8f0;
+    color: #0f172a;
+}
+
+.modal-informe-body {
+    padding: 20px;
+}
+
+.modal-descripcion {
+    font-size: 13px;
+    color: #64748b;
+    margin: 0 0 16px 0;
+    line-height: 1.5;
+}
+
+.resumen-modal-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.resumen-item {
+    background: #f1f5f9;
+    border-radius: 8px;
+    padding: 10px 14px;
+    display: flex;
+    flex-direction: column;
+}
+
+.resumen-label {
+    font-size: 11px;
+    font-weight: 600;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.resumen-valor {
+    font-size: 18px;
+    font-weight: 700;
+    color: #1e293b;
+    margin-top: 2px;
+}
+
+.resumen-valor.valor-costo {
+    color: #27ae60;
+}
+
+.modal-opciones-descarga {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.btn-opcion-descarga {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 12px 16px;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    cursor: pointer;
+    text-align: left;
+    transition: all 0.2s ease;
+    pointer-events: auto;
+}
+
+.btn-opcion-descarga:hover {
+    background: #f1f5f9;
+    border-color: #cbd5e1;
+    transform: translateX(4px);
+}
+
+.icono-opcion {
+    font-size: 24px;
+    flex-shrink: 0;
+}
+
+.texto-opcion strong {
+    display: block;
+    font-size: 14px;
+    color: #1e293b;
+}
+
+.texto-opcion small {
+    display: block;
+    font-size: 11px;
+    color: #64748b;
+    margin-top: 2px;
+}
+
+.btn-descarga-pdf {
+    border-left: 4px solid #e67e22;
+}
+
+.btn-descarga-html {
+    border-left: 4px solid #3498db;
+}
+
+.btn-descarga-print {
+    border-left: 4px solid #2ecc71;
+}
+
+/* Modo oscuro para el Modal */
+body.tema-oscuro .modal-informe-contenido {
+    background: #1e293b;
+    border-color: #334155;
+    color: #f1f5f9;
+}
+
+body.tema-oscuro .modal-informe-header {
+    background: #0f172a;
+    border-bottom-color: #334155;
+}
+
+body.tema-oscuro .modal-informe-header h3 {
+    color: #f8fafc;
+}
+
+body.tema-oscuro .modal-btn-cerrar {
+    color: #94a3b8;
+}
+
+body.tema-oscuro .modal-btn-cerrar:hover {
+    background: #334155;
+    color: #ffffff;
+}
+
+body.tema-oscuro .modal-descripcion {
+    color: #94a3b8;
+}
+
+body.tema-oscuro .resumen-item {
+    background: #0f172a;
+}
+
+body.tema-oscuro .resumen-label {
+    color: #94a3b8;
+}
+
+body.tema-oscuro .resumen-valor {
+    color: #f8fafc;
+}
+
+body.tema-oscuro .btn-opcion-descarga {
+    background: #0f172a;
+    border-color: #334155;
+}
+
+body.tema-oscuro .btn-opcion-descarga:hover {
+    background: #1e293b;
+    border-color: #475569;
+}
+
+body.tema-oscuro .texto-opcion strong {
+    color: #f8fafc;
+}
+
+body.tema-oscuro .texto-opcion small {
+    color: #94a3b8;
 }
