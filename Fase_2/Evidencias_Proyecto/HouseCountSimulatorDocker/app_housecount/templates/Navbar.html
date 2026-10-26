@@ -9,7 +9,10 @@
 </head>
 <header class="navbar">
     <div class="logo">
-        <a href="{% url 'inicio' %}" class="monoton-regular">HouseCount Simulator</a>
+        <a href="{% url 'inicio' %}" class="link-logo">
+            <!-- Se invoca la imagen usando la ruta de tus archivos estáticos -->
+            <img src="{% static 'imagen-galeria/logo_pagina.png' %}" alt="Logo HouseCount Simulator" class="logo-img">
+        </a>
     </div>
 
     <div class="auth-section">

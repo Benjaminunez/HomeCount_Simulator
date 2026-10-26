@@ -1,3 +1,28 @@
+.logo {
+    flex: 1; 
+    display: flex;
+    align-items: center; /* Centra el logo verticalmente */
+}
+
+/* Nuevas clases para alinear y escalar la imagen */
+.link-logo {
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+}
+
+.logo-img {
+    height: 75px; /* Ajusta este valor (ej. 40px - 60px) según qué tan grande lo prefieras en tu navbar */
+    width: auto;
+    object-fit: contain; /* Evita que la imagen se deforme */
+    transition: transform 0.2s ease;
+}
+
+/* Opcional: Pequeño efecto al pasar el mouse por encima del logo */
+.logo-img:hover {
+    transform: scale(1.02);
+}
+
 .monoton-regular {
   font-family: "Monoton", sans-serif;
   font-weight: 400;
