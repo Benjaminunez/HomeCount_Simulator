@@ -23,5 +23,6 @@ urlpatterns = [
     path('recuperar-clave/nueva-clave/', views.recuperar_clave_nueva, name='recuperar_clave_nueva'),
     path('mi-perfil/', views.editar_perfil, name='editarPerfil'),
     path('contacto/enviar/', views.enviar_contacto, name='enviar_contacto'),
+    path('editar-perfil/', views.editar_perfil, name='editar_perfil'),
 ]
 

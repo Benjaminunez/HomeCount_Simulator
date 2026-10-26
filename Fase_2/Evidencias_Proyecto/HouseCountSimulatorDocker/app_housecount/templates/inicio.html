@@ -1,4 +1,5 @@
 {% load static %}
+{% load filtros_perfil %}
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -184,7 +185,7 @@
             <form id="formulario-contacto" class="formulario-personalidad">
                 {% csrf_token %}
                 <div class="grupo-input">
-                    <input type="text" name="user_name" placeholder="Tu Nombre" value="{% if user.is_authenticated %}{{ user.username }}{% endif %}" required>
+                    <input type="text" name="user_name" placeholder="Tu Nombre" value="{% if user.is_authenticated %}{{ user.username |quitar_barras }}{% endif %}" required>
                 </div>
                 <div class="grupo-input">
                     <input type="email" name="user_email" placeholder="Tu Correo" value="{% if user.is_authenticated %}{{ user.email }}{% endif %}" required>

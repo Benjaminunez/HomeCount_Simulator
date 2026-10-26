@@ -1,6 +1,8 @@
 import json
 import requests
 import random
+import base64
+from django.core.files.base import ContentFile
 from django.shortcuts import render, redirect
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.contrib.auth import login, logout, authenticate
@@ -250,9 +252,16 @@ def api_materiales_3d(request):
 
 def registro(request):
     if request.method == 'POST':
-        form = UserCreationForm(request.POST)
+        # Copiamos los datos para poder modificarlos
+        datos_post = request.POST.copy()
+        
+        # Si el usuario ingresó un username, reemplazamos espacios por barras bajas
+        if 'username' in datos_post:
+            datos_post['username'] = datos_post['username'].replace(' ', '_')
+            
+        form = UserCreationForm(datos_post)
         correo = request.POST.get('email', '')
-        avatar_base64 = request.POST.get('avatar_base64', '') # Capturamos el texto Base64
+        avatar_base64 = request.POST.get('avatar_base64', '') 
         
         if form.is_valid():
             user = form.save(commit=False)
@@ -260,32 +269,27 @@ def registro(request):
                 user.email = correo
             user.save()
             
-            # Guardado del Avatar
             avatar_file = request.FILES.get('avatar_file')
             
-            # Si envió el archivo de forma normal
             if avatar_file:
                 if avatar_file.name.lower().endswith(('.png', '.jpg', '.jpeg')):
                     Avatar.objects.create(usuario=user, imagen=avatar_file)
             
-            # Si el archivo se perdió por una recarga, pero recuperamos el Base64 oculto
             elif avatar_base64 and ';base64,' in avatar_base64:
                 try:
                     formato, imgstr = avatar_base64.split(';base64,')
                     ext = formato.split('/')[-1]
                     nombre_archivo = f"avatar_{user.username}.{ext}"
-                    # Decodificamos el texto de vuelta a un archivo físico
                     archivo_recuperado = ContentFile(base64.b64decode(imgstr), name=nombre_archivo)
                     Avatar.objects.create(usuario=user, imagen=archivo_recuperado)
                 except Exception:
-                    pass # Si ocurre un error decodificando, se queda con avatar por defecto
+                    pass 
             
             login(request, user)
             messages.success(request, f"¡Bienvenido {user.username}! Tu cuenta ha sido creada.")
             return redirect('inicio')
         else:
-            # SI HAY ERRORES: Devolvemos el correo y el Base64 de la imagen para que NO se borren
-            return render(request, 'registroUser.html', {
+            return render(request, 'inicioSesion/registroUser.html', {
                 'form': form,
                 'email_ingresado': correo,
                 'avatar_base64': avatar_base64
@@ -297,19 +301,31 @@ def registro(request):
 
 def iniciar_sesion(request):
     if request.method == 'POST':
-        form = AuthenticationForm(request, data=request.POST)
+        # 1. Hacemos una copia mutable de los datos enviados
+        datos_post = request.POST.copy()
+        
+        # 2. Si el usuario escribió su nombre con espacios, lo convertimos a barras bajas
+        if 'username' in datos_post:
+            datos_post['username'] = datos_post['username'].replace(' ', '_')
+            
+        # 3. Le pasamos los datos formateados al formulario de autenticación
+        form = AuthenticationForm(request, data=datos_post)
+        
         if form.is_valid():
             username = form.cleaned_data.get('username')
             password = form.cleaned_data.get('password')
             user = authenticate(username=username, password=password)
             if user is not None:
                 login(request, user)
-                messages.success(request, f"Has iniciado sesión como {username}.")
+                # Opcional: si quieres que el mensaje de éxito muestre el nombre sin barras
+                nombre_limpio = username.replace('_', ' ')
+                messages.success(request, f"Has iniciado sesión como {nombre_limpio}.")
                 return redirect('inicio')
         else:
             messages.error(request, "Usuario o contraseña incorrectos.")
     else:
         form = AuthenticationForm()
+        
     return render(request, 'inicioSesion/loginUser.html', {'form': form})
 
 def cerrar_sesion(request):
@@ -318,37 +334,27 @@ def cerrar_sesion(request):
     return redirect('inicio')
 
 
-# --- Guardar / Cargar Escenas 3D (Vinculado con el usuario activo) ---
-
-# Asegúrate de agregar estas importaciones al inicio de tu archivo views.py
-import base64
-from django.core.files.base import ContentFile
+# --- Guardar / Cargar Escenas 3D ---
 
 @login_required
 def guardar_diseno(request):
     if request.method == 'POST':
         try:
-            # 1. Leer los datos enviados
             data = json.loads(request.body)
-            
-            # 2. Extraer información básica
-            proyecto_id = data.get('proyecto_id', None) # 🔑 NUEVO: Rescatamos el ID
+            proyecto_id = data.get('proyecto_id', None) 
             nombre = data.get('nombre_proyecto', 'Sin nombre')
             costo_total = data.get('costo_total', 0)
             datos_escena = data.get('datos_escena', [])
             datos_camara = data.get('datos_camara', {})
             captura_base64 = data.get('captura_base64', None)
             
-            # 3. VERIFICAR SI ACTUALIZAMOS O CREAMOS
             if proyecto_id:
-                # Buscamos el proyecto existente (asegurándonos de que pertenezca al usuario)
                 proyecto = Proyecto3D.objects.get(id=proyecto_id, usuario=request.user)
                 proyecto.nombre = nombre
                 proyecto.costo_total = costo_total
                 proyecto.datos_escena = datos_escena
                 proyecto.datos_camara = datos_camara
             else:
-                # Si no hay ID, creamos un registro totalmente nuevo
                 proyecto = Proyecto3D(
                     usuario=request.user, 
                     nombre=nombre,
@@ -357,34 +363,22 @@ def guardar_diseno(request):
                     datos_camara=datos_camara
                 )
             
-            # 4. Decodificar la imagen Base64 y guardarla/sobrescribirla
             if captura_base64 and ';base64,' in captura_base64:
-                # Separar el encabezado de los datos puros
                 formato, imgstr = captura_base64.split(';base64,') 
                 ext = formato.split('/')[-1] 
-                
-                # Generar un nombre de archivo
                 nombre_archivo = f"diseno_{request.user.username}_{nombre.replace(' ', '_')}.{ext}"
                 
-                # Opcional pero recomendado: Si estamos sobrescribiendo, borramos la imagen física anterior para no acumular basura
                 if proyecto_id and proyecto.imagen_captura:
                     proyecto.imagen_captura.delete(save=False)
                 
-                # Guardar la nueva captura
                 proyecto.imagen_captura.save(
                     nombre_archivo, 
                     ContentFile(base64.b64decode(imgstr)), 
                     save=False 
                 )
             
-            # 5. Guardar definitivamente en la base de datos (Ejecuta UPDATE o INSERT según corresponda)
             proyecto.save()
-            
-            return JsonResponse({
-                'estado': 'exito', 
-                'mensaje': 'Proyecto guardado/actualizado correctamente.', 
-                'id': proyecto.id
-            })
+            return JsonResponse({'estado': 'exito', 'mensaje': 'Proyecto guardado/actualizado correctamente.', 'id': proyecto.id})
             
         except Proyecto3D.DoesNotExist:
             return JsonResponse({'estado': 'error', 'mensaje': 'El proyecto a modificar no existe o no tienes permisos.'}, status=404)
@@ -407,7 +401,6 @@ def obtener_disenos(request):
             'fecha': p.fecha_creacion.strftime('%d/%m/%Y %H:%M'),
             'datos_escena': p.datos_escena,
             'datos_camara': p.datos_camara,
-            # --- NUEVOS DATOS ---
             'imagen_url': p.imagen_captura.url if p.imagen_captura else None,
             'area_cuadrada': float(p.area_cuadrada) if p.area_cuadrada else 0.0
         }
@@ -424,14 +417,9 @@ def eliminar_diseno(request):
             proyecto_id = data.get('proyecto_id')
             
             if proyecto_id:
-                # Buscamos el proyecto (asegurándonos de que sea del usuario activo)
                 proyecto = Proyecto3D.objects.get(id=proyecto_id, usuario=request.user)
-                
-                # Borramos la imagen del disco duro del servidor para no acumular basura
                 if proyecto.imagen_captura:
                     proyecto.imagen_captura.delete(save=False)
-                
-                # Borramos el registro de la base de datos
                 proyecto.delete()
                 
                 return JsonResponse({'estado': 'exito', 'mensaje': 'Proyecto eliminado correctamente'})
@@ -449,15 +437,11 @@ def recuperar_clave_correo(request):
         email = request.POST.get('email')
         try:
             user = User.objects.get(email=email)
-            
-            # Generar código aleatorio de 6 dígitos
             codigo = str(random.randint(100000, 999999))
             
-            # Borrar códigos anteriores de este usuario por seguridad y guardar el nuevo
             CodigoRecuperacion.objects.filter(usuario=user).delete()
             CodigoRecuperacion.objects.create(usuario=user, codigo=codigo)
             
-            # --- INICIO DEL DISEÑO DEL CORREO ---
             asunto = 'Código de Recuperación - HouseCount Simulator'
             cuerpo_texto = f'Hola {user.username},\n\nTu código de recuperación es: {codigo}\n\nEste código expirará en 15 minutos.'
 
@@ -470,18 +454,14 @@ def recuperar_clave_correo(request):
                 <div style="padding: 30px; background-color: #ffffff; color: #333;">
                     <p style="font-size: 16px; margin-top: 0;">Hola <strong>{user.username}</strong>,</p>
                     <p style="font-size: 16px; line-height: 1.5;">Hemos recibido una solicitud para restablecer la contraseña de tu cuenta. Por favor, ingresa el siguiente código en el simulador para continuar:</p>
-                    
-                    <!-- Caja del Código de 6 dígitos -->
                     <div style="text-align: center; margin: 35px 0;">
                         <span style="display: inline-block; background-color: #fff7ed; border: 2px dashed #f97316; color: #ea580c; font-size: 36px; font-weight: bold; letter-spacing: 8px; padding: 15px 30px; border-radius: 8px;">
                             {codigo}
                         </span>
                     </div>
-                    
                     <p style="text-align: center; font-size: 14px; color: #f97316; font-weight: bold; margin-bottom: 25px;">
                         ⏳ Este código expirará en 15 minutos.
                     </p>
-                    
                     <p style="font-size: 14px; color: #64748b; line-height: 1.5; margin-top: 30px; border-top: 1px solid #e2e8f0; padding-top: 15px;">
                         ⚠️ Si no solicitaste cambiar tu contraseña, puedes ignorar este correo con tranquilidad. Tu cuenta sigue estando protegida.
                     </p>
@@ -493,18 +473,15 @@ def recuperar_clave_correo(request):
             </div>
             """
 
-            # Enviar el correo con el nuevo diseño
             send_mail(
                 asunto,
                 cuerpo_texto,
-                settings.DEFAULT_FROM_EMAIL, # Usa la variable que ya tenías configurada
+                settings.DEFAULT_FROM_EMAIL,
                 [email],
                 fail_silently=False,
-                html_message=cuerpo_html # <--- Aquí se inyecta el diseño visual
+                html_message=cuerpo_html
             )
-            # --- FIN DEL DISEÑO DEL CORREO ---
             
-            # Guardamos el correo en la sesión para el siguiente paso
             request.session['reset_email'] = email
             return redirect('recuperar_clave_codigo')
             
@@ -512,8 +489,8 @@ def recuperar_clave_correo(request):
             messages.error(request, "No encontramos ninguna cuenta con ese correo electrónico.")
             
     return render(request, 'recuperacion/solicitar_correo.html')
+
 def recuperar_clave_codigo(request):
-    # Si no hay un correo en sesión, lo devolvemos al paso 1
     email = request.session.get('reset_email')
     if not email:
         return redirect('recuperar_clave_correo')
@@ -522,16 +499,13 @@ def recuperar_clave_codigo(request):
         codigo_ingresado = request.POST.get('codigo')
         try:
             user = User.objects.get(email=email)
-            # Buscamos si existe ese código exacto para ese usuario
             registro = CodigoRecuperacion.objects.get(usuario=user, codigo=codigo_ingresado)
             
-            # Validar que no hayan pasado más de 15 minutos (900 segundos)
             tiempo_transcurrido = timezone.now() - registro.creado_en
             if tiempo_transcurrido.total_seconds() > 900:
                 messages.error(request, "El código ha expirado. Solicita uno nuevo.")
                 return redirect('recuperar_clave_correo')
                 
-            # Si todo está bien, habilitamos el permiso para cambiar la clave
             request.session['codigo_valido'] = True
             return redirect('recuperar_clave_nueva')
             
@@ -543,7 +517,6 @@ def recuperar_clave_codigo(request):
 def recuperar_clave_nueva(request):
     email = request.session.get('reset_email')
     
-    # Validamos que haya pasado el paso del código exitosamente
     if not email or not request.session.get('codigo_valido'):
         return redirect('recuperar_clave_correo')
 
@@ -553,11 +526,9 @@ def recuperar_clave_nueva(request):
         
         if pass1 == pass2 and len(pass1) >= 8:
             user = User.objects.get(email=email)
-            # set_password es el método nativo de Django para encriptar la nueva clave
             user.set_password(pass1)
             user.save()
             
-            # Limpiamos la base de datos y la sesión
             CodigoRecuperacion.objects.filter(usuario=user).delete()
             del request.session['reset_email']
             del request.session['codigo_valido']
@@ -569,28 +540,33 @@ def recuperar_clave_nueva(request):
 
     return render(request, 'recuperacion/nueva_clave.html')
 
-@login_required # Obliga a que el usuario haya iniciado sesión
+
+# --- Edición de Perfil ---
+
+@login_required
 def editar_perfil(request):
     if request.method == 'POST':
-        nuevo_username = request.POST.get('username')
+        # Capturamos los datos y aplicamos el reemplazo de espacios
+        nuevo_username = request.POST.get('username', '').replace(' ', '_')
         nuevo_email = request.POST.get('email')
-        nuevo_avatar = request.FILES.get('avatar') # request.FILES porque es una imagen
+        nuevo_avatar = request.FILES.get('avatar')
 
         usuario = request.user
-        
         usuario.username = nuevo_username
         usuario.email = nuevo_email
         
         if nuevo_avatar:
-            usuario.avatar = nuevo_avatar
+            avatar_obj, created = Avatar.objects.get_or_create(usuario=usuario)
+            avatar_obj.imagen = nuevo_avatar
+            avatar_obj.save()
             
         usuario.save()
         
-        messages.success(request, '¡Tu información ha sido actualizada exitosamente!', extra_tags='success')
-        return redirect('editar_perfil')
+        messages.success(request, '¡Tu perfil ha sido actualizado exitosamente!', extra_tags='success')
         
-    # Si entra por el método GET (solo ver la página), le mostramos el HTML
-    return render(request, 'inicioSesion/editarPerfil.html')
+    ruta_anterior = request.META.get('HTTP_REFERER', 'inicio')
+    return redirect(ruta_anterior)
+
 
 def enviar_contacto(request):
     if request.method == 'POST':
@@ -627,19 +603,15 @@ def enviar_contacto(request):
         """
 
         try:
-            # 1. Creamos el objeto del correo
             correo = EmailMultiAlternatives(
                 subject=asunto,
                 body=cuerpo_texto,
-                from_email=settings.EMAIL_HOST_USER, # El 'De:' debe seguir siendo tu servidor para no ir a Spam
-                to=['housecountsimulator@gmail.com'], # Llega a tu bandeja
-                reply_to=[correo_usuario] # <--- ESTA ES LA MAGIA: Al darle a "Responder", se dirige al cliente
+                from_email=settings.EMAIL_HOST_USER, 
+                to=['housecountsimulator@gmail.com'], 
+                reply_to=[correo_usuario] 
             )
             
-            # 2. Le adjuntamos el diseño HTML
             correo.attach_alternative(cuerpo_html, "text/html")
-            
-            # 3. Lo enviamos
             correo.send(fail_silently=False)
             
             return JsonResponse({'status': 'success', 'mensaje': '¡Mensaje enviado con éxito! Te contactaremos pronto.'})

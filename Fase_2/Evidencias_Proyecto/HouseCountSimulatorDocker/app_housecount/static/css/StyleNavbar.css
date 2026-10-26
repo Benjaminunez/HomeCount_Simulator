@@ -113,17 +113,33 @@ body {
 
 /* --- Si el usuario NO ha iniciado sesión (Píldoras para Login/Registro) --- */
 .btn-login {
-    color: #475569; /* Texto gris oscuro legible */
-    text-decoration: none;
-    font-size: 14px;
-    font-weight: 600;
-    transition: color 0.25s;
-    margin-right: 5px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px; /* Espacio entre el ícono y el texto */
+    background-color: #f97316; /* Naranja corporativo */
+    color: #ffffff !important; /* Texto blanco forzado para evitar el azul por defecto */
+    font-weight: bold;
+    font-size: 15px;
+    padding: 10px 24px;
+    border-radius: 25px; /* Bordes completamente redondeados (forma de píldora) */
+    text-decoration: none; /* Quita el subrayado */
+    box-shadow: 0 4px 10px rgba(249, 115, 22, 0.3); /* Sombra difuminada naranja */
+    transition: all 0.3s ease; /* Transición suave para el hover */
+    border: 2px solid transparent;
 }
 
 .btn-login:hover {
-    color: #e67e22; /* Naranja al pasar el ratón */
+    background-color: #ea580c; /* Un tono naranja un poco más oscuro */
+    box-shadow: 0 6px 15px rgba(249, 115, 22, 0.4); /* La sombra crece */
+    transform: translateY(-2px); /* El botón "salta" ligeramente hacia arriba */
+    color: #ffffff;
 }
+
+.btn-login:active {
+    transform: translateY(0); /* Vuelve a bajar al presionarlo */
+    box-shadow: 0 2px 5px rgba(249, 115, 22, 0.3);
+}
+
 .btn-registro {
     text-decoration: none;
     background-color: transparent;
@@ -157,4 +173,203 @@ body.tema-oscuro .btn-login {
 
 body.tema-oscuro .btn-login:hover {
     color: #e67e22;
+}
+
+/* --- ESTILOS MODERNOS PARA EL MODAL DE PERFIL --- */
+
+.modal-perfil-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.6);
+    z-index: 9999;
+    display: flex; 
+    justify-content: center;
+    align-items: center;
+}
+
+.modal-perfil-contenido.moderno {
+    background-color: #ffffff;
+    padding: 40px 30px;
+    border-radius: 12px; /* Restauramos los bordes redondeados */
+    width: 90%;
+    max-width: 420px;
+    position: relative;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.2); /* Sombra difuminada en todos los lados */
+    font-family: Arial, sans-serif;
+    box-sizing: border-box;
+    animation: aparecerCentro 0.3s ease-out forwards;
+}
+
+@keyframes aparecerCentro {
+    from { opacity: 0; transform: scale(0.9); }
+    to { opacity: 1; transform: scale(1); }
+}
+
+.cerrar-modal-perfil {
+    position: absolute;
+    top: 15px;
+    right: 15px; 
+    font-size: 24px;
+    font-weight: bold;
+    color: #333;
+    cursor: pointer;
+    z-index: 10;
+    transition: color 0.2s;
+}
+
+.cerrar-modal-perfil:hover {
+    color: #ef4444; /* Rojo al pasar el mouse */
+}
+
+.titulo-modal {
+    text-align: center;
+    color: #1e293b;
+    margin-top: 0;
+    margin-bottom: 25px;
+    font-size: 24px;
+}
+
+/* Contenedor del Avatar */
+.avatar-container {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 25px;
+}
+
+.avatar-preview {
+    width: 110px;
+    height: 110px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 4px solid #f97316; /* Borde naranja */
+    box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+}
+
+/* Inputs Modernos */
+.grupo-input-moderno {
+    margin-bottom: 20px;
+}
+
+.grupo-input-moderno label {
+    display: block;
+    margin-bottom: 8px;
+    color: #475569;
+    font-size: 14px;
+    font-weight: bold;
+}
+
+.grupo-input-moderno label i {
+    color: #f97316;
+    margin-right: 6px;
+}
+
+.grupo-input-moderno input[type="text"],
+.grupo-input-moderno input[type="email"] {
+    width: 100%;
+    padding: 12px 15px;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    font-size: 15px;
+    color: #333;
+    box-sizing: border-box;
+    transition: all 0.3s ease;
+    background-color: #f8fafc;
+}
+
+.grupo-input-moderno input:focus {
+    border-color: #f97316;
+    background-color: #fff;
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.15);
+}
+
+/* Input de Archivo (Foto) Personalizado */
+.file-input-wrapper {
+    text-align: center;
+}
+
+.input-file-oculto {
+    display: none; /* Oculta el input gris feo por defecto */
+}
+
+.btn-file {
+    display: block;
+    background-color: #f1f5f9;
+    color: #475569;
+    padding: 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: bold;
+    transition: all 0.3s ease;
+    border: 2px dashed #cbd5e1;
+}
+
+.btn-file:hover {
+    background-color: #e2e8f0;
+    border-color: #94a3b8;
+    color: #1e293b;
+}
+
+.file-name {
+    display: block;
+    margin-top: 8px;
+    font-size: 12px;
+    color: #94a3b8;
+}
+
+/* Botón Guardar */
+.btn-guardar-moderno {
+    width: 100%;
+    background-color: #f97316;
+    color: white;
+    border: none;
+    padding: 14px;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    margin-top: 10px;
+}
+
+.btn-guardar-moderno:hover {
+    background-color: #ea580c;
+}
+
+
+
+.modal-confirmacion-contenido {
+    background-color: #ffffff;
+    padding: 25px 30px;
+    border-radius: 12px;
+    width: 90%;
+    max-width: 380px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    font-family: Arial, sans-serif;
+    text-align: left;
+    /* Reutilizamos la animación del centro que ya configuramos antes */
+    animation: aparecerCentro 0.3s ease-out forwards;
+}
+
+/* Botón de cancelar gris/transparente */
+.btn-cancelar-moderno {
+    background-color: #f1f5f9;
+    color: #475569;
+    border: 1px solid #cbd5e1;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.btn-cancelar-moderno:hover {
+    background-color: #e2e8f0;
+    color: #1e293b;
+    border-color: #94a3b8;
 }

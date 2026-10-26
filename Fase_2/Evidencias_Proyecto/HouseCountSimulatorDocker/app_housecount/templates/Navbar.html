@@ -1,4 +1,5 @@
 {% load static %}
+{% load filtros_perfil %}
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -23,13 +24,12 @@
                             {{ user.username|make_list|first|upper }}
                         </div>
                     {% endif %}
-                    <span style="font-weight: bold;">{{ user.username }}</span>
+                    <span style="font-weight: bold;">{{ user.username |quitar_barras }}</span>
                 </div>
             
                 <div id="menu-desplegable-perfil" class="menu-perfil-oculto">
-                    <a href="{% url 'editarPerfil' %}">
-                        <span style="font-size: 16px;">✏️</span>
-                        <span>Editar Perfil</span>
+                    <a href="#" id="btn-editar-perfil" class="opcion-menu">
+                        <i class="fas fa-user-edit"></i> Editar Perfil
                     </a>
                     
                     <div class="separador-menu"></div> <!-- Línea divisoria -->
@@ -41,7 +41,9 @@
                 </div>
             </div>
         {% else %}
-            <a href="{% url 'login' %}" class="btn-login">Iniciar Sesión</a>
+            <a href="{% url 'login' %}" class="btn-login">
+                <i class="fas fa-sign-in-alt"></i> Iniciar Sesión
+            </a>
         {% endif %}
     </div>
 
@@ -54,3 +56,62 @@
         </ul>
     </nav>
 </header>
+
+<!-- modal para la edicion de perfil dentro de cualquier vista :)-->
+<div id="modal-editar-perfil" class="modal-perfil-overlay" style="display: none;">
+    <div class="modal-perfil-contenido moderno">
+        <span class="cerrar-modal-perfil" id="cerrar-modal-perfil">&times;</span>
+        <h2 class="titulo-modal">Editar Mi Perfil</h2>
+
+        <!-- Vista previa del Avatar -->
+        <div class="avatar-container">
+            <img id="preview-imagen" 
+                src="{% if request.user.avatar_usuario and request.user.avatar_usuario.imagen %}{{ request.user.avatar_usuario.imagen.url }}{% else %}https://ui-avatars.com/api/?name={{ request.user.username }}&background=f97316&color=fff&size=110{% endif %}" 
+                alt="Avatar actual" 
+                class="avatar-preview">
+        </div>
+
+        <form id="form-editar-perfil" action="{% url 'editar_perfil' %}" method="POST" enctype="multipart/form-data" class="form-perfil">
+            {% csrf_token %}
+            
+            <div class="grupo-input-moderno">
+                <label><i class="fas fa-user-tag"></i> Nombre de Usuario</label>
+                <input type="text" name="username" value="{{ user.username |quitar_barras }}" required>
+            </div>
+
+            <div class="grupo-input-moderno">
+                <label><i class="fas fa-envelope"></i> Correo Electrónico</label>
+                <input type="email" name="email" value="{{ user.email }}" required>
+            </div>
+
+            <!-- Botón personalizado para subir archivo -->
+            <div class="grupo-input-moderno file-input-wrapper">
+                <label class="btn-file">
+                    <i class="fas fa-camera"></i> Subir nueva foto
+                    <input type="file" name="avatar" id="input-avatar" accept="image/*" class="input-file-oculto">
+                </label>
+                <span id="file-name-text" class="file-name">Opcional: formato JPG o PNG</span>
+            </div>
+
+            <button type="submit" class="btn-guardar-moderno">Guardar Cambios</button>
+        </form>
+    </div>
+</div>
+<!--modal para confimraciónd e cambios del modal "edita-perfil"-->
+
+<div id="modal-confirmacion-perfil" class="modal-perfil-overlay" style="display: none; z-index: 10000;">
+    <div class="modal-confirmacion-contenido">
+        <h3 style="margin-top: 0; color: #1e293b; display: flex; align-items: center; gap: 10px;">
+            <i class="fas fa-exclamation-circle" style="color: #f97316; font-size: 24px;"></i> 
+            Confirmar Cambios
+        </h3>
+        <p style="color: #475569; margin-bottom: 25px; font-size: 15px; line-height: 1.5;">
+            ¿Estás seguro de que deseas guardar las modificaciones realizadas en tu perfil?
+        </p>
+        <div style="display: flex; justify-content: flex-end; gap: 12px;">
+            <button type="button" id="btn-cancelar-cambios" class="btn-cancelar-moderno">Cancelar</button>
+            <!-- Reutilizamos la clase del botón guardar que ya tienes, pero ajustamos su tamaño -->
+            <button type="button" id="btn-confirmar-cambios" class="btn-guardar-moderno" style="margin-top: 0; width: auto; padding: 10px 20px;">Sí, guardar</button>
+        </div>
+    </div>
+</div>
