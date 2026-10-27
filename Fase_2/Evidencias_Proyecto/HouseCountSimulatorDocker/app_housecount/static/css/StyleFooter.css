@@ -26,11 +26,11 @@
 
 /* --- Columna 1: Logo e Info --- */
 .footer-logo {
-    margin-bottom: 25px;
+    margin-bottom: 100px;
 }
 
 .footer-logo img {
-    max-width: 100px; /* Ajusta el tamaño de tu logo */
+    max-width: 150px; /* Ajusta el tamaño de tu logo */
     height: auto;
 }
 

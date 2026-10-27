@@ -1,25 +1,56 @@
-/* --- Fondo de la página --- */
+/* --- Fondo de la página interactivo global --- */
 body {
+    /* Color base oscuro por defecto (#1a202c) */
+    --bg-color: rgb(26, 32, 44); 
+
     font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
     margin: 0;
     min-height: 100vh;
     display: flex;
-    justify-content: center; /* Centra horizontalmente */
-    align-items: center;     /* Centra verticalmente */
-    background-color: #1a202c; /* Fondo oscuro */
+    justify-content: center;
+    align-items: center;
+    
+    /* El fondo ahora es uniforme y reacciona a la variable */
+    background-color: var(--bg-color); 
+    transition: background-color 0.1s ease;
 }
 
-/* --- Tarjeta blanca central --- */
+/* --- Efecto adicional en la tarjeta --- */
 .login-card {
     background-color: #ffffff;
     padding: 40px;
     border-radius: 12px;
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+    /* La sombra reaccionará a la proximidad */
+    box-shadow: 0 10px 25px var(--card-glow, rgba(0, 0, 0, 0.3)); 
     width: 100%;
     max-width: 400px;
     box-sizing: border-box;
     text-align: center;
+    position: relative; 
+    z-index: 10; 
+    transition: box-shadow 0.2s ease;
 }
+
+.login-card .logo {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 15px; 
+}
+
+.login-card .logo-img {
+    width: 250px; 
+    height: auto;
+    object-fit: contain;
+    transition: transform 0.3s ease;
+}
+
+/* Efecto opcional al pasar el cursor sobre el logo */
+.login-card .logo-img:hover {
+    transform: scale(1.05);
+}
+
+
 
 /* --- Título principal --- */
 .login-card h2 {

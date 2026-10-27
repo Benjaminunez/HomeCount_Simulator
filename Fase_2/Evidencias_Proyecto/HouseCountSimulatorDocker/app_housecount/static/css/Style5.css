@@ -25,7 +25,7 @@ body {
 
 /* 5. Adaptación automática al Modo Oscuro */
 body.tema-oscuro .navbar {
-    background-color: #1e1e1e;
+    background-color: #605f5f;
     border-bottom: 1px solid #333333;
 }
 

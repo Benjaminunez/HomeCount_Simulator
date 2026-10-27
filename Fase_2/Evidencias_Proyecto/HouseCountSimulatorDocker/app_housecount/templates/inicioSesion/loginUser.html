@@ -6,11 +6,15 @@
     <title>Iniciar Sesión - HomeCount Simulator</title>
     <!-- Aquí enlazas tu archivo CSS externo -->
     <link rel="stylesheet" href="{% static 'css/StyleLogin.css' %}">
+    <link rel="stylesheet" href="{% static 'js/Background.js' %}">
     <link rel="icon" type="image/png" href="media/iconosPestana/Login.ico"> <!--icono para pestaña de navegador-->
 </head>
 <body>
 
     <div class="login-card">
+    <div class="logo">
+        <img src="{% static 'imagen-galeria/logo_pagina.png' %}" alt="Logo HouseCount Simulator" class="logo-img">
+    </div>
         <h2>Iniciar Sesión</h2>
         
         {% if messages %}
@@ -33,9 +37,13 @@
             <p style="margin-top: 10px;">
                 <a href="{% url 'recuperar_clave_correo' %}">¿Olvidaste tu contraseña?</a>
             </p>
+            <p style="margin-top: 10px;">
+                <a href="{% url 'inicio_html' %}">Volver</a>
+            </p>
         </div>
 
     </div>
 
 </body>
+<script src="{% static 'js/Background.js' %}"></script>
 </html>

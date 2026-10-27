@@ -5,11 +5,15 @@
     <meta charset="UTF-8">
     <title>Registro - HomeCount Simulator</title>
     <link rel="stylesheet" href="{% static 'css/StyleRegistro.css' %}">
+    <link rel="stylesheet" href="{% static 'js/Background.js' %}">
     <link rel="icon" type="image/png" href="media/iconosPestana/Register.ico">
 </head>
 <body>
 
     <div class="login-card">
+            <div class="logo">
+                <img src="{% static 'imagen-galeria/logo_pagina.png' %}" alt="Logo HouseCount Simulator" class="logo-img">
+            </div>
         <h2>Crear una Cuenta HouseCount</h2>
         
         {% if form.errors %}
@@ -93,4 +97,5 @@
 
     <script src="{% static 'js/Registro.js' %}"></script>
 </body>
+<script src="{% static 'js/Background.js' %}"></script>
 </html>
