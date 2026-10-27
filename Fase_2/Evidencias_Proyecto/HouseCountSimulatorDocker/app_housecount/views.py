@@ -1,8 +1,8 @@
 import json
 import requests
-import random
 import base64
 from django.core.files.base import ContentFile
+
 from django.shortcuts import render, redirect
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.contrib.auth import login, logout, authenticate

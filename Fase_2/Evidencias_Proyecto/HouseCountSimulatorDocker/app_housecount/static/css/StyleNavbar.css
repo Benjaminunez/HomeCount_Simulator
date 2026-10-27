@@ -398,3 +398,30 @@ body.tema-oscuro .btn-login:hover {
     color: #1e293b;
     border-color: #94a3b8;
 }
+
+/* 5. Adaptación automática al Modo Oscuro */
+body.tema-oscuro .navbar {
+    background-color: #605f5fa1;
+    border-bottom: 1px solid #333333;
+}
+
+body.tema-oscuro .logo {
+    color: #f1f5f9;
+}
+
+body.tema-oscuro .nav-links a {
+    color: #cbd5e1;
+}
+
+body.tema-oscuro .nav-links a:hover {
+    color: #e67e22;
+}
+
+body.tema-oscuro .btn-contacto {
+    background-color: #e67e22 !important;
+    color: #ffffff !important;
+}
+
+body.tema-oscuro .btn-contacto:hover {
+    background-color: #d35400 !important;
+}

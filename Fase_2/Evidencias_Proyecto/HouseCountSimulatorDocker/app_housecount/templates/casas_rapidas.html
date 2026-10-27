@@ -11,187 +11,158 @@
     @import url('https://fonts.googleapis.com/css2?family=Henny+Penny&family=Monoton&display=swap');
     </style>
 </head>
-
+<body>
     <!-- Menú de Navegación -->
-{% include 'navbar.html' %}
+    {% include 'navbar.html' %}
 
-<!-- Sección Catálogo de Casas Rápidas -->
     <section id="modelos-rapidos" class="seccion-modelos">
         <div class="encabezado-modelos">
             <h2>Catálogo de Construcción Rápida</h2>
             <p>Elige uno de nuestros diseños optimizados. Ahorra tiempo en arquitectura y comienza a construir tu nuevo hogar en tiempo récord.</p>
         </div>
 
-
-<!-- seccion de filtrado para opciones de casas en ventas -->
-
-<div class="catalogo-container" style="display: flex; gap: 3rem; align-items: flex-start; width: 100%;">
-    
-    <!-- LADO IZQUIERDO: Sidebar de Filtros (Oculto por defecto) -->
-    <aside id="panel-filtros" class="sidebar-filtros" style="display: none;">
-        <form method="GET">
+        <div class="catalogo-container" style="display: flex; gap: 3rem; align-items: flex-start; width: 100%;">
             
-            <!-- Sección 1: Precio y Tamaño -->
-            <div class="sidebar-seccion">
-                <div class="sidebar-titulo">Especificaciones</div>
-                
-                <label for="precio_max" class="sidebar-label-text">Precio Máximo (CLP)</label>
-                <input type="number" id="precio_max" name="precio_max" value="{{ filtros.precio_max }}" class="sidebar-input-text">
-                
-                <label for="m2_min" class="sidebar-label-text" style="margin-top: 0.5rem;">M² Mínimos</label>
-                <input type="number" id="m2_min" name="m2_min" value="{{ filtros.m2_min }}" class="sidebar-input-text">
-            </div>
+            <!-- Sidebar de Filtros -->
+            <aside id="panel-filtros" class="sidebar-filtros" style="display: none;">
+                <form method="GET">
+                    <div class="sidebar-seccion">
+                        <div class="sidebar-titulo">Especificaciones</div>
+                        <label for="precio_max" class="sidebar-label-text">Precio Máximo (CLP)</label>
+                        <input type="number" id="precio_max" name="precio_max" value="{{ filtros.precio_max }}" class="sidebar-input-text">
+                        
+                        <label for="m2_min" class="sidebar-label-text" style="margin-top: 0.5rem;">M² Mínimos</label>
+                        <input type="number" id="m2_min" name="m2_min" value="{{ filtros.m2_min }}" class="sidebar-input-text">
+                    </div>
 
-            <!-- Sección 2: Habitaciones -->
-            <div class="sidebar-seccion">
-                <div class="sidebar-titulo">Habitaciones</div>
-                
-                <label class="sidebar-opcion">
-                    Cualquiera
-                    <input type="radio" name="habitaciones" value="" {% if filtros.habitaciones == '' %}checked{% endif %}>
-                </label>
-                <label class="sidebar-opcion">
-                    1 o más
-                    <input type="radio" name="habitaciones" value="1" {% if filtros.habitaciones == '1' %}checked{% endif %}>
-                </label>
-                <label class="sidebar-opcion">
-                    2 o más
-                    <input type="radio" name="habitaciones" value="2" {% if filtros.habitaciones == '2' %}checked{% endif %}>
-                </label>
-                <label class="sidebar-opcion">
-                    3 o más
-                    <input type="radio" name="habitaciones" value="3" {% if filtros.habitaciones == '3' %}checked{% endif %}>
-                </label>
-            </div>
+                    <div class="sidebar-seccion">
+                        <div class="sidebar-titulo">Habitaciones</div>
+                        <label class="sidebar-opcion">
+                            Cualquiera
+                            <input type="radio" name="habitaciones" value="" {% if filtros.habitaciones == '' %}checked{% endif %}>
+                        </label>
+                        <label class="sidebar-opcion">
+                            1 o más
+                            <input type="radio" name="habitaciones" value="1" {% if filtros.habitaciones == '1' %}checked{% endif %}>
+                        </label>
+                        <label class="sidebar-opcion">
+                            2 o más
+                            <input type="radio" name="habitaciones" value="2" {% if filtros.habitaciones == '2' %}checked{% endif %}>
+                        </label>
+                        <label class="sidebar-opcion">
+                            3 o más
+                            <input type="radio" name="habitaciones" value="3" {% if filtros.habitaciones == '3' %}checked{% endif %}>
+                        </label>
+                    </div>
 
-            <!-- Sección 3: Baños -->
-            <div class="sidebar-seccion">
-                <div class="sidebar-titulo">Baños</div>
-                
-                <label class="sidebar-opcion">
-                    Cualquiera
-                    <input type="radio" name="banos" value="" {% if filtros.banos == '' %}checked{% endif %}>
-                </label>
-                <label class="sidebar-opcion">
-                    1 o más
-                    <input type="radio" name="banos" value="1" {% if filtros.banos == '1' %}checked{% endif %}>
-                </label>
-                <label class="sidebar-opcion">
-                    2 o más
-                    <input type="radio" name="banos" value="2" {% if filtros.banos == '2' %}checked{% endif %}>
-                </label>
-            </div>
+                    <div class="sidebar-seccion">
+                        <div class="sidebar-titulo">Baños</div>
+                        <label class="sidebar-opcion">
+                            Cualquiera
+                            <input type="radio" name="banos" value="" {% if filtros.banos == '' %}checked{% endif %}>
+                        </label>
+                        <label class="sidebar-opcion">
+                            1 o más
+                            <input type="radio" name="banos" value="1" {% if filtros.banos == '1' %}checked{% endif %}>
+                        </label>
+                        <label class="sidebar-opcion">
+                            2 o más
+                            <input type="radio" name="banos" value="2" {% if filtros.banos == '2' %}checked{% endif %}>
+                        </label>
+                    </div>
 
-            <!-- Botones de Acción -->
-                <div style="display: flex; flex-direction: column; gap: 0.5rem; margin-top: 1rem;">
-                    <button type="submit" class="btn-modelo" style="width: 100%;">Aplicar Filtros</button>
-                    <a href="{% url 'casas_rapidas' %}" class="sidebar-btn-limpiar">Limpiar</a>
+                    <div style="display: flex; flex-direction: column; gap: 0.5rem; margin-top: 1rem;">
+                        <button type="submit" class="btn-modelo" style="width: 100%;">Aplicar Filtros</button>
+                        <a href="{% url 'casas_rapidas' %}" class="sidebar-btn-limpiar">Limpiar</a>
+                    </div>
+                </form>
+            </aside>
+
+            <!-- LADO DERECHO: Resultados -->
+            <div class="catalogo-contenido" style="flex: 1;">
+                <div class="filtro-cabecera" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; border-bottom: 1px solid #e0e0e0; padding-bottom: 1rem;">
+                    <span style="color: #4a4a4a; font-size: 0.9rem;">Mostrando {{ modelos|length }} resultados.</span>
+                    <button type="button" id="btn-toggle-filtros" class="btn-toggle-lateral">
+                        <span>⇅≡</span> Ordenar y filtrar
+                    </button>
                 </div>
-                            
-        </form>
-    </aside>
+                
+                <div class="grid-modelos">
+                    {% for modelo in modelos %}
+                        <div class="tarjeta-modelo">
+                            <div class="imagen-modelo">
+                                {% if modelo.imagen %}
+                                    <img src="{{ modelo.imagen.url }}" alt="{{ modelo.nombre }}" class="img-real-modelo">
+                                {% else %}
+                                    <span class="texto-placeholder">Sin Imagen</span>
+                                {% endif %}
+                            </div>
+                            <div class="info-modelo">
+                                <h3>{{ modelo.nombre }}</h3>
+                                <div class="caracteristicas-modelo">
+                                    <span>📏 {{ modelo.metros_cuadrados }} m²</span>
+                                    <span>🛏️ {{ modelo.habitaciones }} Hab</span>
+                                    <span>🛁 {{ modelo.banos }} Baños</span>
+                                </div>
+                                <p>{{ modelo.descripcion }}</p>
+                                <p class="precio-modelo">Desde <strong>${{ modelo.precio_formateado }} CLP</strong></p>
+                                <a href="{% url 'inicio' %}#contacto" class="btn-modelo">Me interesa este modelo</a>
+                            </div>
+                        </div>
+                    {% empty %}
+                        <p>No hay modelos de casas disponibles en este momento.</p>
+                    {% endfor %}
+                </div>
+            </div>
+        </div> 
 
-    <!-- LADO DERECHO: Resultados y Grilla -->
-    <div class="catalogo-contenido" style="flex: 1;">
-        
-        <!-- Cabecera con el botón de filtro -->
-        <div class="filtro-cabecera" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; border-bottom: 1px solid #e0e0e0; padding-bottom: 1rem;">
-            <span style="color: #4a4a4a; font-size: 0.9rem;">Mostrando {{ modelos|length }} resultados.</span>
-            
-            <button type="button" id="btn-toggle-filtros" class="btn-toggle-lateral">
-                <span>⇅≡</span> Ordenar y filtrar
-            </button>
+        <script src="{% static 'js/scriptFiltroCasas.js' %}"></script>
+    </section>
+
+    <section class="seccion-modelos" style="margin-top: 3rem; border-top: 2px solid #f1f5f9; padding-top: 3rem;">
+        <div class="encabezado-modelos">
+            <h2>El Mercado en Tiempo Real</h2>
+            <p>Explora algunas de las propiedades que se están vendiendo actualmente y compara opciones.</p>
         </div>
-        
-        <!-- GRILLA DE CASAS REAL (Movida dentro del contenedor flex) -->
+
         <div class="grid-modelos">
-            {% for modelo in modelos %}
+            {% for casa in casas_mercado %}
                 <div class="tarjeta-modelo">
                     <div class="imagen-modelo">
-                        {% if modelo.imagen %}
-                            <img src="{{ modelo.imagen.url }}" alt="{{ modelo.nombre }}" class="img-real-modelo">
-                        {% else %}
-                            <span class="texto-placeholder">Sin Imagen</span>
-                        {% endif %}
+                        <img src="{{ casa.imagen_alta }}" alt="{{ casa.title }}" class="img-real-modelo">
                     </div>
                     <div class="info-modelo">
-                        <h3>{{ modelo.nombre }}</h3>
-                        <div class="caracteristicas-modelo">
-                            <span>📏 {{ modelo.metros_cuadrados }} m²</span>
-                            <span>🛏️ {{ modelo.habitaciones }} Hab</span>
-                            <span>🛁 {{ modelo.banos }} Baños</span>
+                        <h3 style="font-size: 1.05rem; height: 3em; overflow: hidden; margin-bottom: 0.2rem;">{{ casa.title }}</h3>
+                        <p style="font-size: 0.85rem; color: #64748b; line-height: 1.4; height: 4.2em; overflow: hidden; margin-bottom: 0.8rem;">
+                            {{ casa.descripcion }}
+                        </p>
+                        <div class="caracteristicas-modelo" style="margin-bottom: 0.8rem;">
+                            <span>📏 {{ casa.m2 }}</span>
+                            <span>🛏️ {{ casa.habs }}</span>
+                            <span>🛁 {{ casa.banos }}</span>
                         </div>
-                        <p>{{ modelo.descripcion }}</p>
-                        <p class="precio-modelo">Desde <strong>${{ modelo.precio_formateado }} CLP</strong></p>
-                        <a href="{% url 'inicio' %}#contacto" class="btn-modelo">Me interesa este modelo</a>
+                        <div style="margin-bottom: 1rem;">
+                            <span style="background: #f8fafc; border: 1px solid #e2e8f0; padding: 4px 8px; border-radius: 4px; font-size: 0.8rem; color: #475569;">
+                                📍 {{ casa.city }}
+                            </span>
+                        </div>
+                        <p class="precio-modelo">
+                            <strong>{{ casa.currency_id }} ${{ casa.price|intcomma }}</strong>
+                        </p>
+                        <a href="{{ casa.permalink }}" target="_blank" rel="noopener noreferrer" class="btn-modelo" style="background-color: #ffe600; color: #2d3277; box-shadow: none; border: 1px solid #f0d800;">
+                            Ver en Portal Inmobiliario
+                        </a>
                     </div>
                 </div>
             {% empty %}
-                <p>No hay modelos de casas disponibles en este momento.</p>
+                <div style="grid-column: 1 / -1; text-align: center; padding: 3rem; color: #64748b;">
+                    <p>No pudimos conectar con el mercado en este momento. Intenta más tarde.</p>
+                </div>
             {% endfor %}
         </div>
-
-    </div>
-        
-</div> <!-- FIN DE CATALOGO-CONTAINER -->
-
-<script src="{% static 'js/scriptFiltroCasas.js' %}"></script>
-
-</section>
-
-<section class="seccion-modelos" style="margin-top: 3rem; border-top: 2px solid #f1f5f9; padding-top: 3rem;">
-    <div class="encabezado-modelos">
-        <h2>El Mercado en Tiempo Real</h2>
-        <p>Explora algunas de las propiedades que se están vendiendo actualmente y compara opciones.</p>
-    </div>
-
-    <div class="grid-modelos">
-        {% for casa in casas_mercado %}
-            <div class="tarjeta-modelo">
-                <div class="imagen-modelo">
-                    <img src="{{ casa.imagen_alta }}" alt="{{ casa.title }}" class="img-real-modelo">
-                </div>
-                <div class="info-modelo">
-                    <h3 style="font-size: 1.05rem; height: 3em; overflow: hidden; margin-bottom: 0.2rem;">
-                        {{ casa.title }}
-                    </h3>
-                    
-                    <!-- NUEVO: Agregamos la descripción aquí -->
-                    <p style="font-size: 0.85rem; color: #64748b; line-height: 1.4; height: 4.2em; overflow: hidden; margin-bottom: 0.8rem;">
-                        {{ casa.descripcion }}
-                    </p>
-                    
-                    <div class="caracteristicas-modelo" style="margin-bottom: 0.8rem;">
-                        <span>📏 {{ casa.m2 }}</span>
-                        <span>🛏️ {{ casa.habs }}</span>
-                        <span>🛁 {{ casa.banos }}</span>
-                    </div>
-
-                    <div style="margin-bottom: 1rem;">
-                        <span style="background: #f8fafc; border: 1px solid #e2e8f0; padding: 4px 8px; border-radius: 4px; font-size: 0.8rem; color: #475569;">
-                            📍 {{ casa.city }}
-                        </span>
-                    </div>
-                    
-                    <p class="precio-modelo">
-                        <strong>{{ casa.currency_id }} ${{ casa.price|intcomma }}</strong>
-                    </p>
-                    
-                    <a href="{{ casa.permalink }}" target="_blank" rel="noopener noreferrer" class="btn-modelo" style="background-color: #ffe600; color: #2d3277; box-shadow: none; border: 1px solid #f0d800;">
-                        Ver en Portal Inmobiliario
-                    </a>
-                </div>
-            </div>
-        {% empty %}
-            <div style="grid-column: 1 / -1; text-align: center; padding: 3rem; color: #64748b;">
-                <p>No pudimos conectar con el mercado en este momento. Intenta más tarde.</p>
-            </div>
-        {% endfor %}
-    </div>
-</section>
+    </section>
 
     <!-- Pie de página -->
     {% include 'footer.html' %}
-
 </body>
 </html>

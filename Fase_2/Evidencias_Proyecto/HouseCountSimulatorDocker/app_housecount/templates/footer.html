@@ -10,8 +10,7 @@
         <!-- Columna 1: Logo e Info de Contacto -->
         <div class="footer-columna">
             <div class="footer-logo">
-                <!-- Reemplaza con la ruta real de tu logo -->
-                <img src="{% static 'imagen-galeria/logo_pagina.png' %}" alt="Logo ArquiCasa">
+                <img src="{% static 'imagen-galeria/logo_pagina.png' %}" alt="Logo HouseCount Simulator">
             </div>
             <ul class="lista-info">
                 <li><i class="fa-solid fa-phone"></i> +56 9 1234 5678</li>
@@ -20,14 +19,14 @@
             </ul>
         </div>
 
-        <!-- Columna 2: Enlaces Rápidos -->
+        <!-- Columna 2: Enlaces Rápidos (Actualizados con etiquetas de seguridad de Django) -->
         <div class="footer-columna">
             <h4 class="footer-titulo-pequeno">ENLACES</h4>
             <ul class="lista-enlaces">
-                <li><a href="#inicio">Inicio</a></li>
-                <li><a href="#nosotros">Nosotros</a></li>
-                <li><a href="#proyectos">Proyectos</a></li>
-                <li><a href="#contacto">Contacto</a></li>
+                <li><a href="{% url 'inicio' %}">Inicio</a></li>
+                <li><a href="{% url 'contrucion' %}">Servicios</a></li>
+                <li><a href="{% url 'casas_rapidas' %}">Proyectos</a></li>
+                <li><a href="{% url 'inicio' %}#contacto">Contacto</a></li>
             </ul>
         </div>
 
