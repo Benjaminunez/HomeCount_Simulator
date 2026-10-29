@@ -1,12 +1,12 @@
 body {
     display: flex;
     flex-direction: column;
-    height: 100vh; /* La página ocupa exactamente el 100% del alto de la ventana */
+    height: 100vh;
     margin: 0;
-    overflow: hidden; /* Bloqueamos el scroll de la página completa */
+    overflow: hidden;
 }
 
-/* 4. Botón destacado de Contacto */
+/* --- Botón destacado de Contacto --- */
 .btn-contacto {
     background-color: #2c3e50 !important;
     color: #ffffff !important;
@@ -18,1468 +18,431 @@ body {
 }
 
 .btn-contacto:hover {
-    background-color: #e67e22 !important; /* Cambia a naranja al pasar el ratón */
+    background-color: #e67e22 !important;
     transform: translateY(-1px);
     box-shadow: 0 4px 10px rgba(230, 126, 34, 0.25);
 }
 
-/* 5. Adaptación automática al Modo Oscuro */
+/* --- Adaptación automática al Modo Oscuro (Navbar) --- */
 body.tema-oscuro .navbar {
     background-color: #605f5f;
     border-bottom: 1px solid #333333;
 }
-
-body.tema-oscuro .logo {
-    color: #f1f5f9;
-}
-
-body.tema-oscuro .nav-links a {
-    color: #cbd5e1;
-}
-
-body.tema-oscuro .nav-links a:hover {
-    color: #e67e22;
-}
-
+body.tema-oscuro .logo { color: #f1f5f9; }
+body.tema-oscuro .nav-links a { color: #cbd5e1; }
+body.tema-oscuro .nav-links a:hover { color: #e67e22; }
 body.tema-oscuro .btn-contacto {
     background-color: #e67e22 !important;
     color: #ffffff !important;
 }
+body.tema-oscuro .btn-contacto:hover { background-color: #d35400 !important; }
 
-body.tema-oscuro .btn-contacto:hover {
-    background-color: #d35400 !important;
-}
-
-/* 1. Contenedor principal de la sección 3D */
+/* --- 1. Contenedor principal de la sección 3D --- */
 .seccion-3d {
     flex-grow: 1; 
-    position: relative; /* Clave para que los paneles floten solo dentro de esta caja */
+    position: relative; 
     width: 100%;
     height: calc(100vh - 65px);
     background-color: #87CEEB; /* Fondo cielo */
     overflow: hidden;
 }
 
-#val-perimetro{
-    color: #e67e22; 
-} 
-
-#contenedor-acciones-superiores {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 10px;
-    margin-bottom: 15px;
-}
-
-#contenedor-resultados-dimensiones p {
-    border-radius: 12px;
-    padding: 12px 15px; 
-    margin-bottom: 12px !important;
-    border: 1px solid rgba(255, 255, 255, 0.05);
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-    font-size: 0.95rem; 
-    color: rgba(255, 255, 255, 0.7);
-    position: relative;
-    overflow: hidden;
-    z-index: 1;
-    display: block; /* Se elimina el flex para que "metros" quede en la misma línea */
-    line-height: 1.4;
-}
-
-#contenedor-resultados-dimensiones p strong {
-    font-weight: 700;
-}
-
-#contenedor-resultados-dimensiones p:nth-child(1) {
-    background: linear-gradient(135deg, rgba(20, 20, 28, 1), 100% #cf7f2fe6, 50%);
-}
-
-#contenedor-resultados-dimensiones p:nth-child(1)::before {
-    content: "";
-    position: absolute;
-    top: -50%;
-    left: -50%;
-    width: 200%;
-    height: 200%;
-    background: radial-gradient(circle, rgba(226, 147, 43, 0.15) 0%, transparent 50%);
-    z-index: -1;
-}
-
-#contenedor-resultados-dimensiones p:nth-child(2) {
-    background: linear-gradient(135deg, #cf7f2fe6(218, 120, 8, 0.9) 0%, rgba(20, 20, 28, 1) 100%);
-}
-
-#contenedor-resultados-dimensiones p:nth-child(2)::before {
-    content: "";
-    position: absolute;
-    top: -50%;
-    right: -50%;
-    width: 200%;
-    height: 200%;
-    background: radial-gradient(circle, rgba(0, 255, 200, 0.12) 0%, transparent 50%);
-    z-index: -1;
-}
-
-#contenedor-resultados-dimensiones p strong {
-    display: block; 
-    font-size: 0.75rem;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    color: #a3a3c2;
-    font-weight: 600;
-    margin-bottom: 4px;
-}
-
-#val-perimetro, #val-area {
-    font-size: 1.4rem; 
-    font-weight: 700 !important;
-    color: #ffffff;
-    text-shadow: 0 2px 10px rgba(255, 255, 255, 0.2);
-    margin-right: 4px; /* Pequeña separación con la palabra "metros" */
-}
-
-.cabecera-panel {
-    display: flex;
-    justify-content: flex-end;
-    margin-bottom: 10px;
-}
-
-/* 2. El lienzo 3D ocupa todo el fondo de su contenedor */
 #canvas-3d-container {
     position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    z-index: 1;
+    top: 0; left: 0; width: 100%; height: 100%; z-index: 1;
 }
 
-/* 3. Capa invisible para los paneles flotantes */
+/* Capa invisible para los paneles flotantes */
 #ui-flotante {
     position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
+    top: 0; left: 0; width: 100%; height: 100%;
     pointer-events: none; /* Deja pasar los clicks al mundo 3D */
     z-index: 10; 
 }
 
-/* 4. Reactivamos los clicks SOLO en los paneles */
+/* Reactivamos los clicks SOLO en los paneles */
 .panel-superior-derecho, 
 .panel-inferior-centro,
-.panel-instrucciones {
+.panel-instrucciones,
+.presupuesto-total {
     pointer-events: auto; 
 }
 
-/* 5. Widget del Presupuesto (Arriba a la derecha) */
+/* --- PRESUPUESTO TOTAL FLOTANTE (ARRIBA A LA DERECHA) --- */
+.presupuesto-total {
+    position: absolute; 
+    top: 15px; 
+    right: 15px; 
+    background-color: #ffffff;
+    padding: 12px 25px;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+    font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    font-size: 1.1rem;
+    color: #475569;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    z-index: 100;
+}
+
+#total-3d {
+    font-size: 1.5rem;
+    color: #27ae60; 
+    font-weight: 800;
+}
+
+body.tema-oscuro .presupuesto-total {
+    background-color: rgba(30, 41, 59, 0.95);
+    color: #e2e8f0;
+    border: 1px solid #334155;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+}
+
+/* --- PANEL LATERAL RETRÁCTIL --- */
 .panel-superior-derecho {
+    position: absolute;
+    top: 15px; 
+    left: 15px; 
     max-width: 260px;
-    max-height: 56vh;
-    top: 15px;
-    right: 15px;
     padding: 12px 15px;
-    background: rgba(255, 255, 255, 0.95); /* Fondo sólido para que no se pierdan los textos */
+    background: rgba(255, 255, 255, 0.95);
     border-radius: 12px;
     box-shadow: 0 4px 15px rgba(0,0,0,0.1);
     overflow: hidden;
     display: flex;
     flex-direction: column;
     transition: max-height 0.3s ease, padding 0.3s ease;
-    margin-top: 10px;
-    margin-left: 10px;
 }
 
+/* Comportamiento al colapsar */
 .panel-superior-derecho.colapsado #contenido-panel-derecho {
     display: none;
 }
-
 .panel-superior-derecho.colapsado {
-    padding-bottom: 12px; /* Ajusta el borde inferior al retraerse */
+    max-height: 90px;
+    padding-bottom: 12px; 
 }
 
-.presupuesto-total {
-    font-size: 1.1rem;
-    color: #2c3e50;
-    padding: 8px 10px;
-}
-
-#total-3d {
-    font-size: 1.3rem;
-    color: #27ae60; /* Verde para el dinero */
-}
-
-.btn-peligro {
-    padding: 6px 15px;
-    font-size: 0.8rem;
+/* Botón Toggle del Panel */
+#btn-toggle-panel-der {
     width: 100%;
-}
-
-#btn-borrar-todo,
-#btn-modo-oscuro,
-#btn-guardar-modelo,
-#btn-generar-informe,
-#btn-mis-modelos {
-    width: 42px;
-    height: 42px;
-    border-radius: 50%;
+    background: transparent;
+    border: none;
+    border-top: 1px solid rgba(0,0,0,0.05);
+    color: #64748b;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    cursor: pointer;
+    padding: 10px 0 2px 0;
+    margin-top: 8px;
+    margin-bottom: 5px;
+    transition: color 0.2s ease;
     display: flex;
     justify-content: center;
     align-items: center;
-    margin: 0;
-    flex-shrink: 0;
-    background-color: #f1f5f9;
-    border: 1px solid #cbd5e1;
-    font-size: 18px;
-    cursor: pointer;
-    position: relative;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-    color: inherit;
 }
 
-#btn-borrar-todo:hover {
-    background-color: #fee2e2; /* Fondo rojizo claro */
-    border-color: #f87171; /* Borde rojizo */
-    transform: scale(1.1) rotate(8deg); /* Crece ligeramente y se inclina */
-    box-shadow: 0 4px 8px rgba(239, 68, 68, 0.2);
+#btn-toggle-panel-der:hover { color: #e67e22; }
+body.tema-oscuro #btn-toggle-panel-der { color: #94a3b8; border-top: 1px solid rgba(255,255,255,0.05); }
+body.tema-oscuro #btn-toggle-panel-der:hover { color: #f39c12; }
+
+/* Botones de acción circulares */
+#contenedor-acciones-superiores {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
 }
 
-#btn-modo-oscuro:hover {
-    background-color: #e0e7ff; 
-    border-color: #818cf8;
-    transform: scale(1.1) rotate(-8deg); 
-    box-shadow: 0 4px 8px rgba(99, 102, 241, 0.2);
+.btn-peligro { padding: 6px 15px; font-size: 0.8rem; width: 100%; }
+
+#btn-borrar-todo, #btn-modo-oscuro, #btn-guardar-modelo, #btn-generar-informe, #btn-mis-modelos {
+    width: 42px; height: 42px; border-radius: 50%;
+    display: flex; justify-content: center; align-items: center;
+    margin: 0; flex-shrink: 0; background-color: #f1f5f9;
+    border: 1px solid #cbd5e1; font-size: 18px; cursor: pointer;
+    position: relative; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05); color: inherit;
 }
 
-#btn-borrar-todo:active,
-#btn-modo-oscuro:active,
-#btn-guardar-modelo:active,
-#btn-generar-informe:active,
-#btn-mis-modelos:active {
+#btn-borrar-todo:hover { background-color: #fee2e2; border-color: #f87171; transform: scale(1.1) rotate(8deg); box-shadow: 0 4px 8px rgba(239, 68, 68, 0.2); }
+#btn-modo-oscuro:hover { background-color: #e0e7ff; border-color: #818cf8; transform: scale(1.1) rotate(-8deg); box-shadow: 0 4px 8px rgba(99, 102, 241, 0.2); }
+#btn-guardar-modelo:hover { background-color: #dcfce7; border-color: #4ade80; transform: scale(1.1) rotate(8deg); box-shadow: 0 4px 8px rgba(74, 222, 128, 0.2); }
+#btn-mis-modelos:hover { background-color: #fef9c3; border-color: #facc15; transform: scale(1.1) rotate(-8deg); box-shadow: 0 4px 8px rgba(250, 204, 21, 0.2); }
+#btn-generar-informe:hover { background-color: #949df0; border-color: #906af8; transform: scale(1.1) rotate(-8deg); box-shadow: 0 4px 8px rgba(250, 204, 21, 0.2); }
+
+#btn-borrar-todo:active, #btn-modo-oscuro:active, #btn-guardar-modelo:active, #btn-generar-informe:active, #btn-mis-modelos:active {
     transform: scale(0.95);
 }
 
-#btn-borrar-todo::after,
-#btn-modo-oscuro::after,
-#btn-guardar-modelo::after,
-#btn-generar-informe:after,
-#btn-mis-modelos::after {
-    position: absolute;
-    top: 125%;
-    left: 50%;
-    z-index: 10;
-    background-color: #1e293b;
-    color: white;
-    padding: 6px 10px;
-    border-radius: 6px;
-    font-size: 11px;
-    font-weight: 600;
-    white-space: nowrap;
-    opacity: 0;
-    visibility: hidden;
-    transform: translateX(-50%) translateY(-10px);
-    transition: all 0.3s ease;
-    pointer-events: none;
-    box-shadow: 0 3px 6px rgba(0,0,0,0.15);
+/* Tooltips de los botones circulares */
+#btn-borrar-todo::after, #btn-modo-oscuro::after, #btn-guardar-modelo::after, #btn-generar-informe:after, #btn-mis-modelos::after {
+    position: absolute; top: 125%; left: 50%; z-index: 10;
+    background-color: #1e293b; color: white; padding: 6px 10px;
+    border-radius: 6px; font-size: 11px; font-weight: 600;
+    white-space: nowrap; opacity: 0; visibility: hidden;
+    transform: translateX(-50%) translateY(-10px); transition: all 0.3s ease; pointer-events: none;
 }
-
 #btn-borrar-todo::after { content: "Borrar modelo"; }
 #btn-modo-oscuro::after { content: "Cambiar tema"; }
 #btn-guardar-modelo::after { content: "Guardar modelo"; }
 #btn-generar-informe::after{content: "Generar Reporte";}
 #btn-mis-modelos::after { content: "Mis diseños"; }
 
-#btn-borrar-todo::before,
-#btn-modo-oscuro::before,
-#btn-guardar-modelo::before,
-#btn-generar-informe::before,
-#btn-mis-modelos::before {
-    content: "";
-    position: absolute;
-    top: 105%;
-    left: 50%;
-    z-index: 10;
-    border-width: 5px;
-    border-style: solid;
-    border-color: transparent transparent #1e293b transparent;
-    opacity: 0;
-    visibility: hidden;
-    transform: translateX(-50%) translateY(-10px);
-    transition: all 0.3s ease;
-    pointer-events: none;
+#btn-borrar-todo::before, #btn-modo-oscuro::before, #btn-guardar-modelo::before, #btn-generar-informe::before, #btn-mis-modelos::before {
+    content: ""; position: absolute; top: 105%; left: 50%; z-index: 10;
+    border-width: 5px; border-style: solid; border-color: transparent transparent #1e293b transparent;
+    opacity: 0; visibility: hidden; transform: translateX(-50%) translateY(-10px); transition: all 0.3s ease; pointer-events: none;
 }
 
-#btn-guardar-modelo:hover {
-    background-color: #dcfce7; /* Verde clarito */
-    border-color: #4ade80;
-    transform: scale(1.1) rotate(8deg); 
-    box-shadow: 0 4px 8px rgba(74, 222, 128, 0.2);
+#btn-borrar-todo:hover::after, #btn-borrar-todo:hover::before,
+#btn-modo-oscuro:hover::after, #btn-modo-oscuro:hover::before,
+#btn-guardar-modelo:hover::after, #btn-guardar-modelo:hover::before,
+#btn-generar-informe:hover::after, #btn-generar-informe:hover::before,
+#btn-mis-modelos:hover::after, #btn-mis-modelos:hover::before {
+    opacity: 1; visibility: visible; transform: translateX(-50%) translateY(0);
 }
 
-#btn-mis-modelos:hover {
-    background-color: #fef9c3; /* Amarillo clarito */
-    border-color: #facc15;
-    transform: scale(1.1) rotate(-8deg); 
-    box-shadow: 0 4px 8px rgba(250, 204, 21, 0.2);
+/* --- NAVEGACIÓN TABS --- */
+.navegacion-tabs-derecho {
+    display: flex; gap: 6px; background-color: #e2e8f0;
+    padding: 5px; border-radius: 10px; margin: 3px 0 8px 0;
 }
+.btn-tab {
+    flex: 1; padding: 8px 12px; border: none; outline: none; background: transparent;
+    color: #64748b; font-size: 13px; font-weight: 600; border-radius: 7px;
+    cursor: pointer; transition: all 0.25s ease; text-align: center; user-select: none;
+}
+.btn-tab:hover { color: #2c3e50; background-color: rgba(255, 255, 255, 0.6); }
+.btn-tab.activo { background-color: #ffffff; color: #e67e22; font-weight: 700; box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08); }
+.contenido-tab { animation: aparecerTab 0.25s ease-in-out; }
+@keyframes aparecerTab { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
 
-#btn-generar-informe:hover {
-    background-color: #949df0; /* Amarillo clarito */
-    border-color: #906af8;
-    transform: scale(1.1) rotate(-8deg); 
-    box-shadow: 0 4px 8px rgba(250, 204, 21, 0.2);
-}
-
-#btn-borrar-todo:hover::after,
-#btn-borrar-todo:hover::before,
-#btn-modo-oscuro:hover::after,
-#btn-modo-oscuro:hover::before,
-#btn-guardar-modelo:hover::after,
-#btn-guardar-modelo:hover::before,
-#btn-generar-informe:hover::after,
-#btn-generar-informe:hover::before,
-#btn-mis-modelos:hover::after,
-#btn-mis-modelos:hover::before {
-    opacity: 1;
-    visibility: visible;
-    transform: translateX(-50%) translateY(0);
-}
-
-.btn-detalle {
-    background-color: #f1f2f6;
-    color: #2c3e50;
-    border: 1px solid #dcdde1;
-    padding: 8px 12px;
-    font-size: 0.85rem;
-    font-weight: bold;
-    border-radius: 6px;
-    cursor: pointer;
-    margin: 10px 0;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    transition: background-color 0.2s;
-    width: 100%;
-}
-
-.btn-detalle:hover {
-    background-color: #e2e6ea;
-}
-
-#lista-objetos-container.oculto {
-    display: none;
-}
-
-.btn-peligro:hover {
-    background-color: #c0392b;
-}
-
-/* 6. Instrucciones flotantes (Arriba al centro) */
-.panel-instrucciones {
-    position: absolute;
-    top: 15px;
-    left: 50%;
-    transform: translateX(-50%);
-    background: rgba(255, 255, 255, 0.85);
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
-    padding: 6px 18px;
-    border-radius: 20px;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.15);
-    font-size: 0.75rem;
-    color: #333;
-    opacity: 0.85;
-}
-
-/* 7. Barra de Catálogo Inferior (Abajo al centro) */
-.panel-inferior-centro {
-    background: rgba(255, 255, 255, 0.85);
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
-    padding: 10px 15px;
-    border-radius: 15px;
-    /* Redondeamos diferente arriba a la izquierda para que fusione con la pestaña activa */
-    border-top-left-radius: 0px; 
-    box-shadow: 0 8px 32px rgba(0,0,0,0.2);
-    display: flex;
-    flex-direction: row; /* Mantiene tus listas horizontales */
-    gap: 15px;
-    overflow-x: auto;
-    scrollbar-width: none;
-    width: 100%;
-}
-
-.panel-instrucciones {
-    top: 15px;
-    padding: 6px 15px;
-    font-size: 0.75rem;
-    opacity: 0.85; /* Un poco translúcido para no distraer */
-}
-
-.catalogo-scroll {
-    display: flex;
-    gap: 12px;
-    align-items: center;
-}
-
-/* Divisor visual entre materiales y habitaciones */
-#lista-materiales,
-#lista-habitaciones {
-    display: flex;
-    flex-wrap: nowrap; /* Fuerza a que los botones estén en una sola línea */
-    overflow-x: auto;  /* Habilita el scroll horizontal en este contenedor */
-    overflow-y: hidden; 
-    gap: 15px;
-    align-items: center;
-    width: 100%;     
-    max-width: 100%;  
-    scrollbar-width: none; /* Oculta la barra en Firefox */
-}
-
-#lista-materiales {
-    border-right: none;
-    padding-right: 0;
-}
-
-#lista-materiales::-webkit-scrollbar,
-#lista-habitaciones::-webkit-scrollbar {
-    display: none; 
-}
-
-/* 8. Botones convertidos a Tarjetas (Como en Los Sims) */
-.btn-mat-3d, .btn-hab-3d {
-    width: 80px;
-    height: 80px;
-    border-radius: 12px;
-    background-color: #ffffff;
-    border: 2px solid transparent;
-    cursor: pointer;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    margin: 5px;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-    transition: all 0.2s ease;
-    flex: 0 0 auto;
-}
-
-.btn-mat-3d img, .btn-hab-3d img {
-    max-width: 100%;
-    max-height: 100%;
-    object-fit: contain;
-    border-radius: 6px;
-    pointer-events: none; /* Evita bugs al hacer click */
-}
-
-.btn-mat-3d span, .btn-hab-3d span {
-    font-size: 24px; /* Tamaño ideal si usas emojis temporalmente */
-}
-
-.btn-mat-3d:hover, .btn-hab-3d:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 5px 15px rgba(0,0,0,0.15);
-}
-
-.btn-mat-3d.activo, .btn-hab-3d.activo {
-    border-color: #2ecc71; 
-    background-color: #f0fdf4;
-}
-
-/* Ajuste sutil del texto interior (precio más claro) */
-.btn-mat-3d small, .btn-hab-3d small {
-    font-weight: normal;
-    color: #7f8c8d;
-    margin-top: 4px;
-}
-
-
-
-.btn-mat-3d:hover::after, .btn-hab-3d:hover::after,
-.btn-mat-3d:hover::before, .btn-hab-3d:hover::before {
-    opacity: 1;
-    visibility: visible;
-    transform: translateX(-50%) translateY(0);
-}
-
-/* Ocultar barra de scroll en el catálogo para diseño limpio */
-.panel-inferior-centro::-webkit-scrollbar {
-    display: none;
-}
-
-.panel-inferior-centro::-webkit-scrollbar-thumb {
-    background: #bdc3c7;
-    border-radius: 10px;
-}
-
-footer {
-    display: none;
-}
-
-/* listado de objetos ingresados en el modelo 3D*/
-#lista-objetos-container {
-    background-color: #f8f9fa; /* Fondo gris muy suave */
-    border: 1px solid #e2e8f0;
-    border-radius: 8px;
-    padding: 15px;
-    margin-top: 8px;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
-    /* Evita scroll aquí para pasarlo a la lista directamente */
-    overflow: hidden; 
-}
-
-.titulo-desglose {
-    margin: 0 0 10px 0;
-    font-size: 14px;
-    color: #333;
-    border-bottom: 2px solid #ddd;
-    padding-bottom: 5px;
-    text-align: left;
-}
-
-#lista-objetos-ui {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-    max-height: 220px; /* Define una altura máxima fija */
-    overflow-y: auto;  /* Crea UN SOLO scrollbar limpio */
-    overflow-x: hidden;
-}
-
-#lista-objetos-container h3, 
-#lista-objetos-container h4 {
-    margin-top: 0;
-    margin-bottom: 12px;
-    font-size: 15px;
-    color: #1e293b;
-    border-bottom: 2px solid #e2e8f0;
-    padding-bottom: 8px;
-}
-
-#lista-objetos-ui::-webkit-scrollbar {
-    width: 6px;
-}
-#lista-objetos-ui::-webkit-scrollbar-track {
-    background: transparent;
-}
-#lista-objetos-ui::-webkit-scrollbar-thumb {
-    background-color: #cbd5e1;
-    border-radius: 10px;
-}
-
-.item-lista-objeto {
-    display: flex;
-    justify-content: space-between; /* Separa el texto a la izq y el precio a la der */
-    align-items: center;
-    padding: 10px 5px;
-    border-bottom: 1px solid #f1f5f9;
-}
-.item-lista-objeto:last-child {
-    border-bottom: none;
-}
-
-.item-lista-objeto:last-child {
-    border-bottom: none;
-}
-
-.item-lista-objeto > div {
-    display: flex;
-    align-items: center;
-    gap: 8px; /* Espacio exacto entre nombre y "x1" */
-    overflow: hidden; 
-}
-
-/* Estilo para el nombre del objeto */
-.nombre-item {
-    font-weight: 600;
-    color: #334155;
-    font-size: 13.5px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis; /* Agrega "..." si el nombre es muy largo */
-    max-width: 130px; /* Evita que empuje al precio */
-}
-
-/* Estilo para la cantidad (ej. x3) */
-.cantidad-item {
-    background-color: #e2e8f0;
-    color: #475569;
-    font-size: 11px;
-    font-weight: bold;
-    padding: 2px 6px;
-    border-radius: 12px;
-}
-
-/* Estilo para el subtotal */
-.subtotal-item {
-    font-weight: 700;
-    color: #10b981; /* Verde esmeralda para el dinero */
-    font-size: 14px;
-    white-space: nowrap;
-    margin-left: 10px;
-}
-
-/* Estilo para cuando la lista está vacía */
-.item-vacio {
-    text-align: center;
-    color: #94a3b8;
-    font-style: italic;
-    padding: 20px 0;
-    font-size: 13px;
-}
-
-/* --- ESTILOS BASE DEL BOTÓN --- */
-.btn-tema {
-    margin-bottom: 10px;
-    padding: 8px 12px;
-    cursor: pointer;
-    border-radius: 6px;
-    border: 1px solid #ccc;
-    background-color: #ffffff;
-    color: #333333;
-    font-weight: bold;
-    transition: background-color 0.3s, color 0.3s, border-color 0.3s;
-}
-
-.btn-tema:hover {
-    background-color: #f0f0f0;
-}
-
-.btn-toggle-panel {
-    background: #34495e;
-    color: white;
-    border: none;
-    padding: 6px 12px;
-    border-radius: 6px;
-    font-size: 0.85rem;
-    font-weight: bold;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    transition: background 0.2s;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-}
-
-.btn-toggle-panel:hover {
-    background: #2c3e50;
-}
-
-/* --- ESTILOS DEL MODO OSCURO (UI Web) --- */
-body.tema-oscuro .titulo-desglose {
-    color: #e2e8f0;
-    border-bottom-color: #444444;
-}
-
-/* El botón en modo oscuro */
-body.tema-oscuro .btn-tema {
-    background-color: #2c3e50;
-    color: #ffffff;
-    border-color: #1a252f;
-}
-
-body.tema-oscuro .btn-tema:hover {
-    background-color: #34495e;
-}
-
-/* Paneles y recuadros en modo oscuro (ajusta las clases según las tuyas) */
-body.tema-oscuro #lista-objetos-container {
-    background-color: #1e1e1e;
-    border-color: #333333;
-    color: #e0e0e0;
-}
-
-body.tema-oscuro .titulo-desglose {
-    color: #e0e0e0;
-    border-bottom-color: #444444;
-}
-
-body.tema-oscuro .item-lista-objeto {
-    border-bottom-color: #333333;
-}
-
-body.tema-oscuro .nombre-item {
-    color: #ecf0f1;
-}
-
-body.tema-oscuro .cantidad-item {
-    background-color: #333333;
-    color: #bdc3c7;
-}
-
-body.tema-oscuro .subtotal-item {
-    color: #2ecc71; /* Un verde un poco más brillante para fondos oscuros */
-}
-
-#zona-menu-inferior {
-    position: absolute;
-    bottom: 15px;
-    left: 50%;
-    transform: translateX(-50%);
-    display: flex;
-    flex-direction: column; /* Apila pestañas arriba y caja abajo */
-    align-items: flex-start; /* Alinea las pestañas a la izquierda */
-    z-index: 100;
-    max-width: 90vw;
-    pointer-events: auto;
-}
-
+/* --- DISEÑO NEÓN PARA DIMENSIONES --- */
 #tab-dimensiones {
     background-color: #1a1a24;
-    padding: 15px; 
+    padding: 6px; 
     border-radius: 12px;
     font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
     color: #ffffff;
 }
 
 #tab-dimensiones .titulo-desglose {
-    color: #ffffff;
-    font-size: 1.1rem; 
-    font-weight: 600;
-    margin-bottom: 8px;
+    color: #ffffff; font-size: 1.1rem; font-weight: 600; margin-bottom: 8px; border: none;
 }
 
-#tab-dimensiones hr {
-    border-color: rgba(255, 255, 255, 0.1) !important;
-    margin-bottom: 5px !important;
+#tab-dimensiones hr { border-color: rgba(255, 255, 255, 0.1) !important; margin-bottom: 15px !important; }
+
+#contenedor-resultados-dimensiones p {
+    border-radius: 12px; padding: 12px 15px; margin-bottom: 12px !important;
+    border: 1px solid rgba(255, 255, 255, 0.05); box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    font-size: 0.95rem; color: rgba(255, 255, 255, 0.7); position: relative;
+    overflow: hidden; z-index: 1; display: block; line-height: 1.4;
+}
+
+/* Tarjeta 1: Perímetro (Morado) */
+#contenedor-resultados-dimensiones p:nth-child(1) { background: linear-gradient(135deg, rgba(30, 35, 50, 0.9) 0%, rgba(20, 20, 28, 1) 100%); }
+#contenedor-resultados-dimensiones p:nth-child(1)::before {
+    content: ""; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%;
+    background: radial-gradient(circle, rgba(138, 43, 226, 0.15) 0%, transparent 50%); z-index: -1;
+}
+
+/* Tarjeta 2: Área (Cian/Verde) */
+#contenedor-resultados-dimensiones p:nth-child(2) { background: linear-gradient(135deg, rgba(20, 45, 50, 0.9) 0%, rgba(20, 20, 28, 1) 100%); }
+#contenedor-resultados-dimensiones p:nth-child(2)::before {
+    content: ""; position: absolute; top: -50%; right: -50%; width: 200%; height: 200%;
+    background: radial-gradient(circle, rgba(0, 255, 200, 0.12) 0%, transparent 50%); z-index: -1;
+}
+
+#contenedor-resultados-dimensiones p strong {
+    display: block; font-size: 0.75rem; text-transform: uppercase;
+    letter-spacing: 1px; color: #a3a3c2; font-weight: 600; margin-bottom: 4px;
+}
+
+#val-perimetro, #val-area {
+    font-size: 1.4rem; font-weight: 700 !important; color: #ffffff;
+    text-shadow: 0 2px 10px rgba(255, 255, 255, 0.2); margin-right: 4px;
+}
+
+/* --- TABLA DETALLE DE MATERIALES --- */
+#lista-objetos-container {
+    background-color: #f8f9fa; border: 1px solid #e2e8f0; border-radius: 8px;
+    padding: 15px; margin-top: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); overflow: hidden; 
+}
+#lista-objetos-ui {
+    list-style: none; padding: 0; margin: 0; max-height: 166px; overflow-y: auto; overflow-x: hidden;
+}
+#lista-objetos-ui::-webkit-scrollbar { width: 6px; }
+#lista-objetos-ui::-webkit-scrollbar-track { background: transparent; }
+#lista-objetos-ui::-webkit-scrollbar-thumb { background-color: #cbd5e1; border-radius: 10px; }
+
+.item-lista-objeto { display: flex; justify-content: space-between; align-items: center; padding: 10px 5px; border-bottom: 1px solid #f1f5f9; }
+.item-lista-objeto:last-child { border-bottom: none; }
+.item-lista-objeto > div { display: flex; align-items: center; gap: 8px; overflow: hidden; }
+.nombre-item { font-weight: 600; color: #334155; font-size: 13.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 130px; }
+.cantidad-item { background-color: #e2e8f0; color: #475569; font-size: 11px; font-weight: bold; padding: 2px 6px; border-radius: 12px; }
+.subtotal-item { font-weight: 700; color: #10b981; font-size: 14px; white-space: nowrap; margin-left: 10px; }
+.item-vacio { text-align: center; color: #94a3b8; font-style: italic; padding: 20px 0; font-size: 13px; }
+
+/* --- INSTRUCCIONES CENTRALES --- */
+.panel-instrucciones {
+    position: absolute; top: 15px; left: 50%; transform: translateX(-50%);
+    background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px); padding: 6px 18px; border-radius: 20px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.15); font-size: 0.75rem; color: #333; opacity: 0.85;
+}
+
+/* --- CATÁLOGO INFERIOR --- */
+#zona-menu-inferior {
+    position: absolute; bottom: 15px; left: 50%; transform: translateX(-50%);
+    display: flex; flex-direction: column; align-items: flex-start; z-index: 100;
+    width: 1400px; max-width: 95vw; pointer-events: auto;
 }
 
 .tabs-categorias {
-    display: flex;
-    gap: 4px;
-    margin-bottom: 0px; /* Para que toquen la caja blanca */
-    z-index: 2;
-    overflow-x: auto;
-    scrollbar-width: none;
+    display: flex; gap: 4px; margin-bottom: 0px; z-index: 2; overflow-x: auto; scrollbar-width: none;
 }
-
 .tab-categoria {
-    background: rgba(241, 245, 249, 0.7);
-    backdrop-filter: blur(8px);
-    border: 1px solid rgba(255, 255, 255, 0.5);
-    border-bottom: none;
-    padding: 8px 18px;
-    border-radius: 12px 12px 0 0;
-    font-size: 13px;
-    font-weight: 600;
-    color: #475569;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    white-space: nowrap;
+    background: rgba(241, 245, 249, 0.7); backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 255, 255, 0.5); border-bottom: none;
+    padding: 8px 18px; border-radius: 12px 12px 0 0; font-size: 13px;
+    font-weight: 600; color: #475569; cursor: pointer; transition: all 0.2s ease; white-space: nowrap;
 }
-
-.tab-categoria:hover {
-    background: rgba(255, 255, 255, 0.9);
-    color: #0f172a;
-}
-
+.tab-categoria:hover { background: rgba(255, 255, 255, 0.9); color: #0f172a; }
 .tab-categoria.activa {
-    background: rgba(255, 255, 255, 0.85); /* Mismo color que tu panel inferior */
-    color: #0f172a;
-    font-weight: 700;
-    padding-bottom: 12px; /* La empuja hacia abajo para "fusionarla" con la caja */
-    margin-bottom: -2px; /* Monta la pestaña levemente sobre la caja blanca */
-    box-shadow: 0 -4px 10px rgba(0,0,0,0.05);
+    background: rgba(255, 255, 255, 0.85); color: #0f172a; font-weight: 700;
+    padding-bottom: 12px; margin-bottom: -2px; box-shadow: 0 -4px 10px rgba(0,0,0,0.05);
 }
 
-/* --- cosas que agrego el milo --- */
-
-/* --- Barra de Pestañas (Tabs) en el Panel Derecho --- */
-.navegacion-tabs-derecho {
-    display: flex;
-    gap: 6px;
-    background-color: #e2e8f0; /* Fondo sutil para la barra */
-    padding: 5px;
-    border-radius: 10px;
-    margin: 3px 0 8px 0;
-}
-
-/* Botón individual de pestaña */
-.btn-tab {
-    flex: 1; /* Hace que todos los botones tengan el mismo ancho */
-    padding: 8px 12px;
-    border: none;
-    outline: none;
-    background: transparent;
-    color: #64748b;
-    font-size: 13px;
-    font-weight: 600;
-    border-radius: 7px;
-    cursor: pointer;
-    transition: all 0.25s ease;
-    text-align: center;
-    user-select: none;
-}
-
-/* Efecto al pasar el cursor por encima */
-.btn-tab:hover {
-    color: #2c3e50;
-    background-color: rgba(255, 255, 255, 0.6);
-}
-
-/* Pestaña activa (seleccionada) */
-.btn-tab.activo {
-    background-color: #ffffff;
-    color: #e67e22; /* El naranja característico de tu sitio */
-    font-weight: 700;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08); /* Pequeña elevación */
-}
-
-/* --- Contenedor de contenido de las pestañas --- */
-.contenido-tab {
-    animation: aparecerTab 0.25s ease-in-out;
-}
-
-/* Animación sutil de desvanecimiento al cambiar de tab */
-@keyframes aparecerTab {
-    from {
-        opacity: 0;
-        transform: translateY(4px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-/* Títulos y textos dentro del tab */
-.titulo-desglose {
-    font-size: 14px;
-    color: #2c3e50;
-    margin-bottom: 8px;
-    font-weight: 600;
-}
-
-.texto-placeholder {
-    font-size: 12px;
-    color: #7f8c8d;
-}
-
-/* --- Adaptación automática para el Modo Oscuro --- */
-body.tema-oscuro .navegacion-tabs-derecho {
-    background-color: #2d3748;
-}
-
-body.tema-oscuro .btn-tab {
-    color: #a0aec0;
-}
-
-body.tema-oscuro .btn-tab:hover {
-    color: #f7fafc;
-    background-color: rgba(255, 255, 255, 0.08);
-}
-
-body.tema-oscuro .btn-tab.activo {
-    background-color: #1a202c;
-    color: #f39c12;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
-}
-
-body.tema-oscuro .titulo-desglose {
-    color: #2c3e50;
-}
-body.tema-oscuro .texto-placeholder {
-    color: #7f8c8d;
-}
-
-/* --- Mantener fija la posición y tamaño del menú inferior --- */
-#zona-menu-inferior {
-
-    width: 1400px; 
-    max-width: 95vw; 
-}
 .panel-inferior-centro {
-    width: 100%;
-
-    display: flex;
-    justify-content: flex-start;
+    background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+    padding: 10px 15px; border-radius: 15px; border-top-left-radius: 0px; 
+    box-shadow: 0 8px 32px rgba(0,0,0,0.2); display: flex; justify-content: flex-start;
+    gap: 15px; overflow-x: auto; scrollbar-width: none; width: 100%;
 }
+.panel-inferior-centro::-webkit-scrollbar { display: none; }
 
-#lista-habitaciones {
-    border-left: none !important;
-    padding-left: 0 !important;
-    margin-left: 0 !important;
+.catalogo-scroll { display: flex; gap: 12px; align-items: center; }
+#lista-materiales, #lista-habitaciones {
+    display: flex; flex-wrap: nowrap; overflow-x: auto; overflow-y: hidden; 
+    gap: 15px; align-items: center; width: 100%; max-width: 100%; scrollbar-width: none;
 }
+#lista-habitaciones { border-left: none !important; padding-left: 0 !important; margin-left: 0 !important; }
 
-.separador-vertical {
-    width: 2px;
-    height: 30px;
-    background-color: #cbd5e1;
-    margin: 0 5px 15px 5px; /* Incluye 15px abajo para alinear con los botones circulares */
-    border-radius: 2px;
+/* Tarjetas de Modelos (Botones) */
+.btn-mat-3d, .btn-hab-3d {
+    width: 80px; height: 80px; border-radius: 12px; background-color: #ffffff;
+    border: 2px solid transparent; cursor: pointer; display: inline-flex;
+    align-items: center; justify-content: center; margin: 5px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1); transition: all 0.2s ease; flex: 0 0 auto;
 }
+.btn-mat-3d img, .btn-hab-3d img { max-width: 100%; max-height: 100%; object-fit: contain; border-radius: 6px; pointer-events: none; }
+.btn-mat-3d span, .btn-hab-3d span { font-size: 24px; }
+.btn-mat-3d:hover, .btn-hab-3d:hover { transform: translateY(-5px); box-shadow: 0 5px 15px rgba(0,0,0,0.15); }
+.btn-mat-3d.activo, .btn-hab-3d.activo { border-color: #2ecc71; background-color: #f0fdf4; }
 
-/* --- Botones de usuario en el panel 3D --- */
-.btn-panel-texto {
-    text-decoration: none;
-    height: 42px; /* Misma altura exacta que los botones circulares */
-    padding: 0 14px;
-    background-color: #f1f5f9; /* Mismo fondo que la papelera y el sol */
-    color: #2c3e50; /* Texto oscuro legible */
-    border: 1px solid #cbd5e1; /* Mismo borde claro */
-    border-radius: 10px; /* Esquinas redondeadas armoniosas */
-    font-size: 12px;
-    font-weight: 700;
-    line-height: 1.2;
-    text-align: center;
-    cursor: pointer;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-    font-family: inherit;
-    white-space: nowrap;
+/* --- ADAPTACIONES GLOBALES MODO OSCURO --- */
+body.tema-oscuro .navegacion-tabs-derecho { background-color: #2d3748; }
+body.tema-oscuro .btn-tab { color: #a0aec0; }
+body.tema-oscuro .btn-tab:hover { color: #f7fafc; background-color: rgba(255, 255, 255, 0.08); }
+body.tema-oscuro .btn-tab.activo { background-color: #1a202c; color: #f39c12; box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4); }
+body.tema-oscuro .panel-superior-derecho, body.tema-oscuro .panel-inferior-centro, body.tema-oscuro .panel-instrucciones {
+    background: rgba(30, 41, 59, 0.95); box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
 }
+body.tema-oscuro .panel-instrucciones { color: #ffffff; background: rgba(30, 41, 59, 0.85); }
+body.tema-oscuro #lista-objetos-container h3, body.tema-oscuro #lista-objetos-container h4 { color: #ffffff !important; border-bottom-color: #444444; }
+body.tema-oscuro .contenido-tab { background-color: transparent; }
 
-.btn-panel-texto:hover {
-    background-color: #ffffff;
-    color: #e67e22; /* Tu color naranja de marca al pasar el cursor */
-    border-color: #e67e22;
-    transform: scale(1.05); /* Mismo efecto de escala sutil */
-    box-shadow: 0 4px 8px rgba(230, 126, 34, 0.2);
-}
-
-/* --- Adaptación al modo oscuro de la UI Web --- */
-body.tema-oscuro .separador-vertical {
-    background-color: #444444; /* Borde sutil basado en tus reglas de titulo-desglose */
-}
-
-body.tema-oscuro .btn-panel-texto {
-    background-color: #2c3e50;
-    color: #ffffff;
-    border-color: #1a252f;
-}
-
-body.tema-oscuro .btn-panel-texto:hover {
-    background-color: #34495e;
-    color: #e67e22;
-    border-color: #e67e22;
-}
-
-.btn-panel-texto:active {
-    transform: scale(0.95);
-}
-
-/* --- Modal Background --- */
+/* --- MODALES UI GLOBALES --- */
 .modal-oculto {
-    display: none; 
-    position: fixed; 
-    z-index: 2000; 
-    left: 0; top: 0; 
-    width: 100%; height: 100%; 
-    background-color: rgba(0, 0, 0, 0.6);
-    backdrop-filter: blur(4px);
+    display: none; position: fixed; z-index: 2000; left: 0; top: 0; 
+    width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.6); backdrop-filter: blur(4px);
 }
-
-/* --- Contenedor del Modal --- */
 .modal-contenido {
-    background-color: #f8fafc;
-    margin: 5% auto;
-    padding: 25px;
-    width: 90%;
-    max-width: 1000px;
-    border-radius: 12px;
-    box-shadow: 0 10px 25px rgba(0,0,0,0.2);
-    max-height: 85vh;
-    overflow-y: auto;
+    background-color: #f8fafc; margin: 5% auto; padding: 25px; width: 90%; max-width: 1000px;
+    border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); max-height: 85vh; overflow-y: auto;
 }
-
-.modal-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    border-bottom: 2px solid #e2e8f0;
-    padding-bottom: 15px;
-    margin-bottom: 20px;
-}
-
+.modal-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #e2e8f0; padding-bottom: 15px; margin-bottom: 20px; }
 .modal-header h2 { margin: 0; color: #1e293b; }
 .cerrar-modal { font-size: 28px; font-weight: bold; cursor: pointer; color: #64748b; }
 .cerrar-modal:hover { color: #ef4444; }
-
-/* --- Cuadrícula de Tarjetas --- */
-.grid-disenos {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-    gap: 20px;
-}
-
-/* --- Estilos de la Tarjeta --- */
-.tarjeta-diseno {
-    background: #ffffff;
-    border: 1px solid #e2e8f0;
-    border-radius: 10px;
-    overflow: hidden;
-    cursor: pointer;
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-
-.tarjeta-diseno:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 8px 15px rgba(0,0,0,0.1);
-    border-color: #e67e22; /* Tu naranja corporativo */
-}
-
-.tarjeta-diseno img {
-    width: 100%;
-    height: 180px;
-    object-fit: cover;
-    background-color: #e2e8f0;
-    border-bottom: 1px solid #e2e8f0;
-}
-
+.grid-disenos { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 20px; }
+.tarjeta-diseno { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 10px; overflow: hidden; cursor: pointer; transition: transform 0.2s ease, box-shadow 0.2s ease; position: relative;}
+.tarjeta-diseno:hover { transform: translateY(-5px); box-shadow: 0 8px 15px rgba(0,0,0,0.1); border-color: #e67e22; }
+.tarjeta-diseno img { width: 100%; height: 180px; object-fit: cover; background-color: #e2e8f0; border-bottom: 1px solid #e2e8f0; }
 .tarjeta-info { padding: 15px; }
 .tarjeta-info h3 { margin: 0 0 8px 0; font-size: 16px; color: #334155; }
 .tarjeta-info p { margin: 4px 0; font-size: 13px; color: #64748b; }
 .tarjeta-info .precio-tarjeta { color: #e67e22; font-weight: bold; font-size: 15px; margin-top: 10px; }
+.btn-eliminar-diseno { position: absolute; top: 10px; right: 10px; background-color: rgba(255, 0, 0, 0.8); color: white; font-size: 16px; width: 30px; height: 30px; display: flex; justify-content: center; align-items: center; border-radius: 50%; cursor: pointer; z-index: 10; transition: background 0.2s; }
+.btn-eliminar-diseno:hover { background-color: rgb(255, 0, 0); transform: scale(1.1); }
 
-.btn-eliminar-diseno {
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    background-color: rgba(255, 0, 0, 0.8);
-    color: white;
-    font-size: 16px;
-    width: 30px;
-    height: 30px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    border-radius: 50%;
-    cursor: pointer;
-    z-index: 10;
-    transition: background 0.2s;
+/* Modal Mensajes Pequeños */
+.modal-ui-overlay {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0, 0, 0, 0.7); backdrop-filter: blur(3px); display: flex; align-items: center; justify-content: center; z-index: 10000000; pointer-events: auto;
 }
+.modal-ui-caja { background: #1a1a1a; color: #ffffff; padding: 24px; border-radius: 12px; width: 90%; max-width: 400px; box-shadow: 0 10px 25px rgba(0,0,0,0.5); text-align: center; }
+.modal-ui-input { width: 100%; padding: 10px; margin-bottom: 20px; border-radius: 6px; border: 1px solid #444; background: #2a2a2a; color: white; box-sizing: border-box; }
+.modal-ui-botones { display: flex; justify-content: center; gap: 12px; }
+.modal-ui-botones button { padding: 10px 20px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; transition: all 0.2s; }
+.btn-primario { background: #f39c12; color: white; }
+.btn-primario:hover { background: #e67e22; }
+.btn-secundario { background: #555; color: white; }
+.btn-secundario:hover { background: #444; }
 
-.btn-eliminar-diseno:hover {
-    background-color: rgb(255, 0, 0);
-    transform: scale(1.1);
+/* --- MODAL INFORME PDF --- */
+.modal-informe-overlay {
+    position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+    background: rgba(15, 23, 42, 0.65); backdrop-filter: blur(5px); z-index: 10000000; 
+    display: flex; align-items: center; justify-content: center; padding: 20px; box-sizing: border-box; pointer-events: auto; 
 }
+.modal-informe-contenido { background: #ffffff; border-radius: 16px; width: 100%; max-width: 520px; box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2); overflow: hidden; animation: aparecerModal 0.25s ease-out; border: 1px solid #e2e8f0; }
+@keyframes aparecerModal { from { opacity: 0; transform: scale(0.92) translateY(10px); } to { opacity: 1; transform: scale(1) translateY(0); } }
+.modal-informe-header { display: flex; justify-content: space-between; align-items: center; padding: 16px 20px; border-bottom: 1px solid #e2e8f0; background: #f8fafc; }
+.modal-informe-header h3 { margin: 0; font-size: 16px; color: #1e293b; font-weight: 700; }
+.modal-btn-cerrar { background: transparent; border: none; font-size: 18px; color: #64748b; cursor: pointer; padding: 4px 8px; border-radius: 6px; transition: all 0.15s ease; pointer-events: auto; }
+.modal-btn-cerrar:hover { background: #e2e8f0; color: #0f172a; }
+.modal-informe-body { padding: 20px; }
+.modal-descripcion { font-size: 13px; color: #64748b; margin: 0 0 16px 0; line-height: 1.5; }
+.resumen-modal-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 20px; }
+.resumen-item { background: #f1f5f9; border-radius: 8px; padding: 10px 14px; display: flex; flex-direction: column; }
+.resumen-label { font-size: 11px; font-weight: 600; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; }
+.resumen-valor { font-size: 18px; font-weight: 700; color: #1e293b; margin-top: 2px; }
+.resumen-valor.valor-costo { color: #27ae60; }
+.modal-opciones-descarga { display: flex; flex-direction: column; gap: 10px; }
+.btn-opcion-descarga { display: flex; align-items: center; gap: 14px; padding: 12px 16px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; cursor: pointer; text-align: left; transition: all 0.2s ease; pointer-events: auto; }
+.btn-opcion-descarga:hover { background: #f1f5f9; border-color: #cbd5e1; transform: translateX(4px); }
+.icono-opcion { font-size: 24px; flex-shrink: 0; }
+.texto-opcion strong { display: block; font-size: 14px; color: #1e293b; }
+.texto-opcion small { display: block; font-size: 11px; color: #64748b; margin-top: 2px; }
+.btn-descarga-pdf { border-left: 4px solid #e67e22; }
+.btn-descarga-html { border-left: 4px solid #3498db; }
+.btn-descarga-print { border-left: 4px solid #2ecc71; }
 
+body.tema-oscuro .modal-informe-contenido { background: #1e293b; border-color: #334155; color: #f1f5f9; }
+body.tema-oscuro .modal-informe-header { background: #0f172a; border-bottom-color: #334155; }
+body.tema-oscuro .modal-informe-header h3 { color: #f8fafc; }
+body.tema-oscuro .modal-btn-cerrar { color: #94a3b8; }
+body.tema-oscuro .modal-btn-cerrar:hover { background: #334155; color: #ffffff; }
+body.tema-oscuro .resumen-item { background: #0f172a; }
+body.tema-oscuro .resumen-label { color: #94a3b8; }
+body.tema-oscuro .resumen-valor { color: #f8fafc; }
+body.tema-oscuro .btn-opcion-descarga { background: #0f172a; border-color: #334155; }
+body.tema-oscuro .btn-opcion-descarga:hover { background: #1e293b; border-color: #475569; }
+body.tema-oscuro .texto-opcion strong { color: #f8fafc; }
 
-body.tema-oscuro .panel-superior-derecho,
-body.tema-oscuro .panel-inferior-centro,
-body.tema-oscuro .panel-instrucciones {
-    background: rgba(30, 41, 59, 0.95);
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
-}
-
-body.tema-oscuro .titulo-desglose,
-body.tema-oscuro #lista-objetos-container h3, 
-body.tema-oscuro #lista-objetos-container h4 {
-    color: #ffffff !important;
-    border-bottom-color: #444444; /* Línea separadora sutil */
-}
-
-body.tema-oscuro .panel-instrucciones {
-    color: #ffffff;
-    /* Opcional: aseguramos que el fondo del panel también sea oscuro para buen contraste */
-    background: rgba(30, 41, 59, 0.85); 
-}
 
 body.tema-oscuro .presupuesto-total {
+    background-color: rgba(30, 41, 59, 0.95); 
     color: #e2e8f0;
+    border: 1px solid #334155; 
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4); 
 }
 
-/* Fondo oscuro unificado para el área de contenido de las pestañas */
-body.tema-oscuro .contenido-tab {
-    background-color: transparent;
-}
 
-/* --- Estlo para mensajes de confirmación de acciónes en vista 3D  --- */
-.modal-ui-overlay {
-    position: fixed;
-    top: 0; left: 0; width: 100%; height: 100%;
-    background: rgba(0, 0, 0, 0.7);
-    backdrop-filter: blur(3px);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 10000000;
-    pointer-events: auto;
-}
-.modal-ui-caja {
-    background: #1a1a1a;
-    color: #ffffff;
-    padding: 24px;
-    border-radius: 12px;
-    width: 90%;
-    max-width: 400px;
-    box-shadow: 0 10px 25px rgba(0,0,0,0.5);
-    text-align: center;
-    font-family: sans-serif;
-}
-.modal-ui-caja h3 { 
-    margin-top: 0; 
-    margin-bottom: 12px; 
-    font-size: 1.2rem; 
-}
-.modal-ui-caja p { 
-    margin-bottom: 20px; 
-    font-size: 0.95rem; 
-    color: #dcdcdc; 
-    line-height: 1.5; 
-    white-space: pre-wrap; 
-}
-.modal-ui-input {
-    width: 100%; 
-    padding: 10px; 
-    margin-bottom: 20px;
-    border-radius: 6px; 
-    border: 1px solid #444;
-    background: #2a2a2a; 
-    color: white;
-    box-sizing: border-box;
-}
-.modal-ui-botones { 
-    display: flex; 
-    justify-content: center; 
-    gap: 12px; 
-}
-.modal-ui-botones button {
-    padding: 10px 20px; 
-    border: none; 
-    border-radius: 6px;
-    cursor: pointer; 
-    font-weight: bold; 
-    transition: all 0.2s;
-    pointer-events: auto;
-}
-.btn-primario { 
-    background: #f39c12; 
-    color: white; 
-}
-.btn-primario:hover { 
-    background: #e67e22; 
-}
-.btn-secundario { 
-    background: #555; 
-    color: white; 
-}
-.btn-secundario:hover { 
-    background: #444; 
-}
-
-/* --- Tarjetas del Tab Dimensiones --- */
-.caja-dimensiones-grid {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-    margin-top: 10px;
-}
-
-.tarjeta-dimensiones {
-    background: #f1f5f9;
-    border: 1px solid #e2e8f0;
-    border-radius: 8px;
-    padding: 12px;
-    text-align: center;
-    transition: all 0.2s ease;
-}
-
-.etiqueta-dimensiones {
-    font-size: 11px;
-    color: #64748b;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-}
-
-.valor-dimensiones {
-    font-size: 28px;
-    font-weight: 700;
-    margin-top: 4px;
-}
-
-.valor-perimetro {
-    color: #e67e22;
-}
-
-.valor-area {
-    color: #2c3e50;
-}
-
-/* Modo oscuro para Dimensiones */
-body.tema-oscuro .tarjeta-dimensiones {
-    background: #1e293b;
-    border-color: #334155;
-}
-
-body.tema-oscuro .etiqueta-dimensiones {
-    color: #94a3b8;
-}
-
-body.tema-oscuro .valor-area {
-    color: #e2e8f0;
-}
-
-/* --- Botón Descargar Informe en Panel Superior --- */
-.btn-descargar-informe {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    width: 100%;
-    margin-top: 12px;
-    padding: 10px 14px;
-    background: linear-gradient(135deg, #e67e22, #d35400);
-    color: #ffffff;
-    border: none;
-    border-radius: 8px;
-    font-size: 13px;
-    font-weight: 700;
-    cursor: pointer;
-    box-shadow: 0 4px 10px rgba(230, 126, 34, 0.25);
-    transition: all 0.2s ease;
-    user-select: none;
-}
-
-.btn-descargar-informe:hover {
-    background: linear-gradient(135deg, #d35400, #c0392b);
-    transform: translateY(-1px);
-    box-shadow: 0 6px 14px rgba(230, 126, 34, 0.35);
-}
-
-.btn-descargar-informe:active {
-    transform: translateY(0);
-}
-
-body.tema-oscuro .btn-descargar-informe {
-    background: linear-gradient(135deg, #f39c12, #e67e22);
-    box-shadow: 0 4px 12px rgba(243, 156, 18, 0.3);
-}
-
-/* --- Modal de Descarga de Informe --- */
-.modal-informe-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    background: rgba(15, 23, 42, 0.65);
-    backdrop-filter: blur(5px);
-    z-index: 10000000; /* Aseguramos que esté por encima de cualquier elemento 3D */
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 20px;
-    box-sizing: border-box;
-    pointer-events: auto; /* <-- ESTO REACTIVA LOS CLICS EN EL MODAL REPORTE */
-}
-
-.modal-informe-contenido {
-    background: #ffffff;
-    border-radius: 16px;
-    width: 100%;
-    max-width: 520px;
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
-    overflow: hidden;
-    animation: aparecerModal 0.25s ease-out;
-    border: 1px solid #e2e8f0;
-}
-
-@keyframes aparecerModal {
-    from {
-        opacity: 0;
-        transform: scale(0.92) translateY(10px);
-    }
-    to {
-        opacity: 1;
-        transform: scale(1) translateY(0);
-    }
-}
-
-.modal-informe-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 16px 20px;
-    border-bottom: 1px solid #e2e8f0;
-    background: #f8fafc;
-}
-
-.modal-informe-header h3 {
-    margin: 0;
-    font-size: 16px;
-    color: #1e293b;
-    font-weight: 700;
-}
-
-.modal-btn-cerrar {
-    background: transparent;
-    border: none;
-    font-size: 18px;
-    color: #64748b;
-    cursor: pointer;
-    padding: 4px 8px;
-    border-radius: 6px;
-    transition: all 0.15s ease;
-    pointer-events: auto;
-}
-
-.modal-btn-cerrar:hover {
-    background: #e2e8f0;
-    color: #0f172a;
-}
-
-.modal-informe-body {
-    padding: 20px;
-}
-
-.modal-descripcion {
-    font-size: 13px;
-    color: #64748b;
-    margin: 0 0 16px 0;
-    line-height: 1.5;
-}
-
-.resumen-modal-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 10px;
-    margin-bottom: 20px;
-}
-
-.resumen-item {
-    background: #f1f5f9;
-    border-radius: 8px;
-    padding: 10px 14px;
-    display: flex;
-    flex-direction: column;
-}
-
-.resumen-label {
-    font-size: 11px;
-    font-weight: 600;
-    color: #64748b;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-}
-
-.resumen-valor {
-    font-size: 18px;
-    font-weight: 700;
-    color: #1e293b;
-    margin-top: 2px;
-}
-
-.resumen-valor.valor-costo {
-    color: #27ae60;
-}
-
-.modal-opciones-descarga {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-}
-
-.btn-opcion-descarga {
-    display: flex;
-    align-items: center;
-    gap: 14px;
-    padding: 12px 16px;
-    background: #f8fafc;
-    border: 1px solid #e2e8f0;
-    border-radius: 10px;
-    cursor: pointer;
-    text-align: left;
-    transition: all 0.2s ease;
-    pointer-events: auto;
-}
-
-.btn-opcion-descarga:hover {
-    background: #f1f5f9;
-    border-color: #cbd5e1;
-    transform: translateX(4px);
-}
-
-.icono-opcion {
-    font-size: 24px;
-    flex-shrink: 0;
-}
-
-.texto-opcion strong {
-    display: block;
-    font-size: 14px;
-    color: #1e293b;
-}
-
-.texto-opcion small {
-    display: block;
-    font-size: 11px;
-    color: #64748b;
-    margin-top: 2px;
-}
-
-.btn-descarga-pdf {
-    border-left: 4px solid #e67e22;
-}
-
-.btn-descarga-html {
-    border-left: 4px solid #3498db;
-}
-
-.btn-descarga-print {
-    border-left: 4px solid #2ecc71;
-}
-
-/* Modo oscuro para el Modal */
-body.tema-oscuro .modal-informe-contenido {
-    background: #1e293b;
-    border-color: #334155;
-    color: #f1f5f9;
-}
-
-body.tema-oscuro .modal-informe-header {
-    background: #0f172a;
-    border-bottom-color: #334155;
-}
-
-body.tema-oscuro .modal-informe-header h3 {
-    color: #f8fafc;
-}
-
-body.tema-oscuro .modal-btn-cerrar {
-    color: #94a3b8;
-}
-
-body.tema-oscuro .modal-btn-cerrar:hover {
-    background: #334155;
-    color: #ffffff;
-}
-
-body.tema-oscuro .modal-descripcion {
-    color: #94a3b8;
-}
-
-body.tema-oscuro .resumen-item {
-    background: #0f172a;
-}
-
-body.tema-oscuro .resumen-label {
-    color: #94a3b8;
-}
-
-body.tema-oscuro .resumen-valor {
-    color: #f8fafc;
-}
-
-body.tema-oscuro .btn-opcion-descarga {
-    background: #0f172a;
-    border-color: #334155;
-}
-
-body.tema-oscuro .btn-opcion-descarga:hover {
-    background: #1e293b;
-    border-color: #475569;
-}
-
-body.tema-oscuro .texto-opcion strong {
-    color: #f8fafc;
-}
-
-body.tema-oscuro .texto-opcion small {
-    color: #94a3b8;
+body.tema-oscuro #total-3d {
+    color: #4ade80; 
 }

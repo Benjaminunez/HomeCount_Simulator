@@ -301,3 +301,18 @@ document.addEventListener("click", (e) => {
         modal.style.display = "none";
     }
 });
+
+function togglePanelDerecho() {
+    const panel = document.querySelector('.panel-superior-derecho');
+    const btn = document.getElementById('btn-toggle-panel-der');
+    
+    // Alterna la clase 'colapsado'
+    panel.classList.toggle('colapsado');
+    
+    // Cambia el texto e ícono dependiendo del estado
+    if (panel.classList.contains('colapsado')) {
+        btn.innerHTML = '▼ Mostrar Detalles';
+    } else {
+        btn.innerHTML = '▲ Ocultar Detalles';
+    }
+}

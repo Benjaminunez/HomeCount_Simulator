@@ -32,8 +32,14 @@
     <!-- 2. Capa de Interfaz (UI) flotante invisible que contiene los widgets -->
     <div id="ui-flotante">
         
-        <!-- Widget Superior Derecho: Presupuesto y Botón Borrar -->
+        <!-- Costo Total Flotante (Se ubicará con el CSS position: absolute; top: 15px; right: 15px;) -->
+        <div class="presupuesto-total">
+            Costo Total: <strong id="total-3d">$0</strong> CLP
+        </div>
+        
+        <!-- Widget Superior Derecho: Herramientas y Pestañas -->
         <div class="panel-superior-derecho">
+            
             <div id="contenedor-acciones-superiores">
                 <button id="btn-borrar-todo" class="btn-peligro" onclick="limpiarEscenaCompleta(scene, objetosInteractuables)"> 
                     🗑️
@@ -45,48 +51,53 @@
                     <button id="btn-generar-informe" onclick="abrirModalInforme()">📄</button>
                 {% endif %}
             </div>
+            
+            <!-- Botón para retraer el panel -->
+            <button id="btn-toggle-panel-der" onclick="togglePanelDerecho()">▲ Ocultar Detalles</button>
     
-            <!-- Botones de Pestañas (Tabs) -->
-            <div class="navegacion-tabs-derecho">
-                <button class="btn-tab activo" onclick="cambiarTab('tab-dimensiones', this); calcularYMostrarPerimetro()">📐 Dimensiones</button>
-                <button class="btn-tab" onclick="cambiarTab('tab-detalle', this)">📋 Detalle</button>
-            </div>
+            <!-- Contenedor que se ocultará/mostrará -->
+            <div id="contenido-panel-derecho">
+                
+                <!-- Botones de Pestañas (Tabs) -->
+                <div class="navegacion-tabs-derecho">
+                    <button class="btn-tab activo" onclick="cambiarTab('tab-dimensiones', this); calcularYMostrarPerimetro()">📐 Dimensiones</button>
+                    <button class="btn-tab" onclick="cambiarTab('tab-detalle', this)">📋 Detalle</button>
+                </div>
 
-            <!-- Contenedores de Información -->
-            <div id="contenedor-tabs-derecho">
-                <!-- 1. Tab: Dimensiones -->
-                <div id="tab-dimensiones" class="contenido-tab" style="display: block;">
-                    <h4 class="titulo-desglose">Dimensiones del Proyecto</h4>
-                    <hr style="border-color: #ddd; margin-bottom: 15px;">
+                <!-- Contenedores de Información -->
+                <div id="contenedor-tabs-derecho">
                     
-                    <div id="contenedor-resultados-dimensiones">
-                        <p style="margin-bottom: 10px;">
-                            <strong>Perímetro Exterior:</strong> 
-                            <span id="val-perimetro">0</span> metros.
-                        </p>
+                    <!-- 1. Tab: Dimensiones -->
+                    <div id="tab-dimensiones" class="contenido-tab" style="display: block;">
+                        <h4 class="titulo-desglose">Dimensiones del Proyecto</h4>
+                        <hr style="border-color: #ddd; margin-bottom: 15px;">
+                        
+                        <div id="contenedor-resultados-dimensiones">
+                            <p style="margin-bottom: 10px;">
+                                <strong>Perímetro Exterior:</strong> 
+                                <span id="val-perimetro">0</span> metros.
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- 2. Tab: Detalle (Materiales) -->
+                    <div id="tab-detalle" class="contenido-tab" style="display: none;">
+                        <h4 class="titulo-desglose">Sumario de Materiales</h4>
+                        <ul id="lista-objetos-ui">
+                            <!-- JS inyectará los materiales aquí -->
+                        </ul>
                     </div>
                 </div>
-
-                <!-- 2. Tab: Detalle (Materiales) -->
-                <div id="tab-detalle" class="contenido-tab" style="display: none;">
-                    <h4 class="titulo-desglose">Sumario de Materiales</h4>
-                    <ul id="lista-objetos-ui">
-                        <!-- JS inyectará los materiales aquí -->
-                    </ul>
-                </div>
-            </div>
-            
-            <div class="presupuesto-total">
-                Costo Total: <strong id="total-3d">$0</strong> CLP
+                
             </div>
         </div>
 
-            <!-- Instrucciones (Flotantes arriba al centro) -->
-            <div class="panel-instrucciones">
-                <p><strong>Alt:</strong> Modo Libre | <strong>Click:</strong> Construir | <strong>Shift + Click:</strong> Borrar | <strong>Ajustar Tamaño:</strong> btn + / btn - </p>
-            </div>
+        <!-- Instrucciones (Flotantes arriba al centro) -->
+        <div class="panel-instrucciones">
+            <p><strong>Alt:</strong> Modo Libre | <strong>Click:</strong> Construir | <strong>Shift + Click:</strong> Borrar | <strong>Ajustar Tamaño:</strong> btn + / btn - </p>
+        </div>
 
-            <!-- Catálogo Inferior Centrado (Contenedores vacíos para inyectar con JS) -->
+        <!-- Catálogo Inferior Centrado -->
         <div id="zona-menu-inferior">            
             <div id="filtros-categorias" class="tabs-categorias"></div>
             <div class="panel-inferior-centro">
@@ -95,6 +106,7 @@
             </div>
         </div>
 
+        <!-- Modal de Mis Diseños Guardados -->
         <div id="modal-mis-disenos" class="modal-oculto">
             <div class="modal-contenido">
                 <div class="modal-header">
@@ -106,6 +118,7 @@
             </div>
         </div>
 
+        <!-- Modal de Mensajes UI -->
         <div id="modal-personalizado-overlay" class="modal-ui-overlay" style="display: none;">
             <div class="modal-ui-caja">
                 <h3 id="modal-ui-titulo">Mensaje</h3>
@@ -118,7 +131,7 @@
             </div>
         </div>
 
-        <!-- NUEVO: Modal de Descarga de Informe -->
+        <!-- Modal de Descarga de Informe -->
         <div id="modal-informe" class="modal-informe-overlay" style="display: none;">
             <div class="modal-informe-contenido">
                 <div class="modal-informe-header">
@@ -151,5 +164,5 @@
         </div>
 
     </div>
-    
 </section>
+
