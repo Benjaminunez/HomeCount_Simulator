@@ -230,7 +230,13 @@ body.tema-oscuro #btn-toggle-panel-der:hover { color: #f39c12; }
 }
 
 #tab-dimensiones .titulo-desglose {
-    color: #ffffff; font-size: 1.1rem; font-weight: 600; margin-bottom: 8px; border: none;
+    color: #ffffff; 
+    font-size: 1.1rem; 
+    font-weight: 600; 
+    margin-bottom: 8px; 
+    border: none;
+    display: flex;
+    justify-content: center;
 }
 
 #tab-dimensiones hr { border-color: rgba(255, 255, 255, 0.1) !important; margin-bottom: 15px !important; }
@@ -354,6 +360,14 @@ body.tema-oscuro .panel-superior-derecho, body.tema-oscuro .panel-inferior-centr
 body.tema-oscuro .panel-instrucciones { color: #ffffff; background: rgba(30, 41, 59, 0.85); }
 body.tema-oscuro #lista-objetos-container h3, body.tema-oscuro #lista-objetos-container h4 { color: #ffffff !important; border-bottom-color: #444444; }
 body.tema-oscuro .contenido-tab { background-color: transparent; }
+body.tema-oscuro .titulo-desglose {color: #ffffff;}
+body.tema-oscuro .nombre-item {color: #ffffff;}
+body.tema-oscuro kbd {
+    background-color: #334155;
+    border: 1px solid #1e293b;
+    box-shadow: 0 3px 0 #0f172a, 0 3px 3px rgba(0, 0, 0, 0.3);
+    color: #e2e8f0;
+}
 
 /* --- MODALES UI GLOBALES --- */
 .modal-oculto {
@@ -445,4 +459,21 @@ body.tema-oscuro .presupuesto-total {
 
 body.tema-oscuro #total-3d {
     color: #4ade80; 
+}
+
+/*detalle de teclasd en menu central de instrucciones*/
+kbd {
+    background-color: #ffffff;
+    border: 1px solid #c8c8c8;
+    border-radius: 5px;
+    box-shadow: 0 3px 0 #a9a9a9, 0 3px 3px rgba(0, 0, 0, 0.1);
+    color: #333333;
+    display: inline-block;
+    font-family: inherit; /* o 'Courier New', monospace si prefieres */
+    font-size: 0.85em;
+    font-weight: bold;
+    padding: 3px 8px;
+    margin: 0 3px;
+    line-height: 1.2;
+    text-transform: capitalize;
 }

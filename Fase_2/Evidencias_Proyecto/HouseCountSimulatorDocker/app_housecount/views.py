@@ -2,7 +2,7 @@ import json
 import requests
 import base64
 from django.core.files.base import ContentFile
-
+import random
 from django.shortcuts import render, redirect
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.contrib.auth import login, logout, authenticate
@@ -392,13 +392,16 @@ def obtener_disenos(request):
     if not request.user.is_authenticated:
         return JsonResponse({'estado': 'error', 'mensaje': 'Debes iniciar sesión.'}, status=403)
     
-    proyectos = Proyecto3D.objects.filter(usuario=request.user).order_by('-fecha_creacion')
+    # 1. Cambiamos el ordenamiento para priorizar el último modificado
+    proyectos = Proyecto3D.objects.filter(usuario=request.user).order_by('-fecha_modificacion')
+    
     lista = [
         {
             'id': p.id,
             'nombre': p.nombre,
             'costo_total': float(p.costo_total),
-            'fecha': p.fecha_creacion.strftime('%d/%m/%Y %H:%M'),
+            # 2. Mostramos la fecha de la última actualización en la tarjeta
+            'fecha': p.fecha_modificacion.strftime('%d/%m/%Y %H:%M'),
             'datos_escena': p.datos_escena,
             'datos_camara': p.datos_camara,
             'imagen_url': p.imagen_captura.url if p.imagen_captura else None,

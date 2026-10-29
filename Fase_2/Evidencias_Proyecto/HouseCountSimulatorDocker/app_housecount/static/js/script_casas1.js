@@ -614,6 +614,61 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    async function autocompletarUltimoDiseño() {
+        const btnGuardarVerificacion = document.getElementById('btn-guardar-modelo');
+        
+        // Si el botón no existe, asumimos que no está logueado y usamos LocalStorage
+        if (!btnGuardarVerificacion) {
+            cargarEscenaLocal();
+            if (typeof cargarCamaraLocal === 'function') cargarCamaraLocal();
+            actualizarListaUI();
+            return;
+        }
+
+        try {
+            const response = await fetch('/api/obtener-disenos/');
+            const data = await response.json();
+
+            // Si hay diseños guardados en la BD
+            if (response.ok && data.disenos && data.disenos.length > 0) {
+                const ultimoProyecto = data.disenos[0]; 
+                
+                localStorage.removeItem('proyecto_homecount');
+                localStorage.removeItem('camara_homecount');
+
+                if (typeof ejecutarCargaEscena3D === 'function') {
+                    const callbackActualizarUI = (nuevoCosto, idProyecto, nombreProyecto) => {
+                        costoTotal = nuevoCosto; 
+                        proyectoCargadoId = idProyecto;       
+                        proyectoCargadoNombre = nombreProyecto; 
+                        
+                        if (typeof uiTotal !== 'undefined' && uiTotal) {
+                            uiTotal.textContent = `$${new Intl.NumberFormat('es-CL').format(costoTotal)}`;
+                        }
+                        actualizarListaUI();       
+                        recalcularTamanoTerreno(); 
+                    };
+                    
+                    ejecutarCargaEscena3D(ultimoProyecto, scene, objetosInteractuables, camera, controles, callbackActualizarUI);
+                }
+            } else {
+                // Consulta exitosa pero sin proyectos guardados
+                cargarEscenaLocal();
+                if (typeof cargarCamaraLocal === 'function') cargarCamaraLocal();
+                actualizarListaUI(); 
+            }
+        } catch (err) {
+            console.error("No se pudo cargar el último diseño desde la base de datos:", err);
+            // Fallback en caso de error de red
+            cargarEscenaLocal();
+            if (typeof cargarCamaraLocal === 'function') cargarCamaraLocal();
+            actualizarListaUI(); 
+        }
+    }
+
+    // Ejecutar la inicialización
+    autocompletarUltimoDiseño();
+
     window.addEventListener('beforeunload', guardarCamaraLocal);
 
     let inicioX = 0, inicioY = 0;
@@ -711,6 +766,7 @@ document.addEventListener('DOMContentLoaded', () => {
         raycaster.setFromCamera(mouse, camera);
 
         if (event.shiftKey) { 
+            // --- MODO BORRADO CON SHIFT ---
             const objetosConstruidos = objetosInteractuables.filter(obj => obj !== plano);
             const intersecciones = raycaster.intersectObjects(objetosConstruidos, true);
 
@@ -726,8 +782,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 recalcularTamanoTerreno(); 
                 guardarEscenaLocal();
                 if (tooltip) tooltip.style.display = 'none';
+
+                // 1. AÑADIDO: Recalcula y muestra perímetro/área tras eliminar el objeto
+                calcularYMostrarPerimetro();
             }
         } else { 
+            // --- MODO AGREGAR/CONSTRUIR ---
             const intersecciones = raycaster.intersectObjects(objetosInteractuables, true);
             if (intersecciones.length > 0) {
                 const interseccion = intersecciones[0];
@@ -753,6 +813,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 recalcularTamanoTerreno(); 
                 actualizarPresupuesto(precioActual);
                 guardarEscenaLocal();
+
+                // 2. AÑADIDO: Recalcula y muestra perímetro/área tras colocar el nuevo objeto
+                calcularYMostrarPerimetro();
             }
         }
     });
@@ -804,6 +867,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 camera.position.set(500, 800, 1300);
                 controles.target.set(0, 0, 0);
                 controles.update();
+                
+                // NUEVO: Validación segura para recalcular las dimensiones a 0
+                if (typeof window.calcularYMostrarPerimetro === 'function') {
+                    window.calcularYMostrarPerimetro();
+                }
             }
         });
     }

@@ -7,17 +7,17 @@ async function procesarGuardado(objetos, camera, controles, costoTotal, miEscena
 
     let nombreProyecto = proyectoNombre;
 
-    // Lógica para Sobrescribir vs Guardar Nuevo
+    // NUEVA LÓGICA: Si existe ID, solo se actualiza. Si no existe, se crea uno nuevo.
     if (proyectoId) {
-        const sobreescribir = await DialogoUI.confirm(`Actualmente estás editando "${proyectoNombre}".\n\n¿Deseas guardar los cambios en este mismo diseño?\n(Haz clic en "Cancelar" para guardarlo como un diseño totalmente nuevo)`);
+        const confirmarActualizacion = await DialogoUI.confirm(`Actualmente estás editando "${proyectoNombre}".\n\n¿Deseas actualizar y sobrescribir este diseño con los nuevos cambios?`);
         
-        if (!sobreescribir) {
-            nombreProyecto = await DialogoUI.prompt("Ingresa un nombre para la nueva copia del proyecto:");
-            if (!nombreProyecto) return;
-            proyectoId = null; // Al ponerlo en null, forzamos al servidor a crear uno nuevo
+        // Si el usuario hace clic en "Cancelar", detenemos el proceso de guardado.
+        if (!confirmarActualizacion) {
+            return; 
         }
     } else {
-        nombreProyecto = await DialogoUI.prompt("Nombre para este proyecto:");
+        // Si es un proyecto completamente nuevo (proyectoId es null)
+        nombreProyecto = await DialogoUI.prompt("Nombre para este nuevo proyecto:");
         if (!nombreProyecto) return;
     }
 
@@ -114,7 +114,6 @@ async function cargarDisenosUsuario(scene, objetos, camera, controles, callbackA
                 </div>
             `;
 
-            // EVENTO 1: Clic en el basurero (Eliminar)
             const btnEliminar = card.querySelector('.btn-eliminar-diseno');
             btnEliminar.onclick = async (e) => {
                 e.stopPropagation(); 
@@ -124,7 +123,6 @@ async function cargarDisenosUsuario(scene, objetos, camera, controles, callbackA
                 }
             };
 
-            // EVENTO 2: Clic en la tarjeta (Cargar 3D)
             card.onclick = (e) => {
                 e.stopPropagation(); 
                 modal.style.display = 'none';
@@ -262,6 +260,7 @@ async function ejecutarCargaEscena3D(proyecto, scene, objetos, camera, controles
     if (callbackActualizarUI) {
         callbackActualizarUI(nuevoCostoTotal, proyecto.id, proyecto.nombre);
     }
+    
     if (typeof window.calcularYMostrarPerimetro === 'function') {
         window.calcularYMostrarPerimetro();
     }
@@ -306,13 +305,21 @@ function togglePanelDerecho() {
     const panel = document.querySelector('.panel-superior-derecho');
     const btn = document.getElementById('btn-toggle-panel-der');
     
-    // Alterna la clase 'colapsado'
     panel.classList.toggle('colapsado');
     
-    // Cambia el texto e ícono dependiendo del estado
     if (panel.classList.contains('colapsado')) {
         btn.innerHTML = '▼ Mostrar Detalles';
     } else {
         btn.innerHTML = '▲ Ocultar Detalles';
     }
 }
+
+document.addEventListener('DOMContentLoaded', () => {
+    const panel = document.querySelector('.panel-superior-derecho');
+    const btn = document.getElementById('btn-toggle-panel-der');
+    
+    if (panel && btn) {
+        panel.classList.add('colapsado');
+        btn.innerHTML = '▼ Mostrar Detalles';
+    }
+});
