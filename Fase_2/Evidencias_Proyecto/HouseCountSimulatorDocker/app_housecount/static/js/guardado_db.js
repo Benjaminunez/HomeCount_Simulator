@@ -262,6 +262,9 @@ async function ejecutarCargaEscena3D(proyecto, scene, objetos, camera, controles
     if (callbackActualizarUI) {
         callbackActualizarUI(nuevoCostoTotal, proyecto.id, proyecto.nombre);
     }
+    if (typeof window.calcularYMostrarPerimetro === 'function') {
+        window.calcularYMostrarPerimetro();
+    }
 }
 
 // --- 4. HELPERS Y CERRADO DE MODAL ---

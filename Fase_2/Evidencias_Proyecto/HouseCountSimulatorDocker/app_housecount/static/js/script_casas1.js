@@ -939,12 +939,26 @@ document.addEventListener('DOMContentLoaded', () => {
     window.obtenerCalculoDimensiones = obtenerCalculoDimensiones;
 
     function calcularYMostrarPerimetro() {
-        const dim = obtenerCalculoDimensiones();
-        // Usa el DialogoUI que ya tienes configurado en script_casa1.js
-        if(typeof DialogoUI !== 'undefined') {
-            DialogoUI.alert(`📐 Resultados del terreno:\n\n• Perímetro Exterior: ${dim.perimetro} metros.\n• Área Construida: ${dim.area} m².`);
-        } else {
-            alert(`Perímetro: ${dim.perimetro}m | Área: ${dim.area}m²`);
+        // 1. Ejecutar el cálculo matemático existente
+        const { perimetro, area } = obtenerCalculoDimensiones(); 
+
+        // 2. Localizar los contenedores en el panel lateral (tab-dimensiones)
+        // Nota: Como no tenían ID en tu HTML, buscaremos la etiqueta <p> para inyectar allí la información.
+        const tabDimensiones = document.getElementById('tab-dimensiones');
+        
+        if (tabDimensiones) {
+            // Encontramos el párrafo con la clase "texto-placeholder" dentro del tab
+            const parrafoInfo = tabDimensiones.querySelector('p.texto-placeholder') || tabDimensiones.querySelector('p');
+            
+            if (parrafoInfo) {
+                // Reemplazamos el texto por los resultados exactos
+                parrafoInfo.innerHTML = `
+                    <strong>Perímetro Exterior:</strong> <span style="color: #e67e22;">${perimetro}</span> metros.<br><br>
+                    <strong>Área Construida:</strong> <span>${area}</span> m&sup2;.
+                `;
+                // Aseguramos quitar la clase de placeholder para que no se vea gris
+                parrafoInfo.classList.remove('texto-placeholder');
+            }
         }
     }
     window.calcularYMostrarPerimetro = calcularYMostrarPerimetro;

@@ -42,24 +42,29 @@
                 {% if user.is_authenticated %}
                     <button id="btn-guardar-modelo">💾</button>
                     <a href="#" id="btn-mis-modelos" style="text-decoration: none;">📁</a>
+                    <button id="btn-generar-informe" onclick="abrirModalInforme()">📄</button>
                 {% endif %}
             </div>
     
             <!-- Botones de Pestañas (Tabs) -->
             <div class="navegacion-tabs-derecho">
-                <!-- NUEVO: Se agregó el cálculo al hacer clic en la pestaña de dimensiones -->
                 <button class="btn-tab activo" onclick="cambiarTab('tab-dimensiones', this); calcularYMostrarPerimetro()">📐 Dimensiones</button>
                 <button class="btn-tab" onclick="cambiarTab('tab-detalle', this)">📋 Detalle</button>
-                <button class="btn-tab" onclick="cambiarTab('tab-modulos', this)">🧱 Módulos</button>
             </div>
 
             <!-- Contenedores de Información -->
             <div id="contenedor-tabs-derecho">
-                
                 <!-- 1. Tab: Dimensiones -->
                 <div id="tab-dimensiones" class="contenido-tab" style="display: block;">
                     <h4 class="titulo-desglose">Dimensiones del Proyecto</h4>
-                    <p class="texto-placeholder">Área y perímetro de la construcción se mostrarán aquí.</p>
+                    <hr style="border-color: #ddd; margin-bottom: 15px;">
+                    
+                    <div id="contenedor-resultados-dimensiones">
+                        <p style="margin-bottom: 10px;">
+                            <strong>Perímetro Exterior:</strong> 
+                            <span id="val-perimetro">0</span> metros.
+                        </p>
+                    </div>
                 </div>
 
                 <!-- 2. Tab: Detalle (Materiales) -->
@@ -69,25 +74,11 @@
                         <!-- JS inyectará los materiales aquí -->
                     </ul>
                 </div>
-
-                <!-- 3. Tab: Módulos -->
-                <div id="tab-modulos" class="contenido-tab" style="display: none;">
-                    <h4 class="titulo-desglose">Módulos Utilizados</h4>
-                    <ul id="lista-modulos-ui">
-                        <!-- JS inyectará los módulos 3D aquí -->
-                    </ul>
-                </div>
-
             </div>
             
             <div class="presupuesto-total">
                 Costo Total: <strong id="total-3d">$0</strong> CLP
             </div>
-
-            <!-- NUEVO: Botón para Descargar el Informe -->
-            <button id="btn-descargar-informe" class="btn-descargar-informe" onclick="abrirModalInforme()">
-                📥 Descargar Informe
-            </button>
         </div>
 
             <!-- Instrucciones (Flotantes arriba al centro) -->
