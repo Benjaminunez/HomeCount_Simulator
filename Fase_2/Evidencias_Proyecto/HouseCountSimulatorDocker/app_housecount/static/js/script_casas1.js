@@ -862,13 +862,16 @@ document.addEventListener('DOMContentLoaded', () => {
                 localStorage.removeItem('proyecto_homecount');
                 localStorage.removeItem('camara_homecount');
 
+                // CLAVE: Resetear el estado del proyecto para forzar la creación de uno nuevo
+                proyectoCargadoId = null;
+                proyectoCargadoNombre = "";
+
                 cambiarTamanoTerreno(1000);
 
                 camera.position.set(500, 800, 1300);
                 controles.target.set(0, 0, 0);
                 controles.update();
                 
-                // NUEVO: Validación segura para recalcular las dimensiones a 0
                 if (typeof window.calcularYMostrarPerimetro === 'function') {
                     window.calcularYMostrarPerimetro();
                 }

@@ -120,6 +120,12 @@ async function cargarDisenosUsuario(scene, objetos, camera, controles, callbackA
                 const confirmar = await DialogoUI.confirm(`¿Estás seguro de que deseas eliminar permanentemente el diseño "${proyecto.nombre}"?`);
                 if (confirmar) {
                     await eliminarDisenoBD(proyecto.id, card); 
+                    
+                    // Si el usuario eliminó el proyecto que estaba editando en ese momento
+                    if (typeof proyectoCargadoId !== 'undefined' && proyectoCargadoId === proyecto.id) {
+                        proyectoCargadoId = null;
+                        proyectoCargadoNombre = "";
+                    }
                 }
             };
 
