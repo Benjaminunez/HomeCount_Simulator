@@ -6,6 +6,7 @@
     <link rel="stylesheet" href="{% static 'css/Style5.css' %}?v=3">
     <script src="{% static 'js/script_casas1.js' %}" defer></script>
     <script src="{% static 'js/guardado_db.js'%}"></script>
+    <script src="{% static 'js/darkMode.js'%}"></script>
     <link rel="icon" type="image/png" href="media/iconosPestana/martillo.ico"> <!--icono para pestaña de navegador-->
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Henny+Penny&family=Monoton&display=swap');
@@ -45,8 +46,8 @@
                     🗑️
                 </button>
                 {% if user.is_authenticated %}
-                    <button id="btn-guardar-modelo">💾</button>
-                    <button id="btn-guardar-copia">🔄</button>
+                    <button id="btn-guardar-modelo">🔄</button>
+                    <button id="btn-guardar-copia">💾</button>
                     <a href="#" id="btn-mis-modelos" style="text-decoration: none;">📁</a>
                     <button id="btn-generar-informe" onclick="abrirModalInforme()">📄</button>
                 {% endif %}

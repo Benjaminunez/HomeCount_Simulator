@@ -374,11 +374,18 @@ body.tema-oscuro kbd {
 
 /* --- MODALES UI GLOBALES --- */
 .modal-oculto {
-    display: none; position: fixed; z-index: 2000; left: 0; top: 0; 
-    width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.6); backdrop-filter: blur(4px);
+    display: none; 
+    position: fixed; 
+    z-index: 2000; 
+    left: 0; 
+    top: 0; 
+    width: 100%; 
+    height: 100%; 
+    background-color: rgba(0, 0, 0, 0.6); 
+    backdrop-filter: blur(4px);
 }
 .modal-contenido {
-    background-color: #f8fafc; margin: 5% auto; padding: 25px; width: 90%; max-width: 1000px;
+    background-color: #f8fafc; margin: 10% auto; padding: 25px; width: 90%; max-width: 1000px;
     border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); max-height: 85vh; overflow-y: auto;
 }
 .modal-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #e2e8f0; padding-bottom: 15px; margin-bottom: 20px; }
