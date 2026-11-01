@@ -1,0 +1,169 @@
+/* --- Fondo de la página interactivo global --- */
+body {
+    /* Color base oscuro por defecto (#1a202c) */
+    --bg-color: rgb(26, 32, 44); 
+
+    font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    margin: 0;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    
+    /* El fondo ahora es uniforme y reacciona a la variable */
+    background-color: var(--bg-color); 
+    transition: background-color 0.1s ease;
+}
+
+/* --- Efecto adicional en la tarjeta --- */
+.login-card {
+    background-color: #ffffff;
+    padding: 40px;
+    border-radius: 12px;
+    /* La sombra reaccionará a la proximidad */
+    box-shadow: 0 10px 25px var(--card-glow, rgba(0, 0, 0, 0.3)); 
+    width: 100%;
+    max-width: 400px;
+    box-sizing: border-box;
+    text-align: center;
+    position: relative; 
+    z-index: 10; 
+    transition: box-shadow 0.2s ease;
+}
+
+.login-card .logo {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 15px; 
+}
+
+.login-card .logo-img {
+    width: 250px; 
+    height: auto;
+    object-fit: contain;
+    transition: transform 0.3s ease;
+}
+
+/* Efecto opcional al pasar el cursor sobre el logo */
+.login-card .logo-img:hover {
+    transform: scale(1.05);
+}
+
+
+
+/* --- Título principal --- */
+.login-card h2 {
+    margin: 0 0 25px 0;
+    color: #1e293b;
+    font-size: 26px;
+    font-weight: 700;
+}
+
+/* --- Forzar que los campos de Django se apilen verticalmente --- */
+.login-form p {
+    display: flex;
+    flex-direction: column;
+    text-align: left;
+    margin-bottom: 18px;
+}
+
+/* --- Etiquetas (Nombre de usuario, Contraseña) --- */
+.login-form label {
+    margin-bottom: 6px;
+    color: #475569;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+/* --- Inputs de texto --- */
+.login-form input {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    font-size: 15px;
+    box-sizing: border-box;
+    transition: all 0.3s ease;
+    background-color: #f8fafc;
+    color: #1e293b;
+}
+
+.login-form input:focus {
+    outline: none;
+    border-color: #f97316; /* Color naranja corporativo */
+    background-color: #ffffff;
+    box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.15);
+}
+
+/* --- Botón Ingresar --- */
+.btn-ingresar {
+    width: 100%;
+    padding: 14px;
+    background-color: #f97316;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    margin-top: 10px;
+}
+
+.btn-ingresar:hover {
+    background-color: #ea580c;
+}
+
+/* --- Enlace de registro --- */
+.login-footer {
+    margin-top: 25px;
+    font-size: 14px;
+    color: #64748b;
+}
+
+.login-footer a {
+    color: #f97316;
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.login-footer a:hover {
+    text-decoration: underline;
+}
+
+/* --- Alertas de Error --- */
+.mensajes-alerta {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 20px 0;
+    text-align: left;
+}
+
+.mensajes-alerta li {
+    background-color: #fef2f2;
+    color: #ef4444;
+    padding: 10px;
+    border-radius: 6px;
+    font-size: 14px;
+    border-left: 4px solid #ef4444;
+}
+
+.alerta.success {
+    background-color: #f0fdf4;
+    color: #166534;
+    border-left: 4px solid #22c55e;
+    padding: 10px;
+    margin-bottom: 15px;
+    border-radius: 4px;
+}
+
+/* Mensajes de error (Rojo) */
+.alerta.error {
+    background-color: #fef2f2;
+    color: #991b1b;
+    border-left: 4px solid #ef4444;
+    padding: 10px;
+    margin-bottom: 15px;
+    border-radius: 4px;
+}

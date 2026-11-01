@@ -7,28 +7,22 @@
     <script src="{% static 'js/script_casas1.js' %}" defer></script>
     <script src="{% static 'js/guardado_db.js'%}"></script>
     <link rel="icon" type="image/png" href="media/iconosPestana/martillo.ico"> <!--icono para pestaña de navegador-->
+    <style>
+    @import url('https://fonts.googleapis.com/css2?family=Henny+Penny&family=Monoton&display=swap');
+    </style>
 </head>
 
-    <!-- Menú de Navegación -->
-    <header class="navbar">
-        <div class="logo">HomeCount Simulator
-        </div>
-        <nav>
-            <ul class="nav-links">
-                <li><a href="{% url 'inicio' %}">Inicio</a></li>
-                <li><a href="{% url 'contrucion' %}">Servicios</a></li>
-                <li><a href="{% url 'casas_rapidas' %}">Proyectos</a></li>
-                <li><a href="{% url 'inicio' %}#contacto" class="btn-contacto">Contacto</a></li>
-            </ul>
-        </nav>
-    </header>
+<!-- Menú de Navegación -->
+{% include 'Navbar.html' %}
 
 <!-- Importar Three.js -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script> <!-- agregado de importaciones de modelos 3d-->
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/DRACOLoader.js"></script>
-<!-- 2. NUEVO: Agregar OrbitControls para poder rotar la cámara -->
+<!-- Agregar OrbitControls para poder rotar la cámara -->
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+<!-- NUEVO: Agregar html2pdf para descargar el informe en PDF -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 
 <section id="constructor-3d" class="seccion-3d">
     
@@ -45,29 +39,60 @@
                     🗑️
                 </button>
                 <button id="btn-modo-oscuro">🌙</button>
+                {% if user.is_authenticated %}
+                    <button id="btn-guardar-modelo">💾</button>
+                    <a href="#" id="btn-mis-modelos" style="text-decoration: none;">📁</a>
+                {% endif %}
             </div>
     
-            <!-- NUEVO: Botón para mostrar/ocultar el sumario -->
-            <button id="btn-detalle-materiales" class="btn-detalle">
-                Detalle <span id="icono-detalle">▼</span>
-            </button>
+            <!-- Botones de Pestañas (Tabs) -->
+            <div class="navegacion-tabs-derecho">
+                <!-- NUEVO: Se agregó el cálculo al hacer clic en la pestaña de dimensiones -->
+                <button class="btn-tab activo" onclick="cambiarTab('tab-dimensiones', this); calcularYMostrarPerimetro()">📐 Dimensiones</button>
+                <button class="btn-tab" onclick="cambiarTab('tab-detalle', this)">📋 Detalle</button>
+                <button class="btn-tab" onclick="cambiarTab('tab-modulos', this)">🧱 Módulos</button>
+            </div>
 
-            <!-- Contenedor que se ocultará -->
-            <div id="lista-objetos-container">
-                <h4 class="titulo-desglose">Sumario de Materiales:</h4>
-                <ul id="lista-objetos-ui">
+            <!-- Contenedores de Información -->
+            <div id="contenedor-tabs-derecho">
+                
+                <!-- 1. Tab: Dimensiones -->
+                <div id="tab-dimensiones" class="contenido-tab" style="display: block;">
+                    <h4 class="titulo-desglose">Dimensiones del Proyecto</h4>
+                    <p class="texto-placeholder">Área y perímetro de la construcción se mostrarán aquí.</p>
+                </div>
 
-                </ul>
-            </div>            
+                <!-- 2. Tab: Detalle (Materiales) -->
+                <div id="tab-detalle" class="contenido-tab" style="display: none;">
+                    <h4 class="titulo-desglose">Sumario de Materiales</h4>
+                    <ul id="lista-objetos-ui">
+                        <!-- JS inyectará los materiales aquí -->
+                    </ul>
+                </div>
+
+                <!-- 3. Tab: Módulos -->
+                <div id="tab-modulos" class="contenido-tab" style="display: none;">
+                    <h4 class="titulo-desglose">Módulos Utilizados</h4>
+                    <ul id="lista-modulos-ui">
+                        <!-- JS inyectará los módulos 3D aquí -->
+                    </ul>
+                </div>
+
+            </div>
             
             <div class="presupuesto-total">
                 Costo Total: <strong id="total-3d">$0</strong> CLP
             </div>
+
+            <!-- NUEVO: Botón para Descargar el Informe -->
+            <button id="btn-descargar-informe" class="btn-descargar-informe" onclick="abrirModalInforme()">
+                📥 Descargar Informe
+            </button>
         </div>
 
             <!-- Instrucciones (Flotantes arriba al centro) -->
             <div class="panel-instrucciones">
-                <p><strong>Alt:</strong> Modo Libre | <strong>Click:</strong> Construir | <strong>Shift + Click:</strong> Borrar</p>
+                <p><strong>Alt:</strong> Modo Libre | <strong>Click:</strong> Construir | <strong>Shift + Click:</strong> Borrar | <strong>Ajustar Tamaño:</strong> btn + / btn - </p>
             </div>
 
             <!-- Catálogo Inferior Centrado (Contenedores vacíos para inyectar con JS) -->
@@ -78,7 +103,62 @@
                 <div id="lista-habitaciones" class="catalogo-scroll"></div>
             </div>
         </div>
-        
+
+        <div id="modal-mis-disenos" class="modal-oculto">
+            <div class="modal-contenido">
+                <div class="modal-header">
+                    <h2>Mis Diseños Guardados</h2>
+                    <span class="cerrar-modal" id="btn-cerrar-modal">&times;</span>
+                </div>
+                <!-- La cuadrícula donde JavaScript inyectará las tarjetas -->
+                <div id="grid-disenos" class="grid-disenos"></div>
+            </div>
+        </div>
+
+        <div id="modal-personalizado-overlay" class="modal-ui-overlay" style="display: none;">
+            <div class="modal-ui-caja">
+                <h3 id="modal-ui-titulo">Mensaje</h3>
+                <p id="modal-ui-mensaje"></p>
+                <input type="text" id="modal-ui-input" class="modal-ui-input" style="display: none;" />
+                <div class="modal-ui-botones">
+                    <button id="modal-ui-btn-cancelar" class="btn-secundario">Cancelar</button>
+                    <button id="modal-ui-btn-aceptar" class="btn-primario">Aceptar</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- NUEVO: Modal de Descarga de Informe -->
+        <div id="modal-informe" class="modal-informe-overlay" style="display: none;">
+            <div class="modal-informe-contenido">
+                <div class="modal-informe-header">
+                    <h3>📑 Informe del Proyecto</h3>
+                    <button class="modal-btn-cerrar" onclick="cerrarModalInforme()">✕</button>
+                </div>
+                <div class="modal-informe-body">
+                    <p class="modal-descripcion">
+                        Genera un informe detallado con el cálculo de perímetro, área construida, desglose de materiales y presupuesto para llevar a ferreterías, cotizar o presentar a tu constructor.
+                    </p>
+                    <div id="resumen-modal-informe" class="resumen-modal-grid"></div>
+                    <div class="modal-opciones-descarga">
+                        <button class="btn-opcion-descarga btn-descarga-html" onclick="descargarInformeHTML()">
+                            <span class="icono-opcion">🌐</span>
+                            <div class="texto-opcion">
+                                <strong>Descargar Informe Web</strong>
+                                <small>Documento web interactivo completo</small>
+                            </div>
+                        </button>
+                        <button class="btn-opcion-descarga btn-descarga-print" onclick="imprimirInforme()">
+                            <span class="icono-opcion">🖨️</span>
+                            <div class="texto-opcion">
+                                <strong>Imprimir directamente</strong>
+                                <small>Abre la ventana de impresión de tu navegador</small>
+                            </div>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
     </div>
     
 </section>

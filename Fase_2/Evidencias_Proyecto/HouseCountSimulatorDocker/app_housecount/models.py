@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
+from django.utils import timezone
 
 class CategoriaMaterial(models.Model):
     nombre = models.CharField(max_length=100, unique=True)
@@ -124,9 +125,28 @@ class Proyecto3D(models.Model):
     usuario = models.ForeignKey(User, on_delete=models.CASCADE)
     nombre = models.CharField(max_length=100)
     costo_total = models.DecimalField(max_digits=12, decimal_places=2, default=0.0)
-    datos_escena = models.JSONField()
-    datos_camara = models.JSONField()
+    datos_escena = models.JSONField(help_text="JSON con objetos y posiciones")
+    datos_camara = models.JSONField(help_text="JSON con posición y target de la cámara")
+    imagen_captura = models.ImageField(upload_to='capturas_proyectos/', blank=True, null=True, help_text="Miniatura del diseño")
+    area_cuadrada = models.DecimalField(max_digits=8, decimal_places=2, default=0.00, help_text="Superficie total estimada")
     fecha_creacion = models.DateTimeField(auto_now_add=True)
+    fecha_modificacion = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return f"{self.nombre} - {self.usuario.username}"
+
+
+class Avatar(models.Model):
+    usuario = models.OneToOneField(User, on_delete=models.CASCADE, related_name='avatar_usuario')
+    imagen = models.ImageField(upload_to='avatares/', null=True, blank=True)
+
+    def __str__(self):
+        return f"Avatar de {self.usuario.username}"
+
+class CodigoRecuperacion(models.Model):
+    usuario = models.ForeignKey(User, on_delete=models.CASCADE)
+    codigo = models.CharField(max_length=6)
+    creado_en = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.usuario.username} - {self.codigo}"

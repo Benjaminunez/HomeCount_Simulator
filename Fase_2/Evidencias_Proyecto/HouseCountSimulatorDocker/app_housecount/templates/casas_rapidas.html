@@ -7,21 +7,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Modalidades de Construcción</title>
     <link rel="stylesheet" href="{% static 'css/Style3.css' %}">
+    <style>
+    @import url('https://fonts.googleapis.com/css2?family=Henny+Penny&family=Monoton&display=swap');
+    </style>
 </head>
 
     <!-- Menú de Navegación -->
-    <header class="navbar">
-        <div class="logo">HomeCount Simulator
-        </div>
-        <nav>
-            <ul class="nav-links">
-                <li><a href="{% url 'inicio' %}">Inicio</a></li>
-                <li><a href="{% url 'contrucion' %}">Servicios</a></li>
-                <li><a href="{% url 'casas_rapidas' %}">Proyectos</a></li>
-                <li><a href="{% url 'inicio' %}#contacto" class="btn-contacto">Contacto</a></li>
-            </ul>
-        </nav>
-    </header>
+{% include 'navbar.html' %}
 
 <!-- Sección Catálogo de Casas Rápidas -->
     <section id="modelos-rapidos" class="seccion-modelos">
@@ -198,10 +190,8 @@
     </div>
 </section>
 
-<!-- Pie de página -->
-<footer>
-    <p>&copy; 2026 ArquiCasa - Todos los derechos reservados.</p>
-</footer>
+    <!-- Pie de página -->
+    {% include 'footer.html' %}
 
 </body>
 </html>

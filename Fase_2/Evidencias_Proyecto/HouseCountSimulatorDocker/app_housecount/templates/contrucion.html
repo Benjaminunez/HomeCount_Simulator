@@ -6,21 +6,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Modalidades de Construcción</title>
     <link rel="stylesheet" href="{% static 'css/style2.css' %}">
+    <style>
+    @import url('https://fonts.googleapis.com/css2?family=Henny+Penny&family=Monoton&display=swap');
+    </style>
 </head>
 <body>
-
     <!-- Menú de Navegación -->
-    <header class="navbar">
-        <div class="logo">HomeCount Simulator</div>
-        <nav>
-            <ul class="nav-links">
-                <li><a href="{% url 'inicio' %}">Inicio</a></li>
-                <li><a href="{% url 'contrucion' %}">Servicios</a></li>
-                <li><a href="{% url 'casas_rapidas' %}">Proyectos</a></li>
-                <li><a href="{% url 'inicio' %}#contacto" class="btn-contacto">Contacto</a></li>
-            </ul>
-        </nav>
-    </header>
+{% include 'navbar.html' %}
 
     <!-- Sección Modalidades de Construcción -->
     <section id="modalidades" class="modalidades-seccion">
@@ -58,20 +50,8 @@
         </div>
     </section>
 
-    <!-- Pie de página Mejorado -->
-    <footer class="footer-sitio">
-        <div class="footer-contenido">
-            <h3>ArquiCasa</h3>
-            <p>Diseñamos y construimos la casa de tus sueños con los mejores estándares de calidad.</p>
-            <div class="footer-contacto">
-                <p>Email: contacto@arquicasa.cl</p>
-                <p>Teléfono: +56 9 1234 5678</p>
-            </div>
-        </div>
-        <div class="footer-legal">
-            <p>&copy; 2026 ArquiCasa - Todos los derechos reservados.</p>
-        </div>
-    </footer>
+    <!-- Pie de página -->
+    {% include 'footer.html' %}
 
 </body>
 </html>

@@ -1,3 +1,66 @@
+// --- CONTROLADOR GLOBAL DE MENSAJES (MODAL PERSONALIZADO) ---
+const DialogoUI = {
+    elementos: function() {
+        return {
+            overlay: document.getElementById('modal-personalizado-overlay'),
+            titulo: document.getElementById('modal-ui-titulo'),
+            mensaje: document.getElementById('modal-ui-mensaje'),
+            input: document.getElementById('modal-ui-input'),
+            btnAceptar: document.getElementById('modal-ui-btn-aceptar'),
+            btnCancelar: document.getElementById('modal-ui-btn-cancelar')
+        };
+    },
+    mostrar: function({ tipo, titulo, mensaje, placeholder = '' }) {
+        return new Promise((resolve) => {
+            const el = this.elementos();
+            if (!el.overlay) {
+                console.error("No se encontró el modal en el HTML");
+                resolve(null);
+                return;
+            }
+            
+            el.titulo.textContent = titulo;
+            el.mensaje.textContent = mensaje;
+            el.overlay.style.display = 'flex';
+
+            if (tipo === 'alert') {
+                el.btnCancelar.style.display = 'none';
+                el.input.style.display = 'none';
+            } else if (tipo === 'confirm') {
+                el.btnCancelar.style.display = 'block';
+                el.input.style.display = 'none';
+            } else if (tipo === 'prompt') {
+                el.btnCancelar.style.display = 'block';
+                el.input.style.display = 'block';
+                el.input.value = '';
+                el.input.placeholder = placeholder;
+                el.input.focus();
+            }
+
+            const nuevoBtnAceptar = el.btnAceptar.cloneNode(true);
+            const nuevoBtnCancelar = el.btnCancelar.cloneNode(true);
+            el.btnAceptar.replaceWith(nuevoBtnAceptar);
+            el.btnCancelar.replaceWith(nuevoBtnCancelar);
+
+            const cerrar = (valor) => {
+                el.overlay.style.display = 'none';
+                resolve(valor);
+            };
+
+            nuevoBtnAceptar.onclick = () => {
+                if (tipo === 'prompt') cerrar(el.input.value);
+                else cerrar(true);
+            };
+
+            nuevoBtnCancelar.onclick = () => cerrar(false);
+        });
+    },
+    alert: (mensaje) => DialogoUI.mostrar({ tipo: 'alert', titulo: 'Atención', mensaje }),
+    confirm: (mensaje) => DialogoUI.mostrar({ tipo: 'confirm', titulo: 'Confirmar Acción', mensaje }),
+    prompt: (mensaje, placeholder) => DialogoUI.mostrar({ tipo: 'prompt', titulo: 'Ingreso Requerido', mensaje, placeholder })
+};
+
+
 // Esperar a que el DOM cargue
 document.addEventListener('DOMContentLoaded', () => {
     const container = document.getElementById('canvas-3d-container');
@@ -9,20 +72,19 @@ document.addEventListener('DOMContentLoaded', () => {
     let precioActual = 15000;
     let costoTotal = 0;
     let modoConstruccion = 'material'; 
-    let rotacionActual = 0; 
+    let rotacionActual = 0;
+    let escalaActual = 1.0; 
     let urlActual = null;          
     let texturaActual = 'concreto';
-    let esModoOscuro = false; // Nueva variable de estado para el modo oscuro
+    let esModoOscuro = false; 
     const uiTotal = document.getElementById('total-3d');
     
-    // Configurar materiales visuales de respaldo (Fallback)
     const texturas = {
         madera: new THREE.MeshLambertMaterial({ color: 0x8b5a2b }),
         ladrillo: new THREE.MeshLambertMaterial({ color: 0xb22222 }),
         concreto: new THREE.MeshLambertMaterial({ color: 0x7f8c8d })
     };
 
-    // --- Tooltip Flotante para Eliminación ---
     let tooltip = document.getElementById('tooltip-eliminar');
     if (!tooltip) {
         tooltip = document.createElement('div');
@@ -41,7 +103,6 @@ document.addEventListener('DOMContentLoaded', () => {
         document.body.appendChild(tooltip);
     }
 
-    // --- Tooltip Flotante para el Catálogo ---
     let tooltipCatalogo = document.getElementById('tooltip-catalogo');
     if (!tooltipCatalogo) {
         tooltipCatalogo = document.createElement('div');
@@ -61,7 +122,6 @@ document.addEventListener('DOMContentLoaded', () => {
         document.body.appendChild(tooltipCatalogo);
     }
 
-    // --- 1. Configuración Básica y Renderizador ---
     const scene = new THREE.Scene();
     const anchoSeguro = container.clientWidth || 800;
     const altoSeguro = container.clientHeight || 600;
@@ -75,7 +135,6 @@ document.addEventListener('DOMContentLoaded', () => {
     renderer.setClearColor(0xe0e0e0, 1); 
     container.appendChild(renderer.domElement);
 
-    // --- 2. Ajuste automático (Resize) ---
     window.addEventListener('resize', () => {
         if (!container) return;
         camera.aspect = container.clientWidth / container.clientHeight;
@@ -96,7 +155,6 @@ document.addEventListener('DOMContentLoaded', () => {
     directionalLight.position.set(1, 1, 0.5).normalize();
     scene.add(directionalLight);
 
-    // --- 5. Entorno y Herramientas 3D (Auto Expansión y Reducción) ---
     let tamanoTerreno = 1000;
     let gridHelper = new THREE.GridHelper(tamanoTerreno, tamanoTerreno / 50, 0x888888, 0x888888);
     scene.add(gridHelper);
@@ -120,7 +178,6 @@ document.addEventListener('DOMContentLoaded', () => {
         scene.remove(gridHelper);
         if (gridHelper.geometry) gridHelper.geometry.dispose();
         
-        // Mantener el color adecuado de la cuadrícula dependiendo del tema actual
         const colorGrid = esModoOscuro ? 0x444444 : 0x888888;
         gridHelper = new THREE.GridHelper(tamanoTerreno, Math.floor(tamanoTerreno / 50), colorGrid, colorGrid);
         scene.add(gridHelper);
@@ -217,7 +274,11 @@ document.addEventListener('DOMContentLoaded', () => {
         nombreActual = nombreElemento || (esHabitacion ? 'Módulo Habitacional' : 'Material Base');
         modeloActualGLTF = null;
         rotacionActual = 0;
-        if (bloqueFantasma) bloqueFantasma.rotation.y = 0;
+        escalaActual = 1.0; 
+        if (bloqueFantasma) {
+            bloqueFantasma.rotation.y = 0;
+            bloqueFantasma.scale.set(1, 1, 1);
+        }
 
         if (url3D) {
             cargarModeloOptimizado(url3D, (modeloCargado) => {
@@ -253,11 +314,9 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // --- CARGA DINÁMICA DE LA API ---
     const contenedorMateriales = document.getElementById('lista-materiales');
     const contenedorHabitaciones = document.getElementById('lista-habitaciones');
 
-    // --- NUEVA MEJORA: Scroll horizontal con la rueda del ratón ---
     [contenedorMateriales, contenedorHabitaciones].forEach(contenedor => {
         if (!contenedor) return;
         contenedor.addEventListener('wheel', (evento) => {
@@ -265,8 +324,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 evento.preventDefault(); 
                 
                 contenedor.scrollBy({
-                    left: evento.deltaY * 1.2, // Multiplicador para ajustar la distancia por cada giro de rueda
-                    behavior: 'smooth'         // Magia para la fluidez
+                    left: evento.deltaY * 1.2, 
+                    behavior: 'smooth'         
                 });
             }
         }, { passive: false });
@@ -276,14 +335,13 @@ document.addEventListener('DOMContentLoaded', () => {
         .then(response => response.json())
         .then(data => {
             if (contenedorMateriales) contenedorMateriales.innerHTML = ''; 
-            if (contenedorHabitaciones) contenedorHabitaciones.innerHTML = '';
-
-            // --- LÓGICA DE PESTAÑAS (CATEGORÍAS) ---
+            if (contenedorHabitaciones) {
+                contenedorHabitaciones.innerHTML = '';
+                contenedorHabitaciones.style.display = 'none'; 
+            }
             const contenedorFiltros = document.getElementById('filtros-categorias');
-
             if (data.materiales && data.materiales.length > 0) {
                 
-                // 1. Extraer y ordenar categorías (Estructura primero, Sin Categoría al final)
                 let categoriasDB = [...new Set(data.materiales.map(mat => mat.categoria))];
                 const otrasCategorias = categoriasDB.filter(c => c !== 'Estructura' && c !== 'Sin Categoría');
                 
@@ -291,8 +349,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (categoriasDB.includes('Estructura')) categoriasUnicas.push('Estructura');
                 categoriasUnicas.push(...otrasCategorias.sort()); 
                 if (categoriasDB.includes('Sin Categoría')) categoriasUnicas.push('Sin Categoría');
-
-                // 2. Generar los botones de las pestañas
+                
+                if (data.habitaciones && data.habitaciones.length > 0) {
+                    categoriasUnicas.push('Módulos Prehechos');
+                }
+                
                 if (contenedorFiltros) {
                     contenedorFiltros.innerHTML = '';
                     
@@ -300,34 +361,35 @@ document.addEventListener('DOMContentLoaded', () => {
                         const btnTab = document.createElement('button');
                         btnTab.textContent = cat;
                         btnTab.className = `tab-categoria ${index === 0 ? 'activa' : ''}`;
-
                         btnTab.addEventListener('click', () => {
-                            // Cambiar estado visual de la pestaña activa
                             document.querySelectorAll('.tab-categoria').forEach(b => b.classList.remove('activa'));
                             btnTab.classList.add('activa');
-
-                            // Filtrar los materiales en la barra inferior (Lógica simplificada)
-                            document.querySelectorAll('.btn-mat-3d').forEach(btnMat => {
-                                const categoriaMat = btnMat.dataset.categoria;
-                                if (cat === 'Todos' || categoriaMat === cat) {
-                                    btnMat.style.display = 'inline-block';
-                                } else {
-                                    btnMat.style.display = 'none';
-                                }
-                            });
+                            
+                            if (cat === 'Módulos Prehechos') {
+                                if (contenedorMateriales) contenedorMateriales.style.display = 'none';
+                                if (contenedorHabitaciones) contenedorHabitaciones.style.display = 'flex';
+                            } else {
+                                if (contenedorMateriales) contenedorMateriales.style.display = 'flex';
+                                if (contenedorHabitaciones) contenedorHabitaciones.style.display = 'none';
+                                
+                                document.querySelectorAll('.btn-mat-3d').forEach(btnMat => {
+                                    const categoriaMat = btnMat.dataset.categoria;
+                                    if (cat === 'Todos' || categoriaMat === cat) {
+                                        btnMat.style.display = 'inline-block';
+                                    } else {
+                                        btnMat.style.display = 'none';
+                                    }
+                                });
+                            }
                         });
                         contenedorFiltros.appendChild(btnTab);
                     });
                 }
-
-                // 3. Renderizar los materiales (agregando la categoría como dataset)
+                
                 data.materiales.forEach((mat, index) => {
                     const btn = document.createElement('button');
                     btn.className = `btn-mat-3d ${index === 0 ? 'activo' : ''}`;
-                    
-                    // Guardamos la categoría exacta en el HTML para que el filtro funcione
-                    btn.dataset.categoria = mat.categoria; 
-                    
+                    btn.dataset.categoria = mat.categoria;
                     const precioFormateado = new Intl.NumberFormat('es-CL').format(mat.coste);
                     
                     if (mat.imagen) {
@@ -335,8 +397,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     } else {
                         btn.innerHTML = `<span style="font-size: 1.8rem; pointer-events: none;">🧱</span>`;
                     }
-
-                    // Eventos de Tooltip y Click
                     btn.addEventListener('mouseenter', () => {
                         tooltipCatalogo.innerHTML = `<span style="font-size: 10px; color: #a0aec0;">${mat.categoria}</span><br>${mat.nombre}<br><strong>$${precioFormateado} CLP</strong>`;
                         tooltipCatalogo.style.display = 'block';
@@ -344,23 +404,19 @@ document.addEventListener('DOMContentLoaded', () => {
                         tooltipCatalogo.style.left = (rect.left + (rect.width / 2)) + 'px';
                         tooltipCatalogo.style.top = (rect.top - tooltipCatalogo.offsetHeight - 8) + 'px';
                     });
-
                     btn.addEventListener('mouseleave', () => {
                         tooltipCatalogo.style.display = 'none';
                     });
-
                     btn.addEventListener('click', function() {
                         document.querySelectorAll('.btn-mat-3d, .btn-hab-3d').forEach(b => b.classList.remove('activo'));
                         this.classList.add('activo');
                         seleccionarElemento(mat.archivo_3d, mat.coste, false, mat.textura_key, mat.nombre);
                     });
-
                     if (contenedorMateriales) contenedorMateriales.appendChild(btn);
                     if (index === 0) seleccionarElemento(mat.archivo_3d, mat.coste, false, mat.textura_key, mat.nombre);
                 });
             }
-
-            // --- LÓGICA DE HABITACIONES (Se mantiene igual) ---
+            
             if (data.habitaciones && data.habitaciones.length > 0) {
                 data.habitaciones.forEach(hab => {
                     const btn = document.createElement('button');
@@ -372,7 +428,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     } else {
                         btn.innerHTML = `<span style="font-size: 1.8rem; pointer-events: none;">🏠</span>`;
                     }
-
                     btn.addEventListener('mouseenter', () => {
                         tooltipCatalogo.innerHTML = `${hab.nombre} (${hab.dimensiones})<br><strong>$${costoTotalFormateado} CLP</strong>`;
                         tooltipCatalogo.style.display = 'block';
@@ -380,11 +435,9 @@ document.addEventListener('DOMContentLoaded', () => {
                         tooltipCatalogo.style.left = (rect.left + (rect.width / 2)) + 'px';
                         tooltipCatalogo.style.top = (rect.top - tooltipCatalogo.offsetHeight - 8) + 'px';
                     });
-
                     btn.addEventListener('mouseleave', () => {
                         tooltipCatalogo.style.display = 'none';
                     });
-
                     btn.addEventListener('click', function() {
                         document.querySelectorAll('.btn-mat-3d, .btn-hab-3d').forEach(b => b.classList.remove('activo'));
                         this.classList.add('activo');
@@ -397,8 +450,6 @@ document.addEventListener('DOMContentLoaded', () => {
         })
         .catch(error => console.error("Error cargando el catálogo:", error));
 
-
-    // --- FUNCIÓN: Actualizar Desglose en la UI ---
     function actualizarListaUI() {
         const listaUI = document.getElementById('lista-objetos-ui');
         if (!listaUI) return; 
@@ -453,6 +504,14 @@ document.addEventListener('DOMContentLoaded', () => {
             rotacionActual -= Math.PI / 4;
             if (bloqueFantasma) bloqueFantasma.rotation.y = rotacionActual;
         }
+        if (event.key === '+' || event.key === '=') {
+            escalaActual += 0.1;
+            if (bloqueFantasma) bloqueFantasma.scale.set(escalaActual, escalaActual, escalaActual);
+        }
+        if (event.key === '-') {
+            escalaActual = Math.max(0.1, escalaActual - 0.1); 
+            if (bloqueFantasma) bloqueFantasma.scale.set(escalaActual, escalaActual, escalaActual);
+        }
     });
 
     document.addEventListener('keyup', (event) => {
@@ -475,7 +534,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 tipo: obj.userData.tipo,
                 url3D: obj.userData.url3D,
                 textura: obj.userData.textura,
-                nombre: obj.userData.nombre
+                nombre: obj.userData.nombre,
+                escala: obj.userData.escala || 1.0
             });
         }
         localStorage.setItem('proyecto_homecount', JSON.stringify(datosGuardados));
@@ -518,8 +578,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     const maxDimension = Math.max(tamano.x, tamano.z);
                     
                     if (maxDimension > 0) {
-                        const escala = (item.tipo === 'habitacion' ? 200 : 50) / maxDimension;
-                        modelo.scale.set(escala, escala, escala);
+                        const escalaBase = (item.tipo === 'habitacion' ? 200 : 50) / maxDimension;
+                        const escalaFinal = escalaBase * (item.escala || 1.0);
+                        modelo.scale.set(escalaFinal, escalaFinal, escalaFinal);
                         modelo.updateMatrixWorld(true);
                     }
                     
@@ -530,7 +591,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     grupo.add(modelo);
                     grupo.position.set(item.posX, item.posY, item.posZ);
                     grupo.rotation.y = item.rotY;
-                    grupo.userData = { precio: item.precio, tipo: item.tipo, url3D: item.url3D, textura: item.textura, nombre: item.nombre };
+                    grupo.userData = { precio: item.precio, tipo: item.tipo, url3D: item.url3D, textura: item.textura, nombre: item.nombre, escala: item.escala || 1.0 };
                     scene.add(grupo);
                     objetosInteractuables.push(grupo);
                     actualizarPresupuesto(item.precio);
@@ -542,7 +603,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 const malla = new THREE.Mesh(geo, mat);
                 malla.position.set(item.posX, item.posY, item.posZ);
                 malla.rotation.y = item.rotY;
-                malla.userData = { precio: item.precio, tipo: item.tipo, url3D: null, textura: item.textura, nombre: item.nombre };
+                const esc = item.escala || 1.0;
+                malla.scale.set(esc, esc, esc);
+                malla.userData = { precio: item.precio, tipo: item.tipo, url3D: null, textura: item.textura, nombre: item.nombre, escala: esc };
                 scene.add(malla);
                 objetosInteractuables.push(malla);
                 actualizarPresupuesto(item.precio);
@@ -555,38 +618,29 @@ document.addEventListener('DOMContentLoaded', () => {
 
     let inicioX = 0, inicioY = 0;
 
-    // --- NUEVA MEJORA: Eje Y dinámico para apilar ---
     function calcularPosicionSnappeada(interseccion, usarGrid = true) {
         const gridTamXZ = (modoConstruccion === 'habitacion') ? 200 : 50;
         const gridTamY = (modoConstruccion === 'habitacion') ? 100 : 50;
         
-        // Obtener la normal para empujar el punto ligeramente hacia afuera (para calcular la posición correcta)
         const normal = interseccion.face ? interseccion.face.normal : new THREE.Vector3(0, 1, 0);
         const punto = interseccion.point.clone().add(normal.clone().multiplyScalar(0.1));
         
-        // La altura del suelo sigue siendo el mínimo
         const alturaMinima = modeloActualGLTF ? 0 : (gridTamY / 2);
 
         if (!usarGrid) {
-            // Si el grid está desactivado, tomamos la altura exacta, pero evitamos que pase debajo del piso
             return { x: punto.x, y: Math.max(punto.y, alturaMinima), z: punto.z };
         }
 
-        // Posicionamiento "encajado" (Grid Snapping) para X y Z
         const posX = Math.floor(punto.x / gridTamXZ) * gridTamXZ + (gridTamXZ / 2);
         const posZ = Math.floor(punto.z / gridTamXZ) * gridTamXZ + (gridTamXZ / 2);
         
-        // Posicionamiento para Y (Aquí está la mejora que permite apilar)
         let posY;
         if (modeloActualGLTF) {
-            // Si es un modelo 3D (su centro/pivote suele estar abajo)
             posY = Math.floor(punto.y / gridTamY) * gridTamY;
         } else {
-            // Si es un bloque geométrico nativo (su pivote está en el centro)
             posY = Math.floor(punto.y / gridTamY) * gridTamY + (gridTamY / 2);
         }
         
-        // Protegemos que no quede por debajo del suelo
         posY = Math.max(posY, alturaMinima);
         
         return { x: posX, y: posY, z: posZ };
@@ -656,7 +710,7 @@ document.addEventListener('DOMContentLoaded', () => {
         mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
         raycaster.setFromCamera(mouse, camera);
 
-        if (event.shiftKey) { // ELIMINAR
+        if (event.shiftKey) { 
             const objetosConstruidos = objetosInteractuables.filter(obj => obj !== plano);
             const intersecciones = raycaster.intersectObjects(objetosConstruidos, true);
 
@@ -673,7 +727,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 guardarEscenaLocal();
                 if (tooltip) tooltip.style.display = 'none';
             }
-        } else { // CONSTRUIR
+        } else { 
             const intersecciones = raycaster.intersectObjects(objetosInteractuables, true);
             if (intersecciones.length > 0) {
                 const interseccion = intersecciones[0];
@@ -690,7 +744,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 const pos = calcularPosicionSnappeada(interseccion, !event.altKey);
                 nuevoObjeto.position.set(pos.x, pos.y, pos.z);
                 nuevoObjeto.rotation.y = rotacionActual;
-                nuevoObjeto.userData = { precio: precioActual, tipo: modoConstruccion, url3D: urlActual, textura: texturaActual, nombre: nombreActual };
+                nuevoObjeto.scale.set(escalaActual, escalaActual, escalaActual);
+                nuevoObjeto.userData = { precio: precioActual, tipo: modoConstruccion, url3D: urlActual, textura: texturaActual, nombre: nombreActual, escala: escalaActual };
                 
                 scene.add(nuevoObjeto);
                 objetosInteractuables.push(nuevoObjeto);
@@ -702,32 +757,36 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // --- Lógica del Modo Claro / Oscuro ---
     const btnModoOscuro = document.getElementById('btn-modo-oscuro');
+    esModoOscuro = localStorage.getItem('modo_oscuro_homecount') === 'true';
+    function aplicarTemaVisual(oscuro) {
+        document.body.classList.toggle('tema-oscuro', oscuro);
+
+        if (oscuro) {
+            renderer.setClearColor(0x1a1a1a, 1); 
+            if (gridHelper && gridHelper.material) gridHelper.material.color.setHex(0x777777); 
+            if (btnModoOscuro) btnModoOscuro.textContent = '☀️'; 
+        } else {
+            renderer.setClearColor(0xe0e0e0, 1); 
+            if (gridHelper && gridHelper.material) gridHelper.material.color.setHex(0x888888); 
+            if (btnModoOscuro) btnModoOscuro.textContent = '🌙'; 
+        }
+    }
+    aplicarTemaVisual(esModoOscuro);
+
     if (btnModoOscuro) {
         btnModoOscuro.addEventListener('click', () => {
             esModoOscuro = !esModoOscuro;
-            
-            // 1. Delegar a CSS los estilos de la interfaz web
-            document.body.classList.toggle('tema-oscuro', esModoOscuro);
-
-            // 2. Gestionar los elementos internos del Canvas 3D (Three.js)
-            if (esModoOscuro) {
-                renderer.setClearColor(0x1a1a1a, 1); // Fondo oscuro
-                if (gridHelper && gridHelper.material) gridHelper.material.color.setHex(0x777777); // Grid oscuro
-                btnModoOscuro.textContent = '☀️'; // Cambia el icono al sol
-            } else {
-                renderer.setClearColor(0xe0e0e0, 1); // Fondo gris claro (original)
-                if (gridHelper && gridHelper.material) gridHelper.material.color.setHex(0x888888); // Grid normal
-                btnModoOscuro.textContent = '🌙'; // Vuelve al icono de luna
-            }
+            localStorage.setItem('modo_oscuro_homecount', esModoOscuro);
+            aplicarTemaVisual(esModoOscuro);
         });
     }
 
     const btnBorrarTodo = document.getElementById('btn-borrar-todo');
     if (btnBorrarTodo) {
-        btnBorrarTodo.addEventListener('click', () => {
-            if (confirm("¿Estás seguro de que deseas borrar todo el diseño? Esta acción no se puede deshacer.")) {
+        btnBorrarTodo.addEventListener('click', async () => {
+            const seguro = await DialogoUI.confirm("¿Estás seguro de que deseas borrar todo el diseño? Esta acción no se puede deshacer.");
+            if (seguro) {
                 restaurarResaltado();
                 if (tooltip) tooltip.style.display = 'none';
                 for (let i = objetosInteractuables.length - 1; i > 0; i--) scene.remove(objetosInteractuables[i]);
@@ -749,70 +808,68 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    const btnGuardarNube = document.getElementById('btn-guardar-nube');
-    if (btnGuardarNube) {
-        btnGuardarNube.addEventListener('click', () => {
-            // Llamamos a la función que vive en guardado_bd.js pasándole nuestras variables 3D
-            procesarGuardado(objetosInteractuables, camera, controles, costoTotal);
+    let proyectoCargadoId = null;
+    let proyectoCargadoNombre = "";
+
+    const btnGuardarModelo = document.getElementById('btn-guardar-modelo');
+    const btnMisModelos = document.getElementById('btn-mis-modelos');
+
+    if (btnGuardarModelo) {
+        btnGuardarModelo.addEventListener('click', (e) => {
+            e.preventDefault();
+            procesarGuardado(objetosInteractuables, camera, controles, costoTotal, scene, renderer, proyectoCargadoId, proyectoCargadoNombre);
         });
     }
 
-    const btnCargar = document.getElementById('btn-cargar-nube');
-    if (btnCargar) {
-        btnCargar.addEventListener('click', () => {
-            // Pasamos un quinto argumento: una función que actualiza el estado interno
-            cargarDisenosUsuario(scene, objetosInteractuables, camera, controles, (nuevoCosto) => {
-                costoTotal = nuevoCosto; // Actualizamos la variable interna
+    if (btnMisModelos) {
+        btnMisModelos.addEventListener('click', (e) => {
+            e.preventDefault();
+            cargarDisenosUsuario(scene, objetosInteractuables, camera, controles, (nuevoCosto, idProyecto, nombreProyecto) => {
+                costoTotal = nuevoCosto; 
+                proyectoCargadoId = idProyecto;       
+                proyectoCargadoNombre = nombreProyecto; 
+                
                 if (uiTotal) {
                     uiTotal.textContent = `$${new Intl.NumberFormat('es-CL').format(costoTotal)}`;
                 }
-                actualizarListaUI();       // Reconstruye la lista en HTML
-                recalcularTamanoTerreno(); // Ajusta la cuadrícula por si el proyecto es enorme
+                actualizarListaUI();       
+                recalcularTamanoTerreno(); 
             });
         });
     }
 
     function ajustarYAgregarModelo(gltfScene, anchoDeseado, altoDeseado, profundoDeseado) {
-        // 1. Calcular tamaño original del archivo GLTF
         const boxOriginal = new THREE.Box3().setFromObject(gltfScene);
         const sizeOriginal = boxOriginal.getSize(new THREE.Vector3());
 
-        // 2. Calcular los factores de escala necesarios
         const factorX = anchoDeseado / sizeOriginal.x;
         const factorY = altoDeseado / sizeOriginal.y;
         const factorZ = profundoDeseado / sizeOriginal.z;
 
-        // 3. Aplicar escala al grupo principal
         gltfScene.scale.set(factorX, factorY, factorZ);
-
-        // 4. Forzar actualización de la matriz para que el Bounding Box se recalcule correctamente
         gltfScene.updateMatrixWorld(true);
 
-        // 5. Corregir altura para que no quede enterrado en el piso (Y = 0)
         const boxEscalado = new THREE.Box3().setFromObject(gltfScene);
-        gltfScene.position.y = -boxEscalado.min.y; // Ajusta la base exactamente al suelo
+        gltfScene.position.y = -boxEscalado.min.y; 
 
         return gltfScene;
     }
 
-    // --- Lógica del Botón Detalle ---
     const btnDetalle = document.getElementById('btn-detalle-materiales');
     const contenedorLista = document.getElementById('lista-objetos-container');
     const iconoDetalle = document.getElementById('icono-detalle');
 
     if (btnDetalle && contenedorLista) {
-        // Aseguramos que inicie cerrado al cargar la página
         contenedorLista.style.display = 'none';
         if (iconoDetalle) iconoDetalle.textContent = '▶';
 
-        // Lógica para abrir/cerrar al hacer clic
         btnDetalle.addEventListener('click', () => {
             if (contenedorLista.style.display === 'none' || contenedorLista.style.display === '') {
-                contenedorLista.style.display = 'block'; // Muestra la lista
-                if (iconoDetalle) iconoDetalle.textContent = '▼'; // Flecha abajo
+                contenedorLista.style.display = 'block'; 
+                if (iconoDetalle) iconoDetalle.textContent = '▼'; 
             } else {
-                contenedorLista.style.display = 'none'; // Oculta la lista
-                if (iconoDetalle) iconoDetalle.textContent = '▶'; // Flecha lateral
+                contenedorLista.style.display = 'none'; 
+                if (iconoDetalle) iconoDetalle.textContent = '▶'; 
             }
         });
     }
@@ -821,6 +878,292 @@ document.addEventListener('DOMContentLoaded', () => {
     cargarCamaraLocal();
     actualizarListaUI(); 
 
+    const mapaCategoriasMateriales = window.mapaCategoriasMateriales || {};
+
+    function obtenerCalculoDimensiones() {
+        const TAMANO_CELDA = 50; // 50 unidades = 1 metro
+        const celdas = new Set();
+
+        // Accede directamente a objetosInteractuables de script_casa1
+        for (let i = 1; i < objetosInteractuables.length; i++) {
+            const obj = objetosInteractuables[i];
+            if (!obj || !obj.userData) continue;
+
+            let cat = obj.userData.categoria || '';
+            const tipo = obj.userData.tipo || '';
+            const nombre = (obj.userData.nombre || '').toLowerCase();
+
+            if (!cat && obj.userData.nombre && mapaCategoriasMateriales[obj.userData.nombre]) {
+                cat = mapaCategoriasMateriales[obj.userData.nombre];
+                obj.userData.categoria = cat;
+            }
+
+            const esModulo = cat === 'modulo_prehecho' || tipo === 'habitacion';
+            const esEstructura = cat.toLowerCase() === 'estructura' ||
+                (!cat && (nombre.includes('wall') || nombre.includes('doorway') || nombre.includes('paneling') || nombre.includes('stairs') || nombre.includes('floor')));
+
+            if (!esEstructura && !esModulo) continue; 
+
+            const tamCeldasOcupadas = esModulo ? 4 : 1;
+            const tamMundo = tamCeldasOcupadas * TAMANO_CELDA;
+
+            const gridX = Math.round((obj.position.x - tamMundo / 2) / TAMANO_CELDA);
+            const gridZ = Math.round((obj.position.z - tamMundo / 2) / TAMANO_CELDA);
+
+            for (let dx = 0; dx < tamCeldasOcupadas; dx++) {
+                for (let dz = 0; dz < tamCeldasOcupadas; dz++) {
+                    celdas.add(`${gridX + dx},${gridZ + dz}`);
+                }
+            }
+        }
+
+        if (celdas.size === 0) return { perimetro: 0, area: 0 };
+
+        const vecinos = [[1, 0], [-1, 0], [0, 1], [0, -1]];
+        let ladosExteriores = 0;
+
+        for (const celda of celdas) {
+            const parts = celda.split(',');
+            const cx = parseInt(parts[0], 10);
+            const cz = parseInt(parts[1], 10);
+            for (const [vx, vz] of vecinos) {
+                if (!celdas.has(`${cx + vx},${cz + vz}`)) {
+                    ladosExteriores++;
+                }
+            }
+        }
+
+        return { perimetro: ladosExteriores, area: celdas.size };
+    }
+    // Se exporta a window para que los botones del HTML puedan llamarla
+    window.obtenerCalculoDimensiones = obtenerCalculoDimensiones;
+
+    function calcularYMostrarPerimetro() {
+        const dim = obtenerCalculoDimensiones();
+        // Usa el DialogoUI que ya tienes configurado en script_casa1.js
+        if(typeof DialogoUI !== 'undefined') {
+            DialogoUI.alert(`📐 Resultados del terreno:\n\n• Perímetro Exterior: ${dim.perimetro} metros.\n• Área Construida: ${dim.area} m².`);
+        } else {
+            alert(`Perímetro: ${dim.perimetro}m | Área: ${dim.area}m²`);
+        }
+    }
+    window.calcularYMostrarPerimetro = calcularYMostrarPerimetro;
+
+    // --- RECOPILACIÓN DE DATOS PARA EL INFORME ---
+    function obtenerDatosInforme() {
+        const dim = obtenerCalculoDimensiones();
+        const conteo = {};
+        let totalPiezas = 0;
+
+        // Accede directamente a objetosInteractuables y costoTotal
+        for (let i = 1; i < objetosInteractuables.length; i++) {
+            const obj = objetosInteractuables[i];
+            if (!obj || !obj.userData) continue;
+
+            totalPiezas++;
+            const nombre = obj.userData.nombre || (obj.userData.tipo === 'habitacion' ? 'Módulo Habitacional' : 'Material');
+            const precio = Number(obj.userData.precio) || 0;
+            let categoria = obj.userData.categoria || '';
+
+            if (!categoria && mapaCategoriasMateriales[nombre]) categoria = mapaCategoriasMateriales[nombre];
+            if (!categoria) categoria = obj.userData.tipo === 'habitacion' ? 'Módulos Prehechos' : 'General';
+
+            if (!conteo[nombre]) {
+                conteo[nombre] = { nombre: nombre, categoria: categoria, tipo: obj.userData.tipo || 'material', cantidad: 0, precioUnitario: precio, subtotal: 0 };
+            }
+            conteo[nombre].cantidad += 1;
+            conteo[nombre].subtotal += precio;
+        }
+
+        const ahora = new Date();
+        const fechaFormateada = ahora.toLocaleDateString('es-CL', { day: '2-digit', month: 'long', year: 'numeric' });
+        const horaFormateada = ahora.toLocaleTimeString('es-CL', { hour: '2-digit', minute: '2-digit' });
+        const folio = 'HC-' + ahora.getFullYear() + '-' + Math.floor(1000 + Math.random() * 9000);
+
+        return {
+            folio: folio, fecha: `${fechaFormateada}, ${horaFormateada} hrs`,
+            perimetro: dim.perimetro, area: dim.area, costoTotal: costoTotal,
+            totalPiezas: totalPiezas, items: Object.values(conteo)
+        };
+    }
+
+    // --- GENERADOR DE HTML PROFESIONAL PARA EL INFORME ---
+    function generarHTMLInforme(datos, paraPDF = false) {
+        const formatear = (valor) => new Intl.NumberFormat('es-CL').format(valor);
+        const filasTabla = datos.items.map((item, idx) => {
+            const esEstructura = item.categoria.toLowerCase() === 'estructura';
+            const esModulo = item.tipo === 'habitacion' || item.categoria === 'modulo_prehecho';
+            const badgeClass = esEstructura ? 'badge-estructura' : (esModulo ? 'badge-modulo' : 'badge-general');
+
+            return `
+                <tr>
+                    <td style="text-align: center; color: #64748b;">${idx + 1}</td>
+                    <td><strong>${item.nombre}</strong></td>
+                    <td><span class="badge ${badgeClass}">${item.categoria}</span></td>
+                    <td class="td-num"><strong>${item.cantidad}</strong></td>
+                    <td class="td-num">$${formatear(item.precioUnitario)} CLP</td>
+                    <td class="td-num" style="color: #2c3e50; font-weight: 700;">$${formatear(item.subtotal)} CLP</td>
+                </tr>`;
+        }).join('');
+
+        return `<!DOCTYPE html>
+    <html lang="es">
+    <head>
+    <meta charset="UTF-8"><title>Informe de Construcción - Folio ${datos.folio}</title>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; color: #1e293b; padding: ${paraPDF ? '16px' : '32px 24px'}; line-height: 1.5; }
+        .informe-wrapper { max-width: 820px; margin: 0 auto; }
+        .barra-superior-acciones { display: flex; justify-content: space-between; align-items: center; background: #f8fafc; border: 1px solid #e2e8f0; padding: 12px 18px; margin-bottom: 24px; border-radius: 10px; }
+        .btn-accion-print { background: #e67e22; color: #fff; border: none; padding: 8px 16px; border-radius: 6px; font-weight: bold; cursor: pointer; }
+        .header-informe { display: flex; justify-content: space-between; border-bottom: 3px solid #e67e22; padding-bottom: 18px; margin-bottom: 24px; }
+        .logo-box h1 { margin: 0; color: #2c3e50; } .logo-box h1 span { color: #e67e22; }
+        .meta-folio { font-size: 15px; font-weight: bold; color: #e67e22; }
+        table.tabla-informe { width: 100%; border-collapse: collapse; margin-bottom: 24px; font-size: 12px; }
+        table.tabla-informe th { background: #f1f5f9; text-align: left; padding: 10px; border-bottom: 2px solid #cbd5e1; }
+        table.tabla-informe td { padding: 9px; border-bottom: 1px solid #f1f5f9; }
+        .td-num { text-align: right; }
+        .badge { font-size: 10px; padding: 2px 8px; border-radius: 10px; font-weight: bold; }
+        .badge-estructura { background: #ffedd5; color: #c2410c; }
+        .badge-modulo { background: #e0e7ff; color: #4338ca; }
+        .badge-general { background: #f1f5f9; color: #475569; }
+        .fila-total td { background: #f8fafc; font-weight: bold; font-size: 14px; padding: 12px; }
+        @media print { .no-print { display: none !important; } }
+    </style>
+    </head>
+    <body>
+    <div class="informe-wrapper">
+        ${!paraPDF ? `<div class="barra-superior-acciones no-print"><span>📄 Vista previa.</span><button class="btn-accion-print" onclick="window.print()">🖨️ Imprimir / PDF</button></div>` : ''}
+        <div class="header-informe">
+            <div class="logo-box"><h1>HomeCount <span>Simulator</span></h1><p>Informe Técnico de Construcción</p></div>
+            <div class="meta-box"><div class="meta-folio">FOLIO: ${datos.folio}</div><div>Fecha: ${datos.fecha}</div></div>
+        </div>
+        <div style="display:flex; justify-content:space-between; margin-bottom: 20px;">
+            <div><strong>Perímetro:</strong> <span style="color:#e67e22">${datos.perimetro} m</span></div>
+            <div><strong>Área:</strong> <span style="color:#2c3e50">${datos.area} m²</span></div>
+            <div><strong>Costo:</strong> <span style="color:#27ae60">$${formatear(datos.costoTotal)}</span></div>
+        </div>
+        <table class="tabla-informe">
+            <thead><tr><th>#</th><th>Artículo</th><th>Categoría</th><th class="td-num">Cant.</th><th class="td-num">P. Unit.</th><th class="td-num">Subtotal</th></tr></thead>
+            <tbody>
+                ${filasTabla}
+                <tr class="fila-total"><td colspan="3" align="right">Total (${datos.totalPiezas} piezas):</td><td class="td-num">${datos.totalPiezas}</td><td></td><td class="td-num" style="color: #27ae60;">$${formatear(datos.costoTotal)} CLP</td></tr>
+            </tbody>
+        </table>
+    </div>
+    </body>
+    </html>`;
+    }
+
+    // --- ACCIONES DEL MODAL Y DESCARGA ---
+    window.abrirModalInforme = function() {
+        const datos = obtenerDatosInforme();
+        if (datos.totalPiezas === 0) {
+            if(typeof DialogoUI !== 'undefined') DialogoUI.alert("No hay elementos construidos para generar un informe.");
+            else alert("No hay elementos construidos en la escena.");
+            return;
+        }
+        const contenedorResumen = document.getElementById('resumen-modal-informe');
+        if (contenedorResumen) {
+            contenedorResumen.innerHTML = `
+                <div class="resumen-item"><span class="resumen-label">Perímetro Exterior</span><span class="resumen-valor">${datos.perimetro} m</span></div>
+                <div class="resumen-item"><span class="resumen-label">Área Construida</span><span class="resumen-valor">${datos.area} m²</span></div>
+                <div class="resumen-item"><span class="resumen-label">Total Artículos</span><span class="resumen-valor">${datos.totalPiezas} piezas</span></div>
+                <div class="resumen-item"><span class="resumen-label">Presupuesto</span><span class="resumen-valor valor-costo">$${new Intl.NumberFormat('es-CL').format(datos.costoTotal)}</span></div>
+            `;
+        }
+        const modal = document.getElementById('modal-informe');
+        if (modal) modal.style.display = 'flex';
+    };
+
+    window.cerrarModalInforme = function() {
+        const modal = document.getElementById('modal-informe');
+        if (modal) modal.style.display = 'none';
+    };
+
+    // Descarga en PDF mediante html2pdf (Asegúrate de tener el script importado en HTML)
+    window.descargarInformePDF = function() {
+        const datos = obtenerDatosInforme();
+        if (datos.totalPiezas === 0) return;
+
+        if (typeof html2pdf !== 'undefined') {
+            const tempDiv = document.createElement('div');
+            tempDiv.innerHTML = generarHTMLInforme(datos, true);
+            tempDiv.style.position = 'fixed';
+            tempDiv.style.left = '-9999px';
+            tempDiv.style.top = '0';
+            tempDiv.style.width = '780px';
+            tempDiv.style.background = '#ffffff';
+            document.body.appendChild(tempDiv);
+
+            const btnPdf = document.querySelector('.btn-descarga-pdf strong');
+            const textoOriginal = btnPdf ? btnPdf.textContent : '';
+            if (btnPdf) btnPdf.textContent = 'Generando archivo PDF...';
+
+            const opt = {
+                margin: [8, 8, 8, 8],
+                filename: `Informe_Construccion_HomeCount_${datos.folio}.pdf`,
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2, useCORS: true, logging: false },
+                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+            };
+
+            html2pdf().set(opt).from(tempDiv).save()
+                .then(() => {
+                    if (btnPdf) btnPdf.textContent = textoOriginal;
+                    if (tempDiv.parentNode) tempDiv.parentNode.removeChild(tempDiv);
+                    cerrarModalInforme();
+                })
+                .catch(err => {
+                    console.error("Error generando PDF con html2pdf:", err);
+                    if (btnPdf) btnPdf.textContent = textoOriginal;
+                    if (tempDiv.parentNode) tempDiv.parentNode.removeChild(tempDiv);
+                    descargarInformeHTML();
+                });
+        } else {
+            descargarInformeHTML();
+        }
+    };
+
+    window.descargarInformeHTML = function() {
+        const datos = obtenerDatosInforme();
+        if (datos.totalPiezas === 0) return;
+        const blob = new Blob([generarHTMLInforme(datos, false)], { type: 'text/html;charset=utf-8' });
+        const enlace = document.createElement('a');
+        enlace.href = URL.createObjectURL(blob);
+        enlace.download = `Informe_HomeCount_${datos.folio}.html`;
+        enlace.click();
+        URL.revokeObjectURL(enlace.href);
+        cerrarModalInforme();
+    };
+
+    window.imprimirInforme = function() {
+        const datos = obtenerDatosInforme();
+        if (datos.totalPiezas === 0) return;
+        const ventana = window.open('', '_blank');
+        if (ventana) {
+            ventana.document.write(generarHTMLInforme(datos, false));
+            ventana.document.close();
+            ventana.focus();
+            setTimeout(() => ventana.print(), 350);
+        } else {
+            if(typeof DialogoUI !== 'undefined') DialogoUI.alert("El navegador bloqueó la ventana emergente.");
+        }
+    };
+
+    // Eventos para cerrar modal con clic fuera o escape
+    document.addEventListener('DOMContentLoaded', () => {
+        const modalInformeEl = document.getElementById('modal-informe');
+        if (modalInformeEl) {
+            modalInformeEl.addEventListener('click', (e) => {
+                if (e.target === modalInformeEl) cerrarModalInforme();
+            });
+        }
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') cerrarModalInforme();
+        });
+    });
+    
+    
     function animar() {
         requestAnimationFrame(animar);
         controles.update(); 
@@ -828,4 +1171,22 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     
     animar();
+    
+    window.cambiarTab = function(tabId, elementoBoton) {
+        const contenidos = document.querySelectorAll('.contenido-tab');
+        contenidos.forEach(contenido => {
+            contenido.style.display = 'none';
+        });
+        const botones = document.querySelectorAll('.btn-tab');
+        botones.forEach(boton => {
+            boton.classList.remove('activo');
+        });
+        const tabSeleccionado = document.getElementById(tabId);
+        if (tabSeleccionado) {
+            tabSeleccionado.style.display = 'block';
+        }
+        if (elementoBoton) {
+            elementoBoton.classList.add('activo');
+        }
+    };
 });
