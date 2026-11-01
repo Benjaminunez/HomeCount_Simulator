@@ -65,11 +65,15 @@ async function procesarGuardado(objetos, camera, controles, costoTotal, miEscena
         const data = await response.json();
         if (response.ok && data.estado === 'exito') {
             await DialogoUI.alert("¡Proyecto guardado con éxito!");
+            // NUEVO: Retornamos el éxito y los datos clave al script principal
+            return { exito: true, id: data.id, nombre: nombreProyecto };
         } else {
             await DialogoUI.alert("Error al guardar: " + data.mensaje);
+            return { exito: false };
         }
     } catch (err) {
         console.error("Error de red al guardar:", err);
+        return { exito: false };
     }
 }
 
@@ -101,8 +105,11 @@ async function cargarDisenosUsuario(scene, objetos, camera, controles, callbackA
             card.style.position = 'relative';
             card.style.zIndex = '1000000';     
 
-            const imgUrl = proyecto.imagen_url ? proyecto.imagen_url : 'data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs='; 
-            const precioFormateado = Number(proyecto.costo_total).toLocaleString('es-CL');
+        const timestamp = new Date().getTime();
+        const imgUrl = proyecto.imagen_url 
+            ? `${proyecto.imagen_url}?v=${timestamp}` 
+            : 'data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=';            
+        const precioFormateado = Number(proyecto.costo_total).toLocaleString('es-CL');
 
             card.innerHTML = `
                 <div class="btn-eliminar-diseno" title="Eliminar diseño">🗑️</div>

@@ -79,6 +79,9 @@ document.addEventListener('DOMContentLoaded', () => {
     let esModoOscuro = false; 
     const uiTotal = document.getElementById('total-3d');
     
+    let proyectoCargadoId = null;
+    let proyectoCargadoNombre = "";
+
     const texturas = {
         madera: new THREE.MeshLambertMaterial({ color: 0x8b5a2b }),
         ladrillo: new THREE.MeshLambertMaterial({ color: 0xb22222 }),
@@ -170,6 +173,29 @@ document.addEventListener('DOMContentLoaded', () => {
     const raycaster = new THREE.Raycaster();
     const mouse = new THREE.Vector2();
     const objetosInteractuables = [plano]; 
+
+    // --- FUNCIONES DE ESTADO Y UI ---
+    function actualizarEstadoBotones() {
+        const btnGuardar = document.getElementById('btn-guardar-modelo');
+        const btnGuardarCopia = document.getElementById('btn-guardar-copia');
+    
+        // 1 elemento significa que solo está el plano base
+        const hayElementos = objetosInteractuables.length > 1; 
+        const esProyectoExistente = proyectoCargadoId !== null;
+    
+        if (btnGuardar) {
+            btnGuardar.disabled = !hayElementos;
+            btnGuardar.style.opacity = hayElementos ? "1" : "0.5";
+            btnGuardar.style.cursor = hayElementos ? "pointer" : "not-allowed";
+        }
+    
+        if (btnGuardarCopia) {
+            const copiaValida = hayElementos && esProyectoExistente;
+            btnGuardarCopia.disabled = !copiaValida;
+            btnGuardarCopia.style.opacity = copiaValida ? "1" : "0.5";
+            btnGuardarCopia.style.cursor = copiaValida ? "pointer" : "not-allowed";
+        }
+    }
 
     function cambiarTamanoTerreno(nuevoTamano) {
         if (nuevoTamano <= 0 || nuevoTamano === tamanoTerreno) return;
@@ -596,6 +622,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     objetosInteractuables.push(grupo);
                     actualizarPresupuesto(item.precio);
                     recalcularTamanoTerreno(); 
+                    actualizarEstadoBotones(); 
                 });
             } else {
                 const geo = (item.tipo === 'habitacion') ? geometriaHabitacion : geometriaBloque;
@@ -610,6 +637,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 objetosInteractuables.push(malla);
                 actualizarPresupuesto(item.precio);
                 recalcularTamanoTerreno(); 
+                actualizarEstadoBotones(); 
             }
         });
     }
@@ -617,11 +645,11 @@ document.addEventListener('DOMContentLoaded', () => {
     async function autocompletarUltimoDiseño() {
         const btnGuardarVerificacion = document.getElementById('btn-guardar-modelo');
         
-        // Si el botón no existe, asumimos que no está logueado y usamos LocalStorage
         if (!btnGuardarVerificacion) {
             cargarEscenaLocal();
             if (typeof cargarCamaraLocal === 'function') cargarCamaraLocal();
             actualizarListaUI();
+            actualizarEstadoBotones();
             return;
         }
 
@@ -629,7 +657,6 @@ document.addEventListener('DOMContentLoaded', () => {
             const response = await fetch('/api/obtener-disenos/');
             const data = await response.json();
 
-            // Si hay diseños guardados en la BD
             if (response.ok && data.disenos && data.disenos.length > 0) {
                 const ultimoProyecto = data.disenos[0]; 
                 
@@ -647,22 +674,23 @@ document.addEventListener('DOMContentLoaded', () => {
                         }
                         actualizarListaUI();       
                         recalcularTamanoTerreno(); 
+                        actualizarEstadoBotones(); 
                     };
                     
                     ejecutarCargaEscena3D(ultimoProyecto, scene, objetosInteractuables, camera, controles, callbackActualizarUI);
                 }
             } else {
-                // Consulta exitosa pero sin proyectos guardados
                 cargarEscenaLocal();
                 if (typeof cargarCamaraLocal === 'function') cargarCamaraLocal();
                 actualizarListaUI(); 
+                actualizarEstadoBotones(); 
             }
         } catch (err) {
             console.error("No se pudo cargar el último diseño desde la base de datos:", err);
-            // Fallback en caso de error de red
             cargarEscenaLocal();
             if (typeof cargarCamaraLocal === 'function') cargarCamaraLocal();
             actualizarListaUI(); 
+            actualizarEstadoBotones(); 
         }
     }
 
@@ -778,12 +806,17 @@ document.addEventListener('DOMContentLoaded', () => {
                 scene.remove(objBorrar);
                 objetosInteractuables.splice(objetosInteractuables.indexOf(objBorrar), 1);
                 
+                // LÓGICA AÑADIDA: Si al borrar ya no queda ningún bloque (solo el piso)
+                if (objetosInteractuables.length <= 1) {
+                    proyectoCargadoId = null;
+                    proyectoCargadoNombre = "";
+                }
+
                 actualizarPresupuesto(-objBorrar.userData.precio);
                 recalcularTamanoTerreno(); 
                 guardarEscenaLocal();
+                actualizarEstadoBotones(); 
                 if (tooltip) tooltip.style.display = 'none';
-
-                // 1. AÑADIDO: Recalcula y muestra perímetro/área tras eliminar el objeto
                 calcularYMostrarPerimetro();
             }
         } else { 
@@ -813,38 +846,121 @@ document.addEventListener('DOMContentLoaded', () => {
                 recalcularTamanoTerreno(); 
                 actualizarPresupuesto(precioActual);
                 guardarEscenaLocal();
-
-                // 2. AÑADIDO: Recalcula y muestra perímetro/área tras colocar el nuevo objeto
+                actualizarEstadoBotones(); 
                 calcularYMostrarPerimetro();
             }
         }
     });
 
-    const btnModoOscuro = document.getElementById('btn-modo-oscuro');
-    esModoOscuro = localStorage.getItem('modo_oscuro_homecount') === 'true';
-    function aplicarTemaVisual(oscuro) {
-        document.body.classList.toggle('tema-oscuro', oscuro);
-
-        if (oscuro) {
-            renderer.setClearColor(0x1a1a1a, 1); 
-            if (gridHelper && gridHelper.material) gridHelper.material.color.setHex(0x777777); 
-            if (btnModoOscuro) btnModoOscuro.textContent = '☀️'; 
-        } else {
-            renderer.setClearColor(0xe0e0e0, 1); 
-            if (gridHelper && gridHelper.material) gridHelper.material.color.setHex(0x888888); 
-            if (btnModoOscuro) btnModoOscuro.textContent = '🌙'; 
-        }
-    }
-    aplicarTemaVisual(esModoOscuro);
-
-    if (btnModoOscuro) {
-        btnModoOscuro.addEventListener('click', () => {
-            esModoOscuro = !esModoOscuro;
-            localStorage.setItem('modo_oscuro_homecount', esModoOscuro);
-            aplicarTemaVisual(esModoOscuro);
+    // --- EVENTOS DE BOTONES ---
+    const btnGuardarModelo = document.getElementById('btn-guardar-modelo');
+    if (btnGuardarModelo) {
+        btnGuardarModelo.addEventListener('click', async (e) => {
+            e.preventDefault();
+            
+            if (objetosInteractuables.length <= 1) {
+                proyectoCargadoId = null;
+                proyectoCargadoNombre = "";
+                await DialogoUI.alert("La escena está vacía. Añade elementos antes de guardar.");
+                return;
+            }
+            
+            // Recibimos la respuesta de guardado_db.js
+            const resultado = await procesarGuardado(objetosInteractuables, camera, controles, costoTotal, scene, renderer, proyectoCargadoId, proyectoCargadoNombre);
+            
+            // Si el guardado fue exitoso, vinculamos la sesión activa al nuevo ID y encendemos el botón 🔄
+            if (resultado && resultado.exito) {
+                proyectoCargadoId = resultado.id;
+                proyectoCargadoNombre = resultado.nombre;
+                actualizarEstadoBotones(); 
+            }
         });
     }
 
+    const btnGuardarCopia = document.getElementById('btn-guardar-copia');
+    if (btnGuardarCopia) {
+        btnGuardarCopia.addEventListener('click', async (e) => {
+            e.preventDefault();
+            
+            if (!objetosInteractuables || objetosInteractuables.length <= 1) {
+                proyectoCargadoId = null;
+                proyectoCargadoNombre = "";
+                await DialogoUI.alert("La escena está vacía. Añade elementos antes de guardar.");
+                return;
+            }
+
+            if (!proyectoCargadoId) {
+                await DialogoUI.alert("Actualmente no estás en un diseño guardado. Utiliza el botón 'Guardar Modelo' estándar.");
+                return;
+            }
+
+            const confirmacion = await DialogoUI.confirm(`Te encuentras actualmente en el modelo "${proyectoCargadoNombre}".\n\n¿Deseas guardar el estado actual como un diseño completamente nuevo?`);
+            if (!confirmacion) return;
+
+            const nuevoNombre = await DialogoUI.prompt("Ingresa un nombre para el nuevo modelo:", `Copia de ${proyectoCargadoNombre}`);
+            if (!nuevoNombre) return;
+
+            let capturaBase64 = null;
+            if (typeof scene !== 'undefined' && typeof renderer !== 'undefined') {
+                renderer.render(scene, camera); 
+                capturaBase64 = renderer.domElement.toDataURL("image/png");
+            }
+
+            const datosEscena = [];
+            for (let i = 1; i < objetosInteractuables.length; i++) {
+                const obj = objetosInteractuables[i];
+                datosEscena.push({
+                    posX: obj.position.x, posY: obj.position.y, posZ: obj.position.z,
+                    rotY: obj.rotation.y, escalaX: obj.scale.x, escalaY: obj.scale.y, escalaZ: obj.scale.z,
+                    precio: obj.userData.precio || 0, tipo: obj.userData.tipo || "material",
+                    url3D: obj.userData.url3D || null, textura: obj.userData.textura || "concreto",
+                    nombre: obj.userData.nombre || "Bloque"
+                });
+            }
+
+            const payload = {
+                proyecto_id: null, 
+                nombre_proyecto: nuevoNombre,
+                costo_total: costoTotal,
+                datos_escena: datosEscena,
+                datos_camara: {
+                    posX: camera.position.x, posY: camera.position.y, posZ: camera.position.z,
+                    targetX: controles.target.x, targetY: controles.target.y, targetZ: controles.target.z
+                },
+                captura_base64: capturaBase64 
+            };
+
+            try {
+                const response = await fetch('/api/guardar-diseno/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': typeof obtenerCookieCSRF === 'function' ? obtenerCookieCSRF('csrftoken') : ''
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                const data = await response.json();
+                
+                if (response.ok && data.estado === 'exito') {
+                    await DialogoUI.alert("¡Diseño almacenado exitosamente como nueva copia!");
+                    
+                    const cambiarNuevo = await DialogoUI.confirm(`¿Deseas ingresar al nuevo modelo "${nuevoNombre}" para seguir editándolo?\n\n(Haz clic en "Cancelar" para mantenerte trabajando en el diseño original "${proyectoCargadoNombre}")`);
+                    
+                    if (cambiarNuevo) {
+                        proyectoCargadoId = data.id;
+                        proyectoCargadoNombre = nuevoNombre;
+                        actualizarEstadoBotones(); 
+                    } 
+                } else {
+                    await DialogoUI.alert("Error al guardar la copia: " + data.mensaje);
+                }
+            } catch (err) {
+                console.error("Error de red al guardar la copia:", err);
+            }
+        });
+    }
+    
     const btnBorrarTodo = document.getElementById('btn-borrar-todo');
     if (btnBorrarTodo) {
         btnBorrarTodo.addEventListener('click', async () => {
@@ -862,7 +978,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 localStorage.removeItem('proyecto_homecount');
                 localStorage.removeItem('camara_homecount');
 
-                // CLAVE: Resetear el estado del proyecto para forzar la creación de uno nuevo
+                // Resetear estado de proyecto actual
                 proyectoCargadoId = null;
                 proyectoCargadoNombre = "";
 
@@ -872,6 +988,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 controles.target.set(0, 0, 0);
                 controles.update();
                 
+                actualizarEstadoBotones();
+
                 if (typeof window.calcularYMostrarPerimetro === 'function') {
                     window.calcularYMostrarPerimetro();
                 }
@@ -879,19 +997,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    let proyectoCargadoId = null;
-    let proyectoCargadoNombre = "";
-
-    const btnGuardarModelo = document.getElementById('btn-guardar-modelo');
     const btnMisModelos = document.getElementById('btn-mis-modelos');
-
-    if (btnGuardarModelo) {
-        btnGuardarModelo.addEventListener('click', (e) => {
-            e.preventDefault();
-            procesarGuardado(objetosInteractuables, camera, controles, costoTotal, scene, renderer, proyectoCargadoId, proyectoCargadoNombre);
-        });
-    }
-
     if (btnMisModelos) {
         btnMisModelos.addEventListener('click', (e) => {
             e.preventDefault();
@@ -905,6 +1011,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
                 actualizarListaUI();       
                 recalcularTamanoTerreno(); 
+                actualizarEstadoBotones();
             });
         });
     }
@@ -945,17 +1052,12 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    cargarEscenaLocal();
-    cargarCamaraLocal();
-    actualizarListaUI(); 
-
     const mapaCategoriasMateriales = window.mapaCategoriasMateriales || {};
 
     function obtenerCalculoDimensiones() {
         const TAMANO_CELDA = 50; // 50 unidades = 1 metro
         const celdas = new Set();
 
-        // Accede directamente a objetosInteractuables de script_casa1
         for (let i = 1; i < objetosInteractuables.length; i++) {
             const obj = objetosInteractuables[i];
             if (!obj || !obj.userData) continue;
@@ -1006,28 +1108,20 @@ document.addEventListener('DOMContentLoaded', () => {
 
         return { perimetro: ladosExteriores, area: celdas.size };
     }
-    // Se exporta a window para que los botones del HTML puedan llamarla
     window.obtenerCalculoDimensiones = obtenerCalculoDimensiones;
 
     function calcularYMostrarPerimetro() {
-        // 1. Ejecutar el cálculo matemático existente
         const { perimetro, area } = obtenerCalculoDimensiones(); 
-
-        // 2. Localizar los contenedores en el panel lateral (tab-dimensiones)
-        // Nota: Como no tenían ID en tu HTML, buscaremos la etiqueta <p> para inyectar allí la información.
         const tabDimensiones = document.getElementById('tab-dimensiones');
         
         if (tabDimensiones) {
-            // Encontramos el párrafo con la clase "texto-placeholder" dentro del tab
             const parrafoInfo = tabDimensiones.querySelector('p.texto-placeholder') || tabDimensiones.querySelector('p');
             
             if (parrafoInfo) {
-                // Reemplazamos el texto por los resultados exactos
                 parrafoInfo.innerHTML = `
                     <strong>Perímetro Exterior:</strong> <span style="color: #e67e22;">${perimetro}</span> metros.<br><br>
                     <strong>Área Construida:</strong> <span>${area}</span> m&sup2;.
                 `;
-                // Aseguramos quitar la clase de placeholder para que no se vea gris
                 parrafoInfo.classList.remove('texto-placeholder');
             }
         }
@@ -1040,7 +1134,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const conteo = {};
         let totalPiezas = 0;
 
-        // Accede directamente a objetosInteractuables y costoTotal
         for (let i = 1; i < objetosInteractuables.length; i++) {
             const obj = objetosInteractuables[i];
             if (!obj || !obj.userData) continue;
@@ -1165,7 +1258,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (modal) modal.style.display = 'none';
     };
 
-    // Descarga en PDF mediante html2pdf (Asegúrate de tener el script importado en HTML)
+    // Descarga en PDF mediante html2pdf
     window.descargarInformePDF = function() {
         const datos = obtenerDatosInforme();
         if (datos.totalPiezas === 0) return;
@@ -1247,7 +1340,6 @@ document.addEventListener('DOMContentLoaded', () => {
             if (e.key === 'Escape') cerrarModalInforme();
         });
     });
-    
     
     function animar() {
         requestAnimationFrame(animar);

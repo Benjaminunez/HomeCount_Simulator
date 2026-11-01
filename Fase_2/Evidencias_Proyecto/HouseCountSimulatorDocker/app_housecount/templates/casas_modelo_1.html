@@ -44,9 +44,9 @@
                 <button id="btn-borrar-todo" class="btn-peligro" onclick="limpiarEscenaCompleta(scene, objetosInteractuables)"> 
                     🗑️
                 </button>
-                <button id="btn-modo-oscuro">🌙</button>
                 {% if user.is_authenticated %}
                     <button id="btn-guardar-modelo">💾</button>
+                    <button id="btn-guardar-copia">🔄</button>
                     <a href="#" id="btn-mis-modelos" style="text-decoration: none;">📁</a>
                     <button id="btn-generar-informe" onclick="abrirModalInforme()">📄</button>
                 {% endif %}

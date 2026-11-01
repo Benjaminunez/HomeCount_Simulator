@@ -94,3 +94,29 @@ document.addEventListener('DOMContentLoaded', function() {
 
 });
 
+const btnModoOscuro = document.getElementById('btn-modo-oscuro');
+esModoOscuro = localStorage.getItem('modo_oscuro_homecount') === 'true';
+function aplicarTemaVisual(oscuro) {
+    document.body.classList.toggle('tema-oscuro', oscuro);
+
+    if (oscuro) {
+        renderer.setClearColor(0x1a1a1a, 1); 
+        if (gridHelper && gridHelper.material) gridHelper.material.color.setHex(0x777777); 
+        if (btnModoOscuro) btnModoOscuro.textContent = '☀️'; 
+    } else {
+        renderer.setClearColor(0xe0e0e0, 1); 
+        if (gridHelper && gridHelper.material) gridHelper.material.color.setHex(0x888888); 
+        if (btnModoOscuro) btnModoOscuro.textContent = '🌙'; 
+    }
+}
+aplicarTemaVisual(esModoOscuro);
+
+if (btnModoOscuro) {
+    btnModoOscuro.addEventListener('click', () => {
+        esModoOscuro = !esModoOscuro;
+        localStorage.setItem('modo_oscuro_homecount', esModoOscuro);
+        aplicarTemaVisual(esModoOscuro);
+    });
+}
+
+ 
