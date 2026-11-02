@@ -218,6 +218,176 @@ document.addEventListener('DOMContentLoaded', () => {
         objetosInteractuables[0] = plano;
     }
 
+    const grupoCotas = new THREE.Group();
+    scene.add(grupoCotas);
+
+    function crearTextoCota(texto, posicion, rotacionVertical = false) {
+        const canvas = document.createElement('canvas');
+        const context = canvas.getContext('2d');
+        canvas.width = 256;
+        canvas.height = 128;
+        
+        context.font = 'Bold 28px Arial';
+        // LÓGICA DE COLOR: Blanco en modo oscuro, gris oscuro en modo claro
+        context.fillStyle = esModoOscuro ? '#ffffff' : '#1e293b'; 
+        context.textAlign = 'center';
+        context.textBaseline = 'middle';
+        context.fillText(texto, 128, 64);
+        
+        const textura = new THREE.CanvasTexture(canvas);
+        const material = new THREE.SpriteMaterial({ 
+            map: textura, 
+            depthTest: false,
+            transparent: true 
+        });
+        
+        const sprite = new THREE.Sprite(material);
+        sprite.position.copy(posicion);
+        sprite.scale.set(120, 60, 1); 
+        return sprite;
+    }
+
+    function crearLineaCotaArquitectonica(p1, p2, direccionOffset, distanciaOffset, texto) {
+        const colorLinea = esModoOscuro ? 0xffffff : 0x1e293b;
+        const materialLinea = new THREE.LineBasicMaterial({ color: colorLinea, depthTest: false });
+
+        // Vector para alejar la línea del muro
+        const offsetVector = direccionOffset.clone().normalize().multiplyScalar(distanciaOffset);
+        
+        // Puntos de la línea de dimensión (paralela al muro)
+        const cotaP1 = new THREE.Vector3().copy(p1).add(offsetVector);
+        const cotaP2 = new THREE.Vector3().copy(p2).add(offsetVector);
+
+        // Puntos de las líneas de extensión (perpendiculares al muro)
+        const gapInicio = 10; // Separación para que la línea no toque el muro
+        const extensionFin = distanciaOffset + 15; // Qué tanto sobresale la cruz
+        
+        const ext1Inicio = new THREE.Vector3().copy(p1).add(direccionOffset.clone().normalize().multiplyScalar(gapInicio));
+        const ext1Fin = new THREE.Vector3().copy(p1).add(direccionOffset.clone().normalize().multiplyScalar(extensionFin));
+        
+        const ext2Inicio = new THREE.Vector3().copy(p2).add(direccionOffset.clone().normalize().multiplyScalar(gapInicio));
+        const ext2Fin = new THREE.Vector3().copy(p2).add(direccionOffset.clone().normalize().multiplyScalar(extensionFin));
+
+        // LineSegments requiere pares de vértices para dibujar líneas desconectadas
+        const puntos = [
+            cotaP1, cotaP2,      // Segmento 1: La línea principal de cota
+            ext1Inicio, ext1Fin, // Segmento 2: Extensión desde la primera esquina
+            ext2Inicio, ext2Fin  // Segmento 3: Extensión desde la segunda esquina
+        ];
+
+        const geometria = new THREE.BufferGeometry().setFromPoints(puntos);
+        const lineas = new THREE.LineSegments(geometria, materialLinea);
+        lineas.renderOrder = 999;
+
+        // Posicionar el texto un poco más afuera de la línea principal
+        const medio = new THREE.Vector3().addVectors(cotaP1, cotaP2).multiplyScalar(0.5);
+        medio.add(direccionOffset.clone().normalize().multiplyScalar(15));
+
+        const spriteTexto = crearTextoCota(texto, medio);
+        spriteTexto.renderOrder = 1000;
+
+        const grupo = new THREE.Group();
+        grupo.add(lineas);
+        grupo.add(spriteTexto);
+        return grupo;
+    }
+
+    function actualizarCotasVisuales() {
+        // 1. Limpiar líneas anteriores
+        while(grupoCotas.children.length > 0){ 
+            grupoCotas.remove(grupoCotas.children[0]); 
+        }
+
+        if (objetosInteractuables.length <= 1) return;
+
+        // 2. Agrupar objetos contiguos (estructuras independientes)
+        const grupos = [];
+        const visitados = new Set();
+        const margenEpsilon = 5; 
+
+        for (let i = 1; i < objetosInteractuables.length; i++) {
+            if (visitados.has(i)) continue;
+
+            const grupoActual = [];
+            const cola = [objetosInteractuables[i]];
+            visitados.add(i);
+
+            while (cola.length > 0) {
+                const actual = cola.shift();
+                grupoActual.push(actual);
+                
+                const boxActual = new THREE.Box3().setFromObject(actual);
+                boxActual.expandByScalar(margenEpsilon); 
+
+                for (let j = 1; j < objetosInteractuables.length; j++) {
+                    if (!visitados.has(j)) {
+                        const boxOtro = new THREE.Box3().setFromObject(objetosInteractuables[j]);
+                        if (boxActual.intersectsBox(boxOtro)) {
+                            visitados.add(j);
+                            cola.push(objetosInteractuables[j]);
+                        }
+                    }
+                }
+            }
+            grupos.push(grupoActual);
+        }
+
+        // 3. Dibujar cotas por cada grupo independiente
+        const offsetExterior = 45; 
+        const yNivel = 2; 
+
+        grupos.forEach((grupo) => {
+            const boxGrupo = new THREE.Box3();
+            grupo.forEach(obj => boxGrupo.expandByObject(obj));
+
+            const minX = boxGrupo.min.x;
+            const maxX = boxGrupo.max.x;
+            const minZ = boxGrupo.min.z;
+            const maxZ = boxGrupo.max.z;
+            // NUEVO: Extraer valores de altura
+            const minY = boxGrupo.min.y; 
+            const maxY = boxGrupo.max.y; 
+
+            // Calcular dimensiones en metros
+            const anchoMundo = maxX - minX;
+            const anchoMetros = (anchoMundo / 50).toFixed(2); 
+            
+            const largoMundo = maxZ - minZ;
+            const largoMetros = (largoMundo / 50).toFixed(2);
+
+            // NUEVO: Calcular altura
+            const altoMundo = maxY - minY; 
+            const altoMetros = (altoMundo / 50).toFixed(2); 
+
+            // Cota Eje X (Ancho)
+            if (anchoMundo > 1) {
+                const p1X = new THREE.Vector3(minX, yNivel, maxZ);
+                const p2X = new THREE.Vector3(maxX, yNivel, maxZ);
+                const dirOffset = new THREE.Vector3(0, 0, 1); 
+                grupoCotas.add(crearLineaCotaArquitectonica(p1X, p2X, dirOffset, offsetExterior, `${anchoMetros} m`));
+            }
+
+            // Cota Eje Z (Largo)
+            if (largoMundo > 1) {
+                const p1Z = new THREE.Vector3(minX, yNivel, minZ);
+                const p2Z = new THREE.Vector3(minX, yNivel, maxZ);
+                const dirOffset = new THREE.Vector3(-1, 0, 0); 
+                grupoCotas.add(crearLineaCotaArquitectonica(p1Z, p2Z, dirOffset, offsetExterior, `${largoMetros} m`));
+            }
+
+            // NUEVO: Cota Eje Y (Altura)
+            if (altoMundo > 1) {
+                // Tomamos la esquina derecha-frontal de la estructura
+                const p1Y = new THREE.Vector3(maxX, minY, maxZ);
+                const p2Y = new THREE.Vector3(maxX, maxY, maxZ);
+                
+                // Proyectamos la medida hacia la derecha (eje +X) para separarla del muro
+                const dirOffsetY = new THREE.Vector3(1, 0, 0); 
+                
+                grupoCotas.add(crearLineaCotaArquitectonica(p1Y, p2Y, dirOffsetY, offsetExterior, `${altoMetros} m`));
+            }
+        });
+    }
     function recalcularTamanoTerreno() {
         let maxDistancia = 0;
         const margen = 150; 
@@ -1125,6 +1295,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 parrafoInfo.classList.remove('texto-placeholder');
             }
         }
+        actualizarCotasVisuales();
     }
     window.calcularYMostrarPerimetro = calcularYMostrarPerimetro;
 
@@ -1187,6 +1358,10 @@ document.addEventListener('DOMContentLoaded', () => {
             esModoOscuro = !esModoOscuro;
             localStorage.setItem('modo_oscuro_homecount', esModoOscuro);
             aplicarTemaVisual(esModoOscuro);
+            cambiarTamanoTerreno(tamanoTerreno);
+            if (typeof actualizarCotasVisuales === 'function') {
+                actualizarCotasVisuales();
+            }
         });
     }
 
