@@ -13,6 +13,8 @@ from django.views.decorators.csrf import csrf_exempt, ensure_csrf_cookie
 from django.utils import timezone
 from django.core.mail import send_mail, EmailMultiAlternatives
 from django.conf import settings
+from django.views.decorators.http import require_POST
+from .models import TutorialSimulador
 from django.contrib.auth.models import User
 
 from .models import ModeloCasa, Material, Habitacion, Proyecto3D, CategoriaMaterial, Avatar, CodigoRecuperacion
@@ -29,8 +31,23 @@ def contrucion(request):
 def creacion_de_casas(request): 
     return render(request, 'creacion_de_Casas.html')
 
-def casas_modelo_1(request): 
-    return render(request, 'casas_modelo_1.html')
+@ensure_csrf_cookie
+def casas_modelo_1(request):
+    visto = request.user.is_authenticated and TutorialSimulador.objects.filter(usuario=request.user).exists()
+    return render(request, 'casas_modelo_1.html', {'tutorial_visto': visto})
+
+
+@require_POST
+def estado_tutorial(request):
+    try:
+        estado = json.loads(request.body).get('estado')
+    except (ValueError, AttributeError):
+        return JsonResponse({'error': 'Datos inválidos'}, status=400)
+    if estado not in ('omitido', 'completado'):
+        return JsonResponse({'error': 'Estado inválido'}, status=400)
+    if request.user.is_authenticated:
+        TutorialSimulador.objects.update_or_create(usuario=request.user, defaults={'estado': estado})
+    return JsonResponse({'estado': estado})
 
 def casas_rapidas(request):
     modelos = ModeloCasa.objects.all()

@@ -3,6 +3,7 @@ from . import views
 from django.contrib.auth import views as auth_views
 
 urlpatterns = [
+    path('api/tutorial-simulador/', views.estado_tutorial, name='estado_tutorial'),
     path('', views.inicio, name='inicio'), #vista inicial de la pagina al iniciar con localhost (este queda como main)
     path('inicio.html', views.inicio, name='inicio_html'),
     path('contrucion.html', views.contrucion, name='contrucion'),

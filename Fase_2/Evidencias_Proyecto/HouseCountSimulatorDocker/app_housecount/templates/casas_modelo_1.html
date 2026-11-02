@@ -3,8 +3,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Modalidades de Construcción</title>
-    <link rel="stylesheet" href="{% static 'css/Style5.css' %}?v=3">
+    <link rel="stylesheet" href="{% static 'css/Style5.css' %}?v=4">
     <script src="{% static 'js/script_casas1.js' %}" defer></script>
+    <link rel="stylesheet" href="{% static 'css/tutorial_simulador.css' %}">
+    <script src="{% static 'js/tutorial_simulador.js' %}?v=2" defer></script>
     <script src="{% static 'js/guardado_db.js'%}"></script>
     <link rel="icon" type="image/png" href="media/iconosPestana/martillo.ico"> <!--icono para pestaña de navegador-->
     <style>
@@ -24,7 +26,10 @@
 <!-- NUEVO: Agregar html2pdf para descargar el informe en PDF -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 
-<section id="constructor-3d" class="seccion-3d">
+<section id="constructor-3d" class="seccion-3d"
+    data-tutorial-visto="{{ tutorial_visto|yesno:'true,false' }}"
+    data-tutorial-usuario="{{ user.pk|default:'visitante' }}"
+    data-tutorial-url="{% url 'estado_tutorial' %}">
     
     <!-- 1. Contenedor del lienzo 3D (Ahora ocupará todo el fondo) -->
     <div id="canvas-3d-container"></div>
@@ -39,6 +44,7 @@
                     🗑️
                 </button>
                 <button id="btn-modo-oscuro">🌙</button>
+                <button id="btn-tutorial" type="button" title="Ver tutorial" aria-label="Ver tutorial">?</button>
                 {% if user.is_authenticated %}
                     <button id="btn-guardar-modelo">💾</button>
                     <a href="#" id="btn-mis-modelos" style="text-decoration: none;">📁</a>
