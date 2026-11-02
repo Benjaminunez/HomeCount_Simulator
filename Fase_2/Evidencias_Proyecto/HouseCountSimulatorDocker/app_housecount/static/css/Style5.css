@@ -147,6 +147,7 @@ body.tema-oscuro .btn-contacto:hover {
 
 #btn-borrar-todo,
 #btn-modo-oscuro,
+#btn-tutorial,
 #btn-guardar-modelo,
 #btn-mis-modelos {
     width: 42px;
@@ -174,7 +175,8 @@ body.tema-oscuro .btn-contacto:hover {
     box-shadow: 0 4px 8px rgba(239, 68, 68, 0.2);
 }
 
-#btn-modo-oscuro:hover {
+#btn-modo-oscuro:hover,
+#btn-tutorial:hover {
     background-color: #e0e7ff; 
     border-color: #818cf8;
     transform: scale(1.1) rotate(-8deg); 
@@ -183,6 +185,7 @@ body.tema-oscuro .btn-contacto:hover {
 
 #btn-borrar-todo:active,
 #btn-modo-oscuro:active,
+#btn-tutorial:active,
 #btn-guardar-modelo:active,
 #btn-mis-modelos:active {
     transform: scale(0.95);
@@ -190,6 +193,7 @@ body.tema-oscuro .btn-contacto:hover {
 
 #btn-borrar-todo::after,
 #btn-modo-oscuro::after,
+#btn-tutorial::after,
 #btn-guardar-modelo::after,
 #btn-mis-modelos::after {
     position: absolute;
@@ -213,11 +217,13 @@ body.tema-oscuro .btn-contacto:hover {
 
 #btn-borrar-todo::after { content: "Borrar modelo"; }
 #btn-modo-oscuro::after { content: "Cambiar tema"; }
+#btn-tutorial::after { content: "Ver tutorial"; }
 #btn-guardar-modelo::after { content: "Guardar modelo"; }
 #btn-mis-modelos::after { content: "Mis diseños"; }
 
 #btn-borrar-todo::before,
 #btn-modo-oscuro::before,
+#btn-tutorial::before,
 #btn-guardar-modelo::before,
 #btn-mis-modelos::before {
     content: "";
@@ -253,6 +259,8 @@ body.tema-oscuro .btn-contacto:hover {
 #btn-borrar-todo:hover::before,
 #btn-modo-oscuro:hover::after,
 #btn-modo-oscuro:hover::before,
+#btn-tutorial:hover::after,
+#btn-tutorial:hover::before,
 #btn-guardar-modelo:hover::after,
 #btn-guardar-modelo:hover::before,
 #btn-mis-modelos:hover::after,

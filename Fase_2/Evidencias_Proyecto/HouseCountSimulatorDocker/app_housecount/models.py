@@ -150,3 +150,9 @@ class CodigoRecuperacion(models.Model):
 
     def __str__(self):
         return f"{self.usuario.username} - {self.codigo}"
+
+
+class TutorialSimulador(models.Model):
+    usuario = models.OneToOneField(User, on_delete=models.CASCADE)
+    estado = models.CharField(max_length=10, choices=[('omitido', 'Omitido'), ('completado', 'Completado')])
+    actualizado_en = models.DateTimeField(auto_now=True)
