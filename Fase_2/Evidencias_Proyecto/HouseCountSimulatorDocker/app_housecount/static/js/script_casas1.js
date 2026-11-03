@@ -1299,6 +1299,104 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     window.calcularYMostrarPerimetro = calcularYMostrarPerimetro;
 
+    document.addEventListener('DOMContentLoaded', () => {
+    const tutorialCompletado = localStorage.getItem('tutorial_homecount_v1');
+    
+    if (!tutorialCompletado) {
+        // Pequeño retraso para asegurar que los modelos 3D y botones cargaron
+        setTimeout(iniciarTutorialInteractivo, 1000);
+    }
+});
+
+    function iniciarTutorialInteractivo() {
+        const driver = window.driver.js.driver;
+        const driverObj = driver({
+            showProgress: true,
+            allowClose: false,
+            doneBtnText: '¡Comenzar!',
+            nextBtnText: 'Siguiente',
+            prevBtnText: 'Atrás',
+            onDestroyStarted: () => {
+                if (!driverObj.hasNextStep() || DialogoUI.confirm("¿Seguro que deseas omitir el tutorial?")) {
+                    localStorage.setItem('tutorial_homecount_v1', 'true');
+                    driverObj.destroy();
+                }
+            },
+            steps: [
+                {
+                    // PASO 1: Bienvenida General (Ahora se centrará con la nueva clase CSS)
+                    element: 'body', 
+                    popover: {
+                        title: '¡Bienvenido al Simulador 3D HouseCount!',
+                        description: 'A continuación te daremos un breve recorrido por las herramientas principales para que aprendas a diseñar y presupuestar tu proyecto.',
+                        // Al no especificar 'side', Driver.js no lo atará a ningún borde del elemento
+                        align: 'center' 
+                    }
+                },
+                {
+                    // PASO 2: Herramientas (El panel que moviste a la izquierda)
+                    element: '.panel-superior-derecho', // Mantenemos la clase HTML existente
+                    popover: {
+                        title: 'Herramientas del Proyecto',
+                        description: 'Limpia la escena, guarda tu progreso, accede a tus diseños previos o genera el informe técnico desde este panel.',
+                        side: 'right', // Cambiado de 'bottom' a 'right' para que no tape el panel
+                        align: 'start'
+                    }
+                },
+                {
+                    // 2. Botón debajo de las herramientas (Mostrar/Ocultar detalles)
+                    element: '#btn-toggle-panel-der',
+                    popover: {
+                        title: 'Panel de Dimensiones',
+                        description: 'Haz clic aquí para desplegar u ocultar el panel con el cálculo de áreas, perímetros y el sumario de materiales.',
+                        side: 'right', align: 'start'
+                    }
+                },
+                {
+                    // 3. Recuadro superior central (Instrucciones y botón ?)
+                    element: '.panel-instrucciones',
+                    popover: {
+                        title: 'Controles y Ayuda',
+                        description: 'Aquí siempre podrás ver los atajos de teclado para moverte por el entorno 3D. Usa el botón ❓ si necesitas repetir este tutorial.',
+                        side: 'bottom', align: 'center'
+                    }
+                },
+                {
+                    // 4. Recuadro superior derecho (Presupuesto)
+                    element: '.presupuesto-total',
+                    popover: {
+                        title: 'Presupuesto en Tiempo Real',
+                        description: 'Controla tu inversión. El costo total se actualizará instantáneamente cada vez que agregues o quites elementos de tu diseño.',
+                        side: 'bottom', align: 'end'
+                    }
+                },
+                {
+                    // 5. Recuadro inferior completo (Filtros y catálogo)
+                    element: '#zona-menu-inferior',
+                    popover: {
+                        title: 'Catálogo de Construcción',
+                        description: 'Navega por las categorías para seleccionar materiales de construcción, muebles o habitaciones completas listas para insertar.',
+                        side: 'top', align: 'center'
+                    }
+                }
+            ]
+        });
+
+        driverObj.drive();
+    }
+
+    window.repetirTutorial = function() {
+        // Borramos el flag para que Driver.js arranque como si fuera la primera vez
+        localStorage.removeItem('tutorial_homecount_v1');
+        
+        // Llamamos a la función que inicia el recorrido (asegúrate de que iniciarTutorialInteractivo() ya esté definida)
+        if (typeof iniciarTutorialInteractivo === 'function') {
+            iniciarTutorialInteractivo();
+        } else {
+            console.error("La función del tutorial no está disponible.");
+        }
+    };
+
     // --- RECOPILACIÓN DE DATOS PARA EL INFORME ---
     function obtenerDatosInforme() {
         const dim = obtenerCalculoDimensiones();
