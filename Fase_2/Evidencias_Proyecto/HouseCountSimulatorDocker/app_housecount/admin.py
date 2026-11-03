@@ -1,8 +1,9 @@
 from django.contrib import admin
-from .models import ModeloCasa, Material, Habitacion, MaterialHabitacion, Proyecto3D, CategoriaMaterial, Avatar
+from .models import ModeloCasa, Material, Habitacion, MaterialHabitacion,CategoriaMaterial, Proyecto3D, Avatar, CasaPrefabricada
 
 # Registra tus modelos aqui.
 admin.site.register(Proyecto3D)
+admin.site.register(CasaPrefabricada)
 
 @admin.register(ModeloCasa)
 class ModeloCasaAdmin(admin.ModelAdmin):

@@ -3,6 +3,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Modalidades de Construcción</title>
+    
+    <script>
+        const esAdminGlobal = "{{ request.user.is_superuser|yesno:'true,false' }}" === "true";
+    </script>
+        
     <link rel="stylesheet" href="{% static 'css/Style5.css' %}?v=3">
     <link rel="stylesheet" href="{% static 'css/StyleTutorial.css' %}?v=3">
     <script src="{% static 'js/script_casas1.js' %}" defer></script>
@@ -17,7 +22,7 @@
 <!-- Menú de Navegación -->
 {% include 'Navbar.html' %}
 <!-- Importar para Tutorial -->
- <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/driver.js@1.0.1/dist/driver.css"/>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/driver.js@1.0.1/dist/driver.css"/>
 <script src="https://cdn.jsdelivr.net/npm/driver.js@1.0.1/dist/driver.js.iife.js"></script>
 <!-- Importar Three.js -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>

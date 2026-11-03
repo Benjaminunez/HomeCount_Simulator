@@ -15,13 +15,14 @@ from django.core.mail import send_mail, EmailMultiAlternatives
 from django.conf import settings
 from django.contrib.auth.models import User
 
-from .models import ModeloCasa, Material, Habitacion, Proyecto3D, CategoriaMaterial, Avatar, CodigoRecuperacion
+from .models import ModeloCasa, Material, Habitacion, Proyecto3D, CategoriaMaterial, Avatar, CodigoRecuperacion, CasaPrefabricada
 
 
 # --- Vistas de Navegación HTML ---
 
 def inicio(request): 
-    return render(request, 'inicio.html')
+    casas = CasaPrefabricada.objects.all().order_by('-fecha_creacion')[:6]
+    return render(request, 'inicio.html', {'casas_prefabricadas': casas})
 
 def contrucion(request): 
     return render(request, 'contrucion.html')
@@ -336,55 +337,66 @@ def cerrar_sesion(request):
 
 # --- Guardar / Cargar Escenas 3D ---
 
-@login_required
+@csrf_exempt
 def guardar_diseno(request):
     if request.method == 'POST':
-        try:
-            data = json.loads(request.body)
-            proyecto_id = data.get('proyecto_id', None) 
-            nombre = data.get('nombre_proyecto', 'Sin nombre')
-            costo_total = data.get('costo_total', 0)
-            datos_escena = data.get('datos_escena', [])
-            datos_camara = data.get('datos_camara', {})
-            captura_base64 = data.get('captura_base64', None)
-            
+        data = json.loads(request.body)
+        
+        proyecto_id = data.get('proyecto_id')
+        nombre = data.get('nombre_proyecto', 'Sin Nombre')
+        es_prefabricada = data.get('es_prefabricada', False)
+        
+        parametros_guardado = {
+            'nombre': nombre,
+            'costo_total': data.get('costo_total', 0),
+            'datos_escena': data.get('datos_escena'),
+            'datos_camara': data.get('datos_camara'),
+        }
+
+        # Lógica de guardado de imagen en base64
+        captura_b64 = data.get('captura_base64')
+        if captura_b64:
+            format, imgstr = captura_b64.split(';base64,')
+            ext = format.split('/')[-1]
+            nombre_archivo = f"diseno_{nombre.replace(' ', '_')}.{ext}"
+            parametros_guardado['imagen_captura'] = ContentFile(base64.b64decode(imgstr), name=nombre_archivo)
+        
+        # Flujo 1: Guardado en catálogo global público (Solo Administradores)
+        if es_prefabricada and request.user.is_superuser:
             if proyecto_id:
-                proyecto = Proyecto3D.objects.get(id=proyecto_id, usuario=request.user)
-                proyecto.nombre = nombre
-                proyecto.costo_total = costo_total
-                proyecto.datos_escena = datos_escena
-                proyecto.datos_camara = datos_camara
+                CasaPrefabricada.objects.filter(id=proyecto_id).update(**parametros_guardado)
+                obj_id = str(proyecto_id)
             else:
-                proyecto = Proyecto3D(
-                    usuario=request.user, 
-                    nombre=nombre,
-                    costo_total=costo_total,
-                    datos_escena=datos_escena,
-                    datos_camara=datos_camara
-                )
+                nueva_casa = CasaPrefabricada.objects.create(**parametros_guardado)
+                obj_id = str(nueva_casa.id)
+            return JsonResponse({'estado': 'exito', 'id': obj_id})
             
-            if captura_base64 and ';base64,' in captura_base64:
-                formato, imgstr = captura_base64.split(';base64,') 
-                ext = formato.split('/')[-1] 
-                nombre_archivo = f"diseno_{request.user.username}_{nombre.replace(' ', '_')}.{ext}"
+        # Flujo 2: Guardado en proyectos personales de usuario registrado
+        elif request.user.is_authenticated:
+            parametros_guardado['usuario'] = request.user
+            if proyecto_id:
+                Proyecto3D.objects.filter(id=proyecto_id, usuario=request.user).update(**parametros_guardado)
+                obj_id = str(proyecto_id)
+            else:
+                nuevo_proyecto = Proyecto3D.objects.create(**parametros_guardado)
+                obj_id = str(nuevo_proyecto.id)
+            return JsonResponse({'estado': 'exito', 'id': obj_id})
+            
+        # Flujo 3: Guardado anónimo mediante Session ID (Visitantes no registrados)
+        else:
+            session_id = data.get('session_id')
+            if not session_id:
+                return JsonResponse({'estado': 'error', 'mensaje': 'Falta identificador de sesión para invitado'}, status=400)
                 
-                if proyecto_id and proyecto.imagen_captura:
-                    proyecto.imagen_captura.delete(save=False)
-                
-                proyecto.imagen_captura.save(
-                    nombre_archivo, 
-                    ContentFile(base64.b64decode(imgstr)), 
-                    save=False 
-                )
-            
-            proyecto.save()
-            return JsonResponse({'estado': 'exito', 'mensaje': 'Proyecto guardado/actualizado correctamente.', 'id': proyecto.id})
-            
-        except Proyecto3D.DoesNotExist:
-            return JsonResponse({'estado': 'error', 'mensaje': 'El proyecto a modificar no existe o no tienes permisos.'}, status=404)
-        except Exception as e:
-            return JsonResponse({'estado': 'error', 'mensaje': str(e)}, status=400)
-            
+            parametros_guardado['session_id'] = session_id
+            if proyecto_id:
+                Proyecto3D.objects.filter(id=proyecto_id, session_id=session_id).update(**parametros_guardado)
+                obj_id = str(proyecto_id)
+            else:
+                nuevo_proyecto = Proyecto3D.objects.create(**parametros_guardado)
+                obj_id = str(nuevo_proyecto.id)
+            return JsonResponse({'estado': 'exito', 'id': obj_id})
+
     return JsonResponse({'estado': 'error', 'mensaje': 'Método no permitido'}, status=405)
 
 @ensure_csrf_cookie

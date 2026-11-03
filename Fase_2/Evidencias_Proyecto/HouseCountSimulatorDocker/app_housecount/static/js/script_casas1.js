@@ -173,6 +173,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const raycaster = new THREE.Raycaster();
     const mouse = new THREE.Vector2();
     const objetosInteractuables = [plano]; 
+    
 
     // --- FUNCIONES DE ESTADO Y UI ---
     function actualizarEstadoBotones() {
@@ -1035,8 +1036,19 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
             
-            // Recibimos la respuesta de guardado_db.js
-            const resultado = await procesarGuardado(objetosInteractuables, camera, controles, costoTotal, scene, renderer, proyectoCargadoId, proyectoCargadoNombre);
+            // Consultar si es administrador global para redirigir el guardado
+            let guardarComoPrefabricada = false;
+            if (typeof esAdminGlobal !== 'undefined' && esAdminGlobal) {
+                guardarComoPrefabricada = await DialogoUI.confirm(
+                    "Eres Administrador.\n\n¿Deseas guardar este modelo en el catálogo público de 'Casas Prefabricadas'?\n\n(Aceptar = Catálogo Público | Cancelar = Tu Proyecto Personal)"
+                );
+            }
+            
+            // Recibimos la respuesta de guardado_db.js incluyendo el nuevo flag
+            const resultado = await procesarGuardado(
+                objetosInteractuables, camera, controles, costoTotal, scene, renderer, 
+                proyectoCargadoId, proyectoCargadoNombre, guardarComoPrefabricada
+            );
             
             // Si el guardado fue exitoso, vinculamos la sesión activa al nuevo ID y encendemos el botón 🔄
             if (resultado && resultado.exito) {
@@ -1046,7 +1058,6 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     }
-
     const btnGuardarCopia = document.getElementById('btn-guardar-copia');
     if (btnGuardarCopia) {
         btnGuardarCopia.addEventListener('click', async (e) => {
