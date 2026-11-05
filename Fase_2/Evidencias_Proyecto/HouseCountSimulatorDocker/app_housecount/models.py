@@ -161,6 +161,7 @@ class CasaPrefabricada(models.Model):
     area_cuadrada = models.DecimalField(max_digits=8, decimal_places=2, default=0.00, help_text="Superficie total estimada")
     fecha_creacion = models.DateTimeField(auto_now_add=True)
     fecha_modificacion = models.DateTimeField(auto_now=True)
+    costo_total = models.IntegerField(default=0, verbose_name="Costo Total")
 
     class Meta:
         verbose_name = "Casa Prefabricada"

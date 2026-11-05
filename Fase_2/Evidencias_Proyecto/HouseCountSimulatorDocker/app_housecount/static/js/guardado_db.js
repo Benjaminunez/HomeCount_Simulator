@@ -345,15 +345,15 @@ async function cargarCatalogoPrefabricadas(scene, objetos, camera, controles, ca
             const imgUrl = proyecto.imagen_url 
                 ? proyecto.imagen_url
                 : 'data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=';            
-            const precioFormateado = Number(proyecto.costo_total).toLocaleString('es-CL');
-
+           const costoSeguro = Number(proyecto.costo_total) || 0;
+            
             // Las tarjetas del catálogo público no tienen botón de eliminar (solo el admin podría hacerlo desde Django Admin)
             card.innerHTML = `
                 <img src="${imgUrl}" alt="Modelo: ${proyecto.nombre}">
                 <div class="tarjeta-info">
                     <h3>${proyecto.nombre}</h3>
                     <p>📐 ${proyecto.area_cuadrada} m²</p>
-                    <p class="precio-tarjeta">💰 $${precioFormateado} CLP</p>
+                    <p class="precio-tarjeta">💰 $${costoSeguro} CLP</p>
                 </div>
             `;
 

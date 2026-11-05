@@ -1080,7 +1080,7 @@ async function autocompletarUltimoDiseño() {
                 if (data.estado === 'exito' && data.disenos) {
                     const modelo = data.disenos.find(d => String(d.id) === String(prefabId));
                     if (modelo) {
-                        console.log("🔍 [3] Modelo prefabricado encontrado. Procediendo a dibujar...");
+                        console.log(" Modelo prefabricado encontrado. Procediendo a dibujar...");
                         const proyectoCopia = { ...modelo, id: null };
                         const callbackActualizarUI = (nuevoCosto, idProyecto, nombreProyecto) => {
                             costoTotal = nuevoCosto;
@@ -1109,7 +1109,17 @@ async function autocompletarUltimoDiseño() {
         if (!btnGuardarVerificacion) {
             console.log("👤 Usuario invitado. Cargando LocalStorage...");
             
-            // --- NUEVO: LIMPIEZA PARA USUARIO INVITADO ---
+            // --- NUEVO: TRUCO PARA BORRAR DISEÑO AL CERRAR PESTAÑA ---
+            if (!sessionStorage.getItem('pestaña_activa')) {
+                // Si es la primera vez que se abre esta pestaña, destruimos los bloques viejos
+                localStorage.removeItem('proyecto_homecount');
+                localStorage.removeItem('camara_homecount');
+                // Marcamos esta pestaña como iniciada para no borrarla si el usuario aprieta F5
+                sessionStorage.setItem('pestaña_activa', 'true'); 
+            }
+            // ---------------------------------------------------------
+            
+            // Limpieza de nombres e IDs
             localStorage.removeItem('proyecto_hc_id');
             localStorage.removeItem('proyecto_hc_nombre');
             proyectoCargadoId = null;
@@ -1119,13 +1129,12 @@ async function autocompletarUltimoDiseño() {
                 actualizarNombreInterfaz(""); 
             }
             
-            // --- ESTO SE HABÍA BORRADO: CARGA LA ESCENA LOCAL Y DETIENE LA BÚSQUEDA ---
             cargarEscenaLocal();
             if (typeof cargarCamaraLocal === 'function') cargarCamaraLocal();
             actualizarListaUI();
             actualizarEstadoBotones();
             return; 
-        } // <--- ESTA LLAVE SE HABÍA BORRADO
+        }
 
         // Si está logueado, buscar su último diseño
         try {
