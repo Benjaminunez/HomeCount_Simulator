@@ -3,10 +3,16 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Modalidades de Construcción</title>
+    
+    <script>
+        const esAdminGlobal = "{{ request.user.is_superuser|yesno:'true,false' }}" === "true";
+    </script>
+        
     <link rel="stylesheet" href="{% static 'css/Style5.css' %}?v=3">
+    <link rel="stylesheet" href="{% static 'css/StyleTutorial.css' %}?v=3">
     <script src="{% static 'js/script_casas1.js' %}" defer></script>
     <script src="{% static 'js/guardado_db.js'%}"></script>
-    <script src="{% static 'js/darkMode.js'%}"></script>
+
     <link rel="icon" type="image/png" href="media/iconosPestana/martillo.ico"> <!--icono para pestaña de navegador-->
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Henny+Penny&family=Monoton&display=swap');
@@ -15,7 +21,9 @@
 
 <!-- Menú de Navegación -->
 {% include 'Navbar.html' %}
-
+<!-- Importar para Tutorial -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/driver.js@1.0.1/dist/driver.css"/>
+<script src="https://cdn.jsdelivr.net/npm/driver.js@1.0.1/dist/driver.js.iife.js"></script>
 <!-- Importar Three.js -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script> <!-- agregado de importaciones de modelos 3d-->
@@ -36,12 +44,15 @@
         <!-- Costo Total Flotante (Se ubicará con el CSS position: absolute; top: 15px; right: 15px;) -->
         <div class="presupuesto-total">
             Costo Total: <strong id="total-3d">$0</strong> CLP
+                <div id="display-nombre-proyecto">
+                    Proyecto:<strong>Nuevo Proyecto</strong>
+                </div>
         </div>
         
         <!-- Widget Superior Derecho: Herramientas y Pestañas -->
         <div class="panel-superior-derecho">
-            
-            <div id="contenedor-acciones-superiores">
+
+            <div id="contenedor-acciones-superiores">             
                 <button id="btn-borrar-todo" class="btn-peligro" onclick="limpiarEscenaCompleta(scene, objetosInteractuables)"> 
                     🗑️
                 </button>
@@ -92,9 +103,9 @@
                 
             </div>
         </div>
-
         <!-- Instrucciones (Flotantes arriba al centro) -->
         <div class="panel-instrucciones">
+            <button class="btn-circular" id="btn-repetir-tutorial" title="Ayuda / Tutorial" onclick="repetirTutorial()">❓</button>
             <p><kbd>Alt</kbd> : Modo Libre <kbd>Click</kbd> : Construir <kbd>Shift</kbd> + <kbd>Click</kbd> : Borrar  <kbd>+</kbd> / <kbd>-</kbd>: Ajustar Tamaño</p>
         </div>
 

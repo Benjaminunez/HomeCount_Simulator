@@ -133,7 +133,7 @@ document.addEventListener('DOMContentLoaded', () => {
     camera.position.set(500, 800, 1300);
     camera.lookAt(0, 0, 0);
 
-    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
+    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false, preserveDrawingBuffer: true});
     renderer.setSize(anchoSeguro, altoSeguro);
     renderer.setClearColor(0xe0e0e0, 1); 
     container.appendChild(renderer.domElement);
@@ -173,6 +173,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const raycaster = new THREE.Raycaster();
     const mouse = new THREE.Vector2();
     const objetosInteractuables = [plano]; 
+    
 
     // --- FUNCIONES DE ESTADO Y UI ---
     function actualizarEstadoBotones() {
@@ -736,6 +737,8 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         localStorage.setItem('proyecto_homecount', JSON.stringify(datosGuardados));
         guardarCamaraLocal();
+        if (proyectoCargadoId) localStorage.setItem('proyecto_hc_id', proyectoCargadoId);
+        if (proyectoCargadoNombre) localStorage.setItem('proyecto_hc_nombre', proyectoCargadoNombre);
     }
 
     function guardarCamaraLocal() {
@@ -762,7 +765,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function cargarEscenaLocal() {
         const datosString = localStorage.getItem('proyecto_homecount');
+        
         if (!datosString) return;
+        const idLocal = localStorage.getItem('proyecto_hc_id');
+        const nombreLocal = localStorage.getItem('proyecto_hc_nombre');
+        if (idLocal) proyectoCargadoId = idLocal;
+        if (nombreLocal) {
+            proyectoCargadoNombre = nombreLocal;
+            if (typeof actualizarNombreInterfaz === 'function') actualizarNombreInterfaz(proyectoCargadoNombre);
+        }
+
         const datosGuardados = JSON.parse(datosString);
         
         datosGuardados.forEach(item => {
@@ -812,43 +824,359 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    async function autocompletarUltimoDiseño() {
-        const btnGuardarVerificacion = document.getElementById('btn-guardar-modelo');
+    // --- 1. FUNCIÓN NATIVA PARA DIBUJAR ESCENAS (Disponible para todos) ---
+    async function cargarEscenaDesdeJSON(proyecto, scene, objetos, camera, controles, callbackActualizarUI) {
+        console.log("▶️ [A] Iniciando dibujo de escena con datos:", proyecto);
+        let datosEscena = typeof proyecto.datos_escena === 'string' ? JSON.parse(proyecto.datos_escena) : proyecto.datos_escena;
+
+        for (let i = objetos.length - 1; i >= 1; i--) {
+            scene.remove(objetos[i]);
+        }
+        objetos.length = 1; 
+        let nuevoCostoTotal = 0;
+
+        const promesas = datosEscena.map((item) => {
+            nuevoCostoTotal += Number(item.precio || 0);
+
+            return new Promise((resolve) => {
+                if (item.url3D) {
+                    console.log("📥 [B] Solicitando archivo GLTF:", item.url3D);
+                    cargarModeloOptimizado(item.url3D, (modelo) => {
+                        const boxOriginal = new THREE.Box3().setFromObject(modelo);
+                        const sizeOriginal = boxOriginal.getSize(new THREE.Vector3());
+                        const esHabitacion = item.tipo === 'habitacion';
+                        const maxDimension = Math.max(sizeOriginal.x, sizeOriginal.z);
+                        
+                        if (maxDimension > 0) {
+                            const escalaBase = (esHabitacion ? 200 : 50) / maxDimension;
+                            const escalaFinal = escalaBase * (item.escalaX || item.escala || 1.0); 
+                            modelo.scale.set(escalaFinal, escalaFinal, escalaFinal);
+                            modelo.updateMatrixWorld(true);
+                        }
+
+                        const boxEscalado = new THREE.Box3().setFromObject(modelo);
+                        modelo.position.y -= boxEscalado.min.y;
+
+                        const grupo = new THREE.Group();
+                        grupo.add(modelo);
+                        grupo.position.set(item.posX, item.posY, item.posZ);
+                        grupo.rotation.y = item.rotY || 0;
+                        
+                        grupo.userData = {
+                            precio: item.precio || 0, tipo: item.tipo || "material",
+                            url3D: item.url3D, textura: item.textura || "concreto",
+                            nombre: item.nombre || "Modelo 3D", escala: item.escalaX || item.escala || 1.0
+                        };
+
+                        scene.add(grupo);
+                        objetos.push(grupo); 
+                        resolve();
+                    });
+                } else {
+                    const isHab = item.tipo === 'habitacion';
+                    const geo = isHab ? geometriaHabitacion : geometriaBloque;
+                    const mat = texturas[item.textura] || texturas['concreto']; 
+                    const malla = new THREE.Mesh(geo, mat);
+                    malla.position.set(item.posX, item.posY, item.posZ);
+                    malla.rotation.y = item.rotY || 0;
+                    
+                    const esc = item.escalaX || item.escala || 1.0;
+                    malla.scale.set(esc, esc, esc);
+                    
+                    malla.userData = { 
+                        precio: item.precio, tipo: item.tipo, url3D: null, 
+                        textura: item.textura, nombre: item.nombre, escala: esc 
+                    };
+                    
+                    scene.add(malla);
+                    objetos.push(malla); 
+                    resolve();
+                }
+            });
+        });
+
+        await Promise.all(promesas);
+        console.log("✅ [C] Todos los modelos 3D fueron renderizados.");
+
+        if (proyecto.datos_camara) {
+            let cam = typeof proyecto.datos_camara === 'string' ? JSON.parse(proyecto.datos_camara) : proyecto.datos_camara;
+            camera.position.set(cam.posX, cam.posY, cam.posZ);
+            controles.target.set(cam.targetX, cam.targetY, cam.targetZ);
+            controles.update();
+        }
+
+        if (callbackActualizarUI) {
+            callbackActualizarUI(nuevoCostoTotal, proyecto.id, proyecto.nombre);
+        }
+    }
+
+    let temporizadorAutoGuardado = null;
+
+    // 1. Inyectar los estilos de la animación para la ruedita de carga
+    if (!document.getElementById('estilo-spinner-guardado')) {
+        const style = document.createElement('style');
+        style.id = 'estilo-spinner-guardado';
+        style.innerHTML = `
+            @keyframes spinAutoGuardado { 
+                to { transform: rotate(360deg); } 
+            }
+            .ruedita-carga {
+                display: inline-block;
+                width: 12px;
+                height: 12px;
+                border: 2px solid rgba(255,255,255,0.3);
+                border-radius: 50%;
+                border-top-color: #fff;
+                animation: spinAutoGuardado 1s linear infinite;
+                margin-right: 8px;
+                vertical-align: middle;
+            }
+        `;
+        document.head.appendChild(style);
+    }
+
+    // 2. Crear el cartel visual
+    let cartelAutoGuardado = document.getElementById('cartel-autoguardado');
+    if (!cartelAutoGuardado) {
+        cartelAutoGuardado = document.createElement('div');
+        cartelAutoGuardado.id = 'cartel-autoguardado';
         
+        cartelAutoGuardado.style.position = 'fixed';
+        cartelAutoGuardado.style.top = '185px'; // Ajustado más abajo como solicitaste
+        cartelAutoGuardado.style.left = '50%';
+        cartelAutoGuardado.style.transform = 'translateX(-50%)';
+        
+        cartelAutoGuardado.style.backgroundColor = 'rgba(44, 62, 80, 0.9)'; 
+        cartelAutoGuardado.style.color = '#ffffff';
+        cartelAutoGuardado.style.padding = '8px 20px';
+        cartelAutoGuardado.style.borderRadius = '20px';
+        cartelAutoGuardado.style.fontSize = '13px';
+        cartelAutoGuardado.style.fontWeight = 'bold';
+        cartelAutoGuardado.style.boxShadow = '0px 4px 6px rgba(0,0,0,0.1)';
+        cartelAutoGuardado.style.opacity = '0';
+        cartelAutoGuardado.style.transition = 'opacity 0.3s ease, background-color 0.3s ease';
+        cartelAutoGuardado.style.pointerEvents = 'none';
+        cartelAutoGuardado.style.zIndex = '1000';
+        cartelAutoGuardado.style.display = 'flex';
+        cartelAutoGuardado.style.alignItems = 'center';
+        
+        document.body.appendChild(cartelAutoGuardado);
+    }
+
+    async function autoGuardarEnBaseDeDatos() {
+        if (!proyectoCargadoId) return;
+
+        // Mostrar la ruedita y el mensaje de guardado
+        if (cartelAutoGuardado) {
+            cartelAutoGuardado.innerHTML = '<span class="ruedita-carga"></span> Guardando diseño...';
+            cartelAutoGuardado.style.backgroundColor = 'rgba(243, 156, 18, 0.9)'; // Naranja
+            cartelAutoGuardado.style.opacity = '1';
+        }
+
+        let capturaBase64 = null;
+        if (typeof scene !== 'undefined' && typeof renderer !== 'undefined') {
+            renderer.render(scene, camera); 
+            capturaBase64 = renderer.domElement.toDataURL("image/png");
+        }
+
+        const datosEscena = [];
+        for (let i = 1; i < objetosInteractuables.length; i++) {
+            const obj = objetosInteractuables[i];
+            datosEscena.push({
+                posX: obj.position.x, posY: obj.position.y, posZ: obj.position.z,
+                rotY: obj.rotation.y, escalaX: obj.scale.x, escalaY: obj.scale.y, escalaZ: obj.scale.z,
+                precio: obj.userData.precio || 0, tipo: obj.userData.tipo || "material",
+                url3D: obj.userData.url3D || null, textura: obj.userData.textura || "concreto",
+                nombre: obj.userData.nombre || "Bloque"
+            });
+        }
+
+        const payload = {
+            proyecto_id: proyectoCargadoId,
+            nombre_proyecto: proyectoCargadoNombre,
+            costo_total: costoTotal,
+            datos_escena: datosEscena,
+            datos_camara: {
+                posX: camera.position.x, posY: camera.position.y, posZ: camera.position.z,
+                targetX: controles.target.x, targetY: controles.target.y, targetZ: controles.target.z
+            },
+            captura_base64: capturaBase64
+        };
+
+        try {
+            // 3. Ejecutar la petición a Django Y un temporizador de 3 segundos al mismo tiempo
+            const peticionDjango = fetch('/api/guardar-diseno/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': typeof obtenerCookieCSRF === 'function' ? obtenerCookieCSRF('csrftoken') : ''
+                },
+                body: JSON.stringify(payload)
+            });
+            
+            const esperaVisual = new Promise(resolve => setTimeout(resolve, 1500));
+
+            // Promise.all asegura que el código no avance hasta que pasen los 3 segundos
+            // INCLUSO si Django guardó el archivo en 0.5 segundos.
+            const [response] = await Promise.all([peticionDjango, esperaVisual]);
+
+            if (response.ok) {
+                if (cartelAutoGuardado) {
+                    cartelAutoGuardado.innerHTML = '✔️ Progreso guardado';
+                    cartelAutoGuardado.style.backgroundColor = 'rgba(46, 204, 113, 0.9)'; // Verde
+                    
+                    setTimeout(() => {
+                        cartelAutoGuardado.style.opacity = '0';
+                    }, 2500);
+                }
+            }
+        } catch (err) {
+            console.error("❌ Error en autoguardado:", err);
+            if (cartelAutoGuardado) {
+                cartelAutoGuardado.innerHTML = '❌ Error al guardar';
+                cartelAutoGuardado.style.backgroundColor = 'rgba(231, 76, 60, 0.9)'; // Rojo
+                setTimeout(() => {
+                    cartelAutoGuardado.style.opacity = '0';
+                }, 3000);
+            }
+        }
+    }
+
+    function dispararAutoGuardado() {
+        if (!proyectoCargadoId) return; 
+        
+        if (temporizadorAutoGuardado) clearTimeout(temporizadorAutoGuardado);
+        
+        temporizadorAutoGuardado = setTimeout(() => {
+            autoGuardarEnBaseDeDatos();
+        }, 2000); 
+    }
+
+    function limpiarSesion3D() {
+        // Borramos todos los rastros del simulador en la memoria local
+        localStorage.removeItem('proyecto_homecount');
+        localStorage.removeItem('camara_homecount');
+        localStorage.removeItem('proyecto_hc_id');
+        localStorage.removeItem('proyecto_hc_nombre');
+        localStorage.removeItem('diseno_temporal_cargado'); // Si usas alguna otra clave, agrégala aquí
+    }
+    
+    
+    // --- 2. CARGA AUTOMÁTICA (PREFABRICADAS Y ÚLTIMO DISEÑO) ---
+async function autocompletarUltimoDiseño() {
+        const params = new URLSearchParams(window.location.search);
+        const prefabId = params.get('prefab_id');
+
+        if (prefabId) {
+            console.log("🔍 [1] URL detectada con prefab_id:", prefabId);
+            try {
+                const response = await fetch('/api/obtener-casas-prefabricadas/');
+                console.log("🔍 [2] Estado HTTP de la API:", response.status);
+                
+                if (!response.ok) console.error("La API rechazó la conexión. Revisa los permisos en Django.");
+
+                const data = await response.json();
+                
+                if (data.estado === 'exito' && data.disenos) {
+                    const modelo = data.disenos.find(d => String(d.id) === String(prefabId));
+                    if (modelo) {
+                        console.log(" Modelo prefabricado encontrado. Procediendo a dibujar...");
+                        const proyectoCopia = { ...modelo, id: null };
+                        const callbackActualizarUI = (nuevoCosto, idProyecto, nombreProyecto) => {
+                            costoTotal = nuevoCosto;
+                            proyectoCargadoId = idProyecto;
+                            proyectoCargadoNombre = nombreProyecto;
+                            if (typeof actualizarNombreInterfaz === 'function') actualizarNombreInterfaz(proyectoCargadoNombre);
+                            if (uiTotal) uiTotal.textContent = `$${new Intl.NumberFormat('es-CL').format(costoTotal)}`;
+                            actualizarListaUI();
+                            recalcularTamanoTerreno();
+                            actualizarEstadoBotones();
+                            if (typeof calcularYMostrarPerimetro === 'function') calcularYMostrarPerimetro();
+                        };
+                        await cargarEscenaDesdeJSON(proyectoCopia, scene, objetosInteractuables, camera, controles, callbackActualizarUI);
+                        return;
+                    } else {
+                        console.warn("[3] El ID", prefabId, "no existe en la base de datos.");
+                    }
+                }
+            } catch (err) {
+                console.error("Error de red al consultar la casa prefabricada:", err);
+            }
+        }
+
+        // Si no hay prefab_id, verificar autenticación
+        const btnGuardarVerificacion = document.getElementById('btn-guardar-modelo');
         if (!btnGuardarVerificacion) {
+            console.log("👤 Usuario invitado. Cargando LocalStorage...");
+            
+            // --- NUEVO: TRUCO PARA BORRAR DISEÑO AL CERRAR PESTAÑA ---
+            if (!sessionStorage.getItem('pestaña_activa')) {
+                // Si es la primera vez que se abre esta pestaña, destruimos los bloques viejos
+                localStorage.removeItem('proyecto_homecount');
+                localStorage.removeItem('camara_homecount');
+                // Marcamos esta pestaña como iniciada para no borrarla si el usuario aprieta F5
+                sessionStorage.setItem('pestaña_activa', 'true'); 
+            }
+            // ---------------------------------------------------------
+            
+            // Limpieza de nombres e IDs
+            localStorage.removeItem('proyecto_hc_id');
+            localStorage.removeItem('proyecto_hc_nombre');
+            proyectoCargadoId = null;
+            proyectoCargadoNombre = "";
+            
+            if (typeof actualizarNombreInterfaz === 'function') {
+                actualizarNombreInterfaz(""); 
+            }
+            
             cargarEscenaLocal();
             if (typeof cargarCamaraLocal === 'function') cargarCamaraLocal();
             actualizarListaUI();
             actualizarEstadoBotones();
-            return;
+            return; 
         }
 
+        // Si está logueado, buscar su último diseño
         try {
             const response = await fetch('/api/obtener-disenos/');
             const data = await response.json();
 
             if (response.ok && data.disenos && data.disenos.length > 0) {
-                const ultimoProyecto = data.disenos[0]; 
+               const idMemoria = localStorage.getItem('proyecto_hc_id');
+                let ultimoProyecto = data.disenos[0]; // Por defecto, el último modificado
+
+                // Si el navegador recuerda que abrió otro proyecto, lo buscamos y lo priorizamos
+                if (idMemoria) {
+                    const proyectoEspecifico = data.disenos.find(p => String(p.id) === String(idMemoria));
+                    if (proyectoEspecifico) {
+                        ultimoProyecto = proyectoEspecifico;
+                    }
+                } 
                 
                 localStorage.removeItem('proyecto_homecount');
                 localStorage.removeItem('camara_homecount');
 
-                if (typeof ejecutarCargaEscena3D === 'function') {
-                    const callbackActualizarUI = (nuevoCosto, idProyecto, nombreProyecto) => {
-                        costoTotal = nuevoCosto; 
-                        proyectoCargadoId = idProyecto;       
-                        proyectoCargadoNombre = nombreProyecto; 
-                        
-                        if (typeof uiTotal !== 'undefined' && uiTotal) {
-                            uiTotal.textContent = `$${new Intl.NumberFormat('es-CL').format(costoTotal)}`;
-                        }
-                        actualizarListaUI();       
-                        recalcularTamanoTerreno(); 
-                        actualizarEstadoBotones(); 
-                    };
+                const callbackActualizarUI = (nuevoCosto, idProyecto, nombreProyecto) => {
+                    costoTotal = nuevoCosto; 
+                    proyectoCargadoId = idProyecto;       
+                    proyectoCargadoNombre = nombreProyecto; 
                     
-                    ejecutarCargaEscena3D(ultimoProyecto, scene, objetosInteractuables, camera, controles, callbackActualizarUI);
-                }
+                    if (uiTotal) {
+                        uiTotal.textContent = `$${new Intl.NumberFormat('es-CL').format(costoTotal)}`;
+                    }
+                    actualizarListaUI();       
+                    recalcularTamanoTerreno(); 
+                    actualizarEstadoBotones(); 
+
+                    if (typeof actualizarNombreInterfaz === 'function') {
+                        actualizarNombreInterfaz(proyectoCargadoNombre);
+                    }
+                    if (proyectoCargadoId) localStorage.setItem('proyecto_hc_id', proyectoCargadoId);
+                    if (proyectoCargadoNombre) localStorage.setItem('proyecto_hc_nombre', proyectoCargadoNombre);
+                    if (typeof calcularYMostrarPerimetro === 'function') calcularYMostrarPerimetro();
+                };
+                
+                await cargarEscenaDesdeJSON(ultimoProyecto, scene, objetosInteractuables, camera, controles, callbackActualizarUI);
             } else {
                 cargarEscenaLocal();
                 if (typeof cargarCamaraLocal === 'function') cargarCamaraLocal();
@@ -856,7 +1184,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 actualizarEstadoBotones(); 
             }
         } catch (err) {
-            console.error("No se pudo cargar el último diseño desde la base de datos:", err);
             cargarEscenaLocal();
             if (typeof cargarCamaraLocal === 'function') cargarCamaraLocal();
             actualizarListaUI(); 
@@ -980,11 +1307,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (objetosInteractuables.length <= 1) {
                     proyectoCargadoId = null;
                     proyectoCargadoNombre = "";
+                    actualizarNombreInterfaz("");
                 }
 
                 actualizarPresupuesto(-objBorrar.userData.precio);
                 recalcularTamanoTerreno(); 
                 guardarEscenaLocal();
+                dispararAutoGuardado();
                 actualizarEstadoBotones(); 
                 if (tooltip) tooltip.style.display = 'none';
                 calcularYMostrarPerimetro();
@@ -1016,11 +1345,20 @@ document.addEventListener('DOMContentLoaded', () => {
                 recalcularTamanoTerreno(); 
                 actualizarPresupuesto(precioActual);
                 guardarEscenaLocal();
+                dispararAutoGuardado();
                 actualizarEstadoBotones(); 
                 calcularYMostrarPerimetro();
             }
         }
     });
+
+    function actualizarNombreInterfaz(nombre) {
+        const displayNombre = document.getElementById('display-nombre-proyecto');
+        if (displayNombre) {
+            const nombreMostrar = nombre && nombre.trim() !== "" ? nombre : "Nuevo Proyecto";
+            displayNombre.innerHTML = `Proyecto: <strong>${nombreMostrar}</strong>`;
+        }
+    }
 
     // --- EVENTOS DE BOTONES ---
     const btnGuardarModelo = document.getElementById('btn-guardar-modelo');
@@ -1035,18 +1373,29 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
             
-            // Recibimos la respuesta de guardado_db.js
-            const resultado = await procesarGuardado(objetosInteractuables, camera, controles, costoTotal, scene, renderer, proyectoCargadoId, proyectoCargadoNombre);
+            // Consultar si es administrador global para redirigir el guardado
+            let guardarComoPrefabricada = false;
+            if (typeof esAdminGlobal !== 'undefined' && esAdminGlobal) {
+                guardarComoPrefabricada = await DialogoUI.confirm(
+                    "Eres Administrador.\n\n¿Deseas guardar este modelo en el catálogo público de 'Casas Prefabricadas'?\n\n(Aceptar = Catálogo Público | Cancelar = Tu Proyecto Personal)"
+                );
+            }
+            
+            // Recibimos la respuesta de guardado_db.js incluyendo el nuevo flag
+            const resultado = await procesarGuardado(
+                objetosInteractuables, camera, controles, costoTotal, scene, renderer, 
+                proyectoCargadoId, proyectoCargadoNombre, guardarComoPrefabricada
+            );
             
             // Si el guardado fue exitoso, vinculamos la sesión activa al nuevo ID y encendemos el botón 🔄
             if (resultado && resultado.exito) {
                 proyectoCargadoId = resultado.id;
                 proyectoCargadoNombre = resultado.nombre;
                 actualizarEstadoBotones(); 
+                actualizarNombreInterfaz(proyectoCargadoNombre);
             }
         });
     }
-
     const btnGuardarCopia = document.getElementById('btn-guardar-copia');
     if (btnGuardarCopia) {
         btnGuardarCopia.addEventListener('click', async (e) => {
@@ -1073,7 +1422,7 @@ document.addEventListener('DOMContentLoaded', () => {
             let capturaBase64 = null;
             if (typeof scene !== 'undefined' && typeof renderer !== 'undefined') {
                 renderer.render(scene, camera); 
-                capturaBase64 = renderer.domElement.toDataURL("image/png");
+                capturaBase64 = renderer.domElement.toDataURL("image/jpeg", 0.6);
             }
 
             const datosEscena = [];
@@ -1120,7 +1469,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (cambiarNuevo) {
                         proyectoCargadoId = data.id;
                         proyectoCargadoNombre = nuevoNombre;
-                        actualizarEstadoBotones(); 
+                        actualizarEstadoBotones();
+                        actualizarNombreInterfaz(proyectoCargadoNombre);
                     } 
                 } else {
                     await DialogoUI.alert("Error al guardar la copia: " + data.mensaje);
@@ -1147,10 +1497,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 
                 localStorage.removeItem('proyecto_homecount');
                 localStorage.removeItem('camara_homecount');
+                localStorage.removeItem('proyecto_hc_id');
+                localStorage.removeItem('proyecto_hc_nombre');
 
                 // Resetear estado de proyecto actual
                 proyectoCargadoId = null;
                 proyectoCargadoNombre = "";
+                actualizarNombreInterfaz("");
 
                 cambiarTamanoTerreno(1000);
 
@@ -1182,6 +1535,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 actualizarListaUI();       
                 recalcularTamanoTerreno(); 
                 actualizarEstadoBotones();
+                actualizarNombreInterfaz(proyectoCargadoNombre);
             });
         });
     }
@@ -1298,6 +1652,104 @@ document.addEventListener('DOMContentLoaded', () => {
         actualizarCotasVisuales();
     }
     window.calcularYMostrarPerimetro = calcularYMostrarPerimetro;
+
+    document.addEventListener('DOMContentLoaded', () => {
+    const tutorialCompletado = localStorage.getItem('tutorial_homecount_v1');
+    
+    if (!tutorialCompletado) {
+        // Pequeño retraso para asegurar que los modelos 3D y botones cargaron
+        setTimeout(iniciarTutorialInteractivo, 1000);
+    }
+});
+
+    function iniciarTutorialInteractivo() {
+        const driver = window.driver.js.driver;
+        const driverObj = driver({
+            showProgress: true,
+            allowClose: false,
+            doneBtnText: '¡Comenzar!',
+            nextBtnText: 'Siguiente',
+            prevBtnText: 'Atrás',
+            onDestroyStarted: () => {
+                if (!driverObj.hasNextStep() || DialogoUI.confirm("¿Seguro que deseas omitir el tutorial?")) {
+                    localStorage.setItem('tutorial_homecount_v1', 'true');
+                    driverObj.destroy();
+                }
+            },
+            steps: [
+                {
+                    // PASO 1: Bienvenida General (Ahora se centrará con la nueva clase CSS)
+                    element: 'body', 
+                    popover: {
+                        title: '¡Bienvenido al Simulador 3D HouseCount!',
+                        description: 'A continuación te daremos un breve recorrido por las herramientas principales para que aprendas a diseñar y presupuestar tu proyecto.',
+                        // Al no especificar 'side', Driver.js no lo atará a ningún borde del elemento
+                        align: 'center' 
+                    }
+                },
+                {
+                    // PASO 2: Herramientas (El panel que moviste a la izquierda)
+                    element: '.panel-superior-derecho', // Mantenemos la clase HTML existente
+                    popover: {
+                        title: 'Herramientas del Proyecto',
+                        description: 'Limpia la escena, guarda tu progreso, accede a tus diseños previos o genera el informe técnico desde este panel.',
+                        side: 'right', // Cambiado de 'bottom' a 'right' para que no tape el panel
+                        align: 'start'
+                    }
+                },
+                {
+                    // 2. Botón debajo de las herramientas (Mostrar/Ocultar detalles)
+                    element: '#btn-toggle-panel-der',
+                    popover: {
+                        title: 'Panel de Dimensiones',
+                        description: 'Haz clic aquí para desplegar u ocultar el panel con el cálculo de áreas, perímetros y el sumario de materiales.',
+                        side: 'right', align: 'start'
+                    }
+                },
+                {
+                    // 3. Recuadro superior central (Instrucciones y botón ?)
+                    element: '.panel-instrucciones',
+                    popover: {
+                        title: 'Controles y Ayuda',
+                        description: 'Aquí siempre podrás ver los atajos de teclado para moverte por el entorno 3D. Usa el botón ❓ si necesitas repetir este tutorial.',
+                        side: 'bottom', align: 'center'
+                    }
+                },
+                {
+                    // 4. Recuadro superior derecho (Presupuesto)
+                    element: '.presupuesto-total',
+                    popover: {
+                        title: 'Presupuesto en Tiempo Real',
+                        description: 'Controla tu inversión. El costo total se actualizará instantáneamente cada vez que agregues o quites elementos de tu diseño.',
+                        side: 'bottom', align: 'end'
+                    }
+                },
+                {
+                    // 5. Recuadro inferior completo (Filtros y catálogo)
+                    element: '#zona-menu-inferior',
+                    popover: {
+                        title: 'Catálogo de Construcción',
+                        description: 'Navega por las categorías para seleccionar materiales de construcción, muebles o habitaciones completas listas para insertar.',
+                        side: 'top', align: 'center'
+                    }
+                }
+            ]
+        });
+
+        driverObj.drive();
+    }
+
+    window.repetirTutorial = function() {
+        // Borramos el flag para que Driver.js arranque como si fuera la primera vez
+        localStorage.removeItem('tutorial_homecount_v1');
+        
+        // Llamamos a la función que inicia el recorrido (asegúrate de que iniciarTutorialInteractivo() ya esté definida)
+        if (typeof iniciarTutorialInteractivo === 'function') {
+            iniciarTutorialInteractivo();
+        } else {
+            console.error("La función del tutorial no está disponible.");
+        }
+    };
 
     // --- RECOPILACIÓN DE DATOS PARA EL INFORME ---
     function obtenerDatosInforme() {

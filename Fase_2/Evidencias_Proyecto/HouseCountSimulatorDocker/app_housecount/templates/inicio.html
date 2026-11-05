@@ -1,5 +1,6 @@
 {% load static %}
 {% load filtros_perfil %}
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -138,33 +139,46 @@
             <p class="galeria-intro seccion-subtitulo">Explora nuestra colección de planos y los resultados finales.</p>
         </div>
 
+        <!-- Catálogo Dinámico de Casas Prefabricadas (3D) -->
         <div class="galeria-categoria reveal delay-1">
-            <h3 class="categoria-titulo">Planos Arquitectónicos</h3>
-            <div class="grid-imagenes">
-                <div class="espacio-imagen">
-                    <img src="{% static 'imagen-galeria/plano 1.jpg' %}" alt="Plano 1" class="imagen-galeria">
-                </div>
-                <div class="espacio-imagen">
-                    <img src="{% static 'imagen-galeria/plano 2.jpg' %}" alt="Plano 2" class="imagen-galeria">
-                </div>
-                <div class="espacio-imagen">
-                    <img src="{% static 'imagen-galeria/plano 3.png' %}" alt="Plano 3" class="imagen-galeria">
-                </div>
-            </div>
-        </div>
+            <h3 class="categoria-titulo">Modelos 3D de Casas Prefabricadas</h3>
+            <!-- Agrandamos el ancho mínimo de las columnas a 340px para tarjetas más robustas -->
+            <div class="grid-imagenes" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 25px;">
+                
+                {% for casa in casas_prefabricadas %}
+                    <a href="{% url 'casas_modelo_1' %}?prefab_id={{ casa.id }}" style="text-decoration: none; color: inherit; display: block; transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.02)'" onmouseout="this.style.transform='scale(1)'">
+                        
+                        <!-- Añadimos display flex en columna para que todo el contenido se distribuya bien -->
+                        <div class="espacio-imagen" style="position: relative; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.12); background: white; display: flex; flex-direction: column; min-height: 380px;">
+                            
+                            {% if casa.imagen_captura %}
+                                <!-- Reducimos la imagen a 190px de alto para dar más espacio al texto -->
+                                <img src="{{ casa.imagen_captura.url }}" alt="{{ casa.nombre }}" class="imagen-galeria" style="width: 100%; height: 190px; object-fit: cover;">
+                            {% else %}
+                                <div style="width: 100%; height: 190px; background: #e2e8f0; display: flex; align-items: center; justify-content: center; color: #64748b;">
+                                    Sin Imagen
+                                </div>
+                            {% endif %}
+                            
+                            <!-- Padding cómodo y flex-grow para asegurar que el costo siempre quede visible abajo -->
+                            <div style="padding: 18px; text-align: left; display: flex; flex-direction: column; justify-content: space-between; flex-grow: 1;">
+                                <div>
+                                    <h4 style="margin: 0 0 8px 0; color: #1e293b; font-size: 1.2rem; font-weight: 700;">{{ casa.nombre }}</h4>
+                                    <p style="margin: 0 0 12px 0; font-size: 0.95rem; color: #64748b;">📏 Área: {{ casa.area_cuadrada }} m²</p>
+                                </div>
+                                <p style="margin: 0; font-size: 1.15rem; color: #e67e22; font-weight: bold; border-top: 1px solid #f1f5f9; padding-top: 10px;">
+                                    💰 $ {{ casa.costo_total }} CLP
+                                </p>
+                            </div>
 
-        <div class="galeria-categoria reveal delay-2">
-            <h3 class="categoria-titulo">Casas Terminadas</h3>
-            <div class="grid-imagenes">
-                <div class="espacio-imagen">
-                    <img src="{% static 'imagen-galeria/casa1.jpg' %}" alt="Casa 1" class="imagen-galeria">
-                </div>
-                <div class="espacio-imagen">
-                    <img src="{% static 'imagen-galeria/casa2.jpg' %}" alt="Casa 2" class="imagen-galeria">
-                </div>
-                <div class="espacio-imagen">
-                    <img src="{% static 'imagen-galeria/casa3.jpg' %}" alt="Casa 3" class="imagen-galeria">
-                </div>
+                        </div>
+                    </a>
+                {% empty %}
+                    <p style="text-align: center; color: #64748b; grid-column: 1 / -1; padding: 2rem;">
+                        Aún no hay diseños prefabricados publicados en el catálogo.
+                    </p>
+                {% endfor %}
+
             </div>
         </div>
         

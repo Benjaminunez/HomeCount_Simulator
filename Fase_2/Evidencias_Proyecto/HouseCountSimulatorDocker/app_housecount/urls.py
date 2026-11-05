@@ -29,6 +29,8 @@ urlpatterns = [
     # Rutas de perfil y contacto
     path('mi-perfil/', views.editar_perfil, name='editar_perfil'),
     path('contacto/enviar/', views.enviar_contacto, name='enviar_contacto'),
+
+    path('api/obtener-casas-prefabricadas/', views.obtener_casas_prefabricadas, name='obtener_casas_prefabricadas'),
 ]
 
 # ESTO PERMITE VER LAS IMÁGENES SUBIDAS EN LOCALHOST
