@@ -73,3 +73,18 @@
     0% { opacity: 0; transform: translateY(-15px) scale(0.95); }
     100% { opacity: 1; transform: translateY(0) scale(1); }
 }
+
+.driver-popover:not([class*="driver-popover-side-"]) {
+    position: fixed !important;
+    top: 50% !important;
+    left: 50% !important;
+    transform: translate(-50%, -50%) !important;
+    margin: 0 !important;
+    /* La animación se sobreescribe para mantener el translate */
+    animation: aparecerCentro 0.3s cubic-bezier(0.25, 0.8, 0.25, 1) forwards !important;
+}
+
+@keyframes aparecerCentro {
+    0% { opacity: 0; transform: translate(-50%, -45%); }
+    100% { opacity: 1; transform: translate(-50%, -50%); }
+}

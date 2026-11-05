@@ -1,5 +1,4 @@
 // --- 1. FUNCIÓN DE GUARDADO ---
-// --- 1. FUNCIÓN DE GUARDADO ---
 async function procesarGuardado(objetos, camera, controles, costoTotal, miEscena, miRenderer, proyectoId = null, proyectoNombre = "", esPrefabricada = false) {
     if (!objetos || objetos.length <= 1) {
         await DialogoUI.alert("La escena está vacía. Añade elementos antes de guardar.");
@@ -127,6 +126,7 @@ async function cargarDisenosUsuario(scene, objetos, camera, controles, callbackA
                     if (typeof proyectoCargadoId !== 'undefined' && proyectoCargadoId === proyecto.id) {
                         proyectoCargadoId = null;
                         proyectoCargadoNombre = "";
+                        if (typeof actualizarNombreInterfaz === 'function') actualizarNombreInterfaz("");
                     }
                 }
             };
@@ -134,6 +134,10 @@ async function cargarDisenosUsuario(scene, objetos, camera, controles, callbackA
             card.onclick = (e) => {
                 e.stopPropagation(); 
                 modal.style.display = 'none';
+                localStorage.removeItem('proyecto_homecount');
+                localStorage.removeItem('camara_homecount');
+                localStorage.setItem('proyecto_hc_id', proyecto.id);
+                localStorage.setItem('proyecto_hc_nombre', proyecto.nombre);
                 ejecutarCargaEscena3D(proyecto, scene, objetos, camera, controles, callbackActualizarUI);
             };
 

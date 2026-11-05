@@ -737,6 +737,8 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         localStorage.setItem('proyecto_homecount', JSON.stringify(datosGuardados));
         guardarCamaraLocal();
+        if (proyectoCargadoId) localStorage.setItem('proyecto_hc_id', proyectoCargadoId);
+        if (proyectoCargadoNombre) localStorage.setItem('proyecto_hc_nombre', proyectoCargadoNombre);
     }
 
     function guardarCamaraLocal() {
@@ -763,7 +765,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function cargarEscenaLocal() {
         const datosString = localStorage.getItem('proyecto_homecount');
+        
         if (!datosString) return;
+        const idLocal = localStorage.getItem('proyecto_hc_id');
+        const nombreLocal = localStorage.getItem('proyecto_hc_nombre');
+        if (idLocal) proyectoCargadoId = idLocal;
+        if (nombreLocal) {
+            proyectoCargadoNombre = nombreLocal;
+            if (typeof actualizarNombreInterfaz === 'function') actualizarNombreInterfaz(proyectoCargadoNombre);
+        }
+
         const datosGuardados = JSON.parse(datosString);
         
         datosGuardados.forEach(item => {
@@ -1041,6 +1052,16 @@ document.addEventListener('DOMContentLoaded', () => {
         }, 2000); 
     }
 
+    function limpiarSesion3D() {
+        // Borramos todos los rastros del simulador en la memoria local
+        localStorage.removeItem('proyecto_homecount');
+        localStorage.removeItem('camara_homecount');
+        localStorage.removeItem('proyecto_hc_id');
+        localStorage.removeItem('proyecto_hc_nombre');
+        localStorage.removeItem('diseno_temporal_cargado'); // Si usas alguna otra clave, agrégala aquí
+    }
+    
+    
     // --- 2. CARGA AUTOMÁTICA (PREFABRICADAS Y ÚLTIMO DISEÑO) ---
     async function autocompletarUltimoDiseño() {
         const params = new URLSearchParams(window.location.search);
@@ -1065,6 +1086,7 @@ document.addEventListener('DOMContentLoaded', () => {
                             costoTotal = nuevoCosto;
                             proyectoCargadoId = idProyecto;
                             proyectoCargadoNombre = nombreProyecto;
+                            actualizarNombreInterfaz(proyectoCargadoNombre);
                             if (uiTotal) uiTotal.textContent = `$${new Intl.NumberFormat('es-CL').format(costoTotal)}`;
                             actualizarListaUI();
                             recalcularTamanoTerreno();
@@ -1099,7 +1121,16 @@ document.addEventListener('DOMContentLoaded', () => {
             const data = await response.json();
 
             if (response.ok && data.disenos && data.disenos.length > 0) {
-                const ultimoProyecto = data.disenos[0]; 
+               const idMemoria = localStorage.getItem('proyecto_hc_id');
+                let ultimoProyecto = data.disenos[0]; // Por defecto, el último modificado
+
+                // Si el navegador recuerda que abrió otro proyecto, lo buscamos y lo priorizamos
+                if (idMemoria) {
+                    const proyectoEspecifico = data.disenos.find(p => String(p.id) === String(idMemoria));
+                    if (proyectoEspecifico) {
+                        ultimoProyecto = proyectoEspecifico;
+                    }
+                } 
                 
                 localStorage.removeItem('proyecto_homecount');
                 localStorage.removeItem('camara_homecount');
@@ -1115,6 +1146,12 @@ document.addEventListener('DOMContentLoaded', () => {
                     actualizarListaUI();       
                     recalcularTamanoTerreno(); 
                     actualizarEstadoBotones(); 
+
+                    if (typeof actualizarNombreInterfaz === 'function') {
+                        actualizarNombreInterfaz(proyectoCargadoNombre);
+                    }
+                    if (proyectoCargadoId) localStorage.setItem('proyecto_hc_id', proyectoCargadoId);
+                    if (proyectoCargadoNombre) localStorage.setItem('proyecto_hc_nombre', proyectoCargadoNombre);
                     if (typeof calcularYMostrarPerimetro === 'function') calcularYMostrarPerimetro();
                 };
                 
@@ -1249,6 +1286,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (objetosInteractuables.length <= 1) {
                     proyectoCargadoId = null;
                     proyectoCargadoNombre = "";
+                    actualizarNombreInterfaz("");
                 }
 
                 actualizarPresupuesto(-objBorrar.userData.precio);
@@ -1293,6 +1331,14 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
+    function actualizarNombreInterfaz(nombre) {
+        const displayNombre = document.getElementById('display-nombre-proyecto');
+        if (displayNombre) {
+            const nombreMostrar = nombre && nombre.trim() !== "" ? nombre : "Nuevo Proyecto";
+            displayNombre.innerHTML = `Proyecto: <strong>${nombreMostrar}</strong>`;
+        }
+    }
+
     // --- EVENTOS DE BOTONES ---
     const btnGuardarModelo = document.getElementById('btn-guardar-modelo');
     if (btnGuardarModelo) {
@@ -1325,6 +1371,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 proyectoCargadoId = resultado.id;
                 proyectoCargadoNombre = resultado.nombre;
                 actualizarEstadoBotones(); 
+                actualizarNombreInterfaz(proyectoCargadoNombre);
             }
         });
     }
@@ -1401,7 +1448,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (cambiarNuevo) {
                         proyectoCargadoId = data.id;
                         proyectoCargadoNombre = nuevoNombre;
-                        actualizarEstadoBotones(); 
+                        actualizarEstadoBotones();
+                        actualizarNombreInterfaz(proyectoCargadoNombre);
                     } 
                 } else {
                     await DialogoUI.alert("Error al guardar la copia: " + data.mensaje);
@@ -1428,10 +1476,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 
                 localStorage.removeItem('proyecto_homecount');
                 localStorage.removeItem('camara_homecount');
+                localStorage.removeItem('proyecto_hc_id');
+                localStorage.removeItem('proyecto_hc_nombre');
 
                 // Resetear estado de proyecto actual
                 proyectoCargadoId = null;
                 proyectoCargadoNombre = "";
+                actualizarNombreInterfaz("");
 
                 cambiarTamanoTerreno(1000);
 
@@ -1463,6 +1514,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 actualizarListaUI();       
                 recalcularTamanoTerreno(); 
                 actualizarEstadoBotones();
+                actualizarNombreInterfaz(proyectoCargadoNombre);
             });
         });
     }
