@@ -1063,7 +1063,7 @@ document.addEventListener('DOMContentLoaded', () => {
     
     
     // --- 2. CARGA AUTOMÁTICA (PREFABRICADAS Y ÚLTIMO DISEÑO) ---
-    async function autocompletarUltimoDiseño() {
+async function autocompletarUltimoDiseño() {
         const params = new URLSearchParams(window.location.search);
         const prefabId = params.get('prefab_id');
 
@@ -1086,7 +1086,7 @@ document.addEventListener('DOMContentLoaded', () => {
                             costoTotal = nuevoCosto;
                             proyectoCargadoId = idProyecto;
                             proyectoCargadoNombre = nombreProyecto;
-                            actualizarNombreInterfaz(proyectoCargadoNombre);
+                            if (typeof actualizarNombreInterfaz === 'function') actualizarNombreInterfaz(proyectoCargadoNombre);
                             if (uiTotal) uiTotal.textContent = `$${new Intl.NumberFormat('es-CL').format(costoTotal)}`;
                             actualizarListaUI();
                             recalcularTamanoTerreno();
@@ -1108,12 +1108,24 @@ document.addEventListener('DOMContentLoaded', () => {
         const btnGuardarVerificacion = document.getElementById('btn-guardar-modelo');
         if (!btnGuardarVerificacion) {
             console.log("👤 Usuario invitado. Cargando LocalStorage...");
+            
+            // --- NUEVO: LIMPIEZA PARA USUARIO INVITADO ---
+            localStorage.removeItem('proyecto_hc_id');
+            localStorage.removeItem('proyecto_hc_nombre');
+            proyectoCargadoId = null;
+            proyectoCargadoNombre = "";
+            
+            if (typeof actualizarNombreInterfaz === 'function') {
+                actualizarNombreInterfaz(""); 
+            }
+            
+            // --- ESTO SE HABÍA BORRADO: CARGA LA ESCENA LOCAL Y DETIENE LA BÚSQUEDA ---
             cargarEscenaLocal();
             if (typeof cargarCamaraLocal === 'function') cargarCamaraLocal();
             actualizarListaUI();
             actualizarEstadoBotones();
-            return;
-        }
+            return; 
+        } // <--- ESTA LLAVE SE HABÍA BORRADO
 
         // Si está logueado, buscar su último diseño
         try {
