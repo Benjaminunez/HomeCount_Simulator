@@ -536,9 +536,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 contenedorHabitaciones.innerHTML = '';
                 contenedorHabitaciones.style.display = 'none'; 
             }
+            
             const contenedorFiltros = document.getElementById('filtros-categorias');
+            
             if (data.materiales && data.materiales.length > 0) {
-                
                 let categoriasDB = [...new Set(data.materiales.map(mat => mat.categoria))];
                 const otrasCategorias = categoriasDB.filter(c => c !== 'Estructura' && c !== 'Sin Categoría');
                 
@@ -547,7 +548,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 categoriasUnicas.push(...otrasCategorias.sort()); 
                 if (categoriasDB.includes('Sin Categoría')) categoriasUnicas.push('Sin Categoría');
                 
-                if (data.habitaciones && data.habitaciones.length > 0) {
+                // Si el backend envía casas prefabricadas, creamos la pestaña
+                if (data.casas && data.casas.length > 0) {
                     categoriasUnicas.push('Módulos Prehechos');
                 }
                 
@@ -558,6 +560,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         const btnTab = document.createElement('button');
                         btnTab.textContent = cat;
                         btnTab.className = `tab-categoria ${index === 0 ? 'activa' : ''}`;
+                        
                         btnTab.addEventListener('click', () => {
                             document.querySelectorAll('.tab-categoria').forEach(b => b.classList.remove('activa'));
                             btnTab.classList.add('activa');
@@ -583,6 +586,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     });
                 }
                 
+                // --- RENDERIZADO DE MATERIALES ---
                 data.materiales.forEach((mat, index) => {
                     const btn = document.createElement('button');
                     btn.className = `btn-mat-3d ${index === 0 ? 'activo' : ''}`;
@@ -594,6 +598,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     } else {
                         btn.innerHTML = `<span style="font-size: 1.8rem; pointer-events: none;">🧱</span>`;
                     }
+                    
                     btn.addEventListener('mouseenter', () => {
                         tooltipCatalogo.innerHTML = `<span style="font-size: 10px; color: #a0aec0;">${mat.categoria}</span><br>${mat.nombre}<br><strong>$${precioFormateado} CLP</strong>`;
                         tooltipCatalogo.style.display = 'block';
@@ -601,46 +606,57 @@ document.addEventListener('DOMContentLoaded', () => {
                         tooltipCatalogo.style.left = (rect.left + (rect.width / 2)) + 'px';
                         tooltipCatalogo.style.top = (rect.top - tooltipCatalogo.offsetHeight - 8) + 'px';
                     });
+                    
                     btn.addEventListener('mouseleave', () => {
                         tooltipCatalogo.style.display = 'none';
                     });
+                    
                     btn.addEventListener('click', function() {
-                        document.querySelectorAll('.btn-mat-3d, .btn-hab-3d').forEach(b => b.classList.remove('activo'));
+                        document.querySelectorAll('.btn-mat-3d, .btn-hab-3d, .btn-casa-3d').forEach(b => b.classList.remove('activo'));
                         this.classList.add('activo');
                         seleccionarElemento(mat.archivo_3d, mat.coste, false, mat.textura_key, mat.nombre);
                     });
+                    
                     if (contenedorMateriales) contenedorMateriales.appendChild(btn);
                     if (index === 0) seleccionarElemento(mat.archivo_3d, mat.coste, false, mat.textura_key, mat.nombre);
                 });
             }
             
-            if (data.habitaciones && data.habitaciones.length > 0) {
-                data.habitaciones.forEach(hab => {
+            // --- RENDERIZADO DE CASAS PREFABRICADAS ---
+            if (data.casas && data.casas.length > 0) {
+                data.casas.forEach(casa => {
                     const btn = document.createElement('button');
-                    btn.className = 'btn-hab-3d'; 
-                    const costoTotalFormateado = new Intl.NumberFormat('es-CL').format(hab.coste_total);
+                    // Mantenemos btn-hab-3d para que los estilos CSS actuales sigan funcionando
+                    btn.className = 'btn-casa-3d btn-hab-3d'; 
+                    const costoTotalFormateado = new Intl.NumberFormat('es-CL').format(casa.costo_total);
                     
-                    if (hab.imagen) {
-                        btn.innerHTML = `<img src="${hab.imagen}" alt="${hab.nombre}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 8px; pointer-events: none;">`;
+                    // Aquí es donde lee la imagen_captura que configuramos en views.py
+                    if (casa.imagen_captura) {
+                        btn.innerHTML = `<img src="${casa.imagen_captura}" alt="${casa.nombre}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 8px; pointer-events: none;">`;
                     } else {
                         btn.innerHTML = `<span style="font-size: 1.8rem; pointer-events: none;">🏠</span>`;
                     }
+                    
                     btn.addEventListener('mouseenter', () => {
-                        tooltipCatalogo.innerHTML = `${hab.nombre} (${hab.dimensiones})<br><strong>$${costoTotalFormateado} CLP</strong>`;
+                        tooltipCatalogo.innerHTML = `${casa.nombre} (Área: ${casa.area_cuadrada} m²)<br><strong>$${costoTotalFormateado} CLP</strong>`;
                         tooltipCatalogo.style.display = 'block';
                         const rect = btn.getBoundingClientRect();
                         tooltipCatalogo.style.left = (rect.left + (rect.width / 2)) + 'px';
                         tooltipCatalogo.style.top = (rect.top - tooltipCatalogo.offsetHeight - 8) + 'px';
                     });
+                    
                     btn.addEventListener('mouseleave', () => {
                         tooltipCatalogo.style.display = 'none';
                     });
+                    
                     btn.addEventListener('click', function() {
-                        document.querySelectorAll('.btn-mat-3d, .btn-hab-3d').forEach(b => b.classList.remove('activo'));
+                        document.querySelectorAll('.btn-mat-3d, .btn-hab-3d, .btn-casa-3d').forEach(b => b.classList.remove('activo'));
                         this.classList.add('activo');
-                        seleccionarElemento(hab.archivo_3d, hab.coste_total, true, 'concreto', hab.nombre);
+                        // Inyecta el modelo de la casa al escenario
+                        seleccionarElemento(casa.archivo_3d, casa.costo_total, true, 'concreto', casa.nombre);
                     });
                     
+                    // Se inyecta en el contenedor que ya existe en tu HTML
                     if (contenedorHabitaciones) contenedorHabitaciones.appendChild(btn);
                 });
             }
