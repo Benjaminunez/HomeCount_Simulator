@@ -105,7 +105,7 @@
             <!-- Funcionalidad 3: Contacto -->
             <div class="tarjeta-horizontal reveal delay-1">
                 <div class="tarjeta-imagen">
-                    <img src="{% static 'img/contacto.png' %}" alt="Formulario de Contacto">
+                    <img src="{% static 'imagen-galeria/trato.jpg' %}" alt="Formulario de Contacto">
                 </div>
                 <div class="tarjeta-cuerpo">
                     <h3>Asesoría y Contacto</h3>
@@ -119,18 +119,6 @@
         </div>
 
     </section>
-    <!-- Sección de Proyectos y Presupuesto -->
-    <section id="proyectos" class="seccion-moderna">
-        <div class="contenedor-presupuesto reveal">
-            <h2 class="seccion-titulo">Ajusta tu presupuesto.</h2>
-            <p class="seccion-subtitulo">Desliza la barra para indicar cuánto planeas invertir.</p>
-            
-            <input type="range" id="barra-presupuesto" min="0" max="2000000000" step="10000" value="500000">
-            
-            <p class="valor-mostrado">$<span id="valor-pantalla">500.000</span> CLP</p>
-            <a href="{% url 'contrucion' %}" class="btn-principal btn-secundario">Ver opciones de construcción</a>
-        </div>
-    </section>
 
     <!-- Sección de Galería -->
     <section class="seccion-moderna fondo-claro galeria-seccion">
@@ -139,71 +127,59 @@
             <p class="galeria-intro seccion-subtitulo">Explora nuestra colección de planos y los resultados finales.</p>
         </div>
 
-        <!-- Catálogo Dinámico de Casas Prefabricadas (3D) -->
-        <div class="galeria-categoria reveal delay-1">
-            <h3 class="categoria-titulo" style="text-align: center; margin-bottom: 2rem; color: #2d3748; font-size: 1.8rem;">Modelos 3D de Casas Prefabricadas</h3>
-            
-            <div class="grid-imagenes" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 30px;">
-                
-                {% for casa in casas_prefabricadas %}
-                    <a href="{% url 'casas_modelo_1' %}?prefab_id={{ casa.id }}" style="text-decoration: none; display: block;">
+    <!-- Catálogo Dinámico de Casas Prefabricadas (3D) -->
+    <div class="galeria-categoria reveal delay-1">
+        <div class="prefab-grid">
+            {% for casa in casas_prefabricadas %}
+                <a href="{% url 'casas_modelo_1' %}?prefab_id={{ casa.id }}" class="prefab-card-link">
+                    <div class="prefab-card">
                         
-                        <div style="background: white; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05), 0 10px 15px rgba(0, 0, 0, 0.03); transition: all 0.3s ease; display: flex; flex-direction: column; height: 100%; border: 1px solid #f1f5f9;"
-                            onmouseover="this.style.transform='translateY(-6px)'; this.style.boxShadow='0 12px 20px rgba(0, 0, 0, 0.08), 0 16px 24px rgba(0, 0, 0, 0.05)';" 
-                            onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 6px rgba(0, 0, 0, 0.05), 0 10px 15px rgba(0, 0, 0, 0.03)';">
+                        <!-- Imagen de la tarjeta -->
+                        <div class="prefab-card-img-wrapper">
+                            {% if casa.imagen_captura %}
+                                <img src="{{ casa.imagen_captura.url }}" alt="{{ casa.nombre }}" class="prefab-card-img">
+                            {% else %}
+                                <div class="prefab-no-img">Sin vista previa</div>
+                            {% endif %}
+                        </div>
+                        
+                        <!-- Cuerpo de la Tarjeta -->
+                        <div class="prefab-card-body">
                             
-                            <div style="position: relative; height: 220px; width: 100%; border-bottom: 1px solid #f1f5f9; overflow: hidden; background: #e2e8f0;">
-                                {% if casa.imagen_captura %}
-                                    <img src="{{ casa.imagen_captura.url }}" alt="{{ casa.nombre }}" style="width: 100%; height: 100%; object-fit: cover; transition: transform 0.5s ease;"
-                                        onmouseover="this.style.transform='scale(1.05)';" 
-                                        onmouseout="this.style.transform='scale(1)';">
-                                {% else %}
-                                    <div style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; color: #94a3b8; font-weight: 500;">
-                                        Sin vista previa
-                                    </div>
-                                {% endif %}
+                            <!-- Título -->
+                            <h4 class="prefab-title">{{ casa.nombre }}</h4>
+                            
+                            <!-- Etiqueta de Área -->
+                            <div class="prefab-badge">
+                                <span class="prefab-badge-icon">📐</span>
+                                <span class="prefab-badge-text">Área: {{ casa.area_cuadrada }} m²</span>
                             </div>
+
+                            <!-- Descripción Mejorada -->
+                            <p class="prefab-desc">
+                                {{ casa.descripcion|default:"Sin descripción disponible." }}
+                            </p>
                             
-                            <!-- Cuerpo de la Tarjeta -->
-                            <div style="padding: 24px; display: flex; flex-direction: column; flex-grow: 1;">
-                                
-                                <!-- Título -->
-                                <h4 style="margin: 0 0 12px 0; color: #1e293b; font-size: 1.3rem; font-weight: 700; line-height: 1.2;">
-                                    {{ casa.nombre }}
-                                </h4>
-                                
-                                <!-- Etiqueta de Área (Estilo Badge) -->
-                                <div style="margin-bottom: auto; display: inline-flex; align-items: center; background: #f8fafc; border: 1px solid #e2e8f0; padding: 6px 12px; border-radius: 8px; width: fit-content;">
-                                    <span style="font-size: 1.1rem; margin-right: 6px;">📐</span>
-                                    <span style="font-size: 0.9rem; color: #64748b; font-weight: 500;">Área: {{ casa.area_cuadrada }} m²</span>
-                                </div>
-                                
-                                <!-- Pie de tarjeta (Precio) -->
-                                <div style="margin-top: 24px; padding-top: 16px; border-top: 2px dashed #f1f5f9; display: flex; align-items: center; justify-content: space-between;">
-                                    <span style="font-size: 0.85rem; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px; font-weight: 600;">
-                                        Costo Estimado
-                                    </span>
-                                    <span style="font-size: 1.25rem; color: #16ca43; font-weight: 800;">
-                                        $ {{ casa.costo_total }} CLP
-                                    </span>
-                                </div>
+                            <!-- Pie de tarjeta (Precio) -->
+                            <div class="prefab-footer">
+                                <span class="prefab-footer-label">Costo Estimado</span>
+                                <span class="prefab-price">$ {{ casa.costo_total }} CLP</span>
                             </div>
 
                         </div>
-                    </a>
-                {% empty %}
-                    <p style="text-align: center; color: #64748b; grid-column: 1 / -1; padding: 3rem; background: white; border-radius: 12px; border: 1px dashed #cbd5e1;">
-                        No hay modelos disponibles en este momento.
-                    </p>
-                {% endfor %}
-
-            </div>
+                    </div>
+                </a>
+            {% empty %}
+                <p class="prefab-empty">
+                    No hay modelos disponibles en este momento.
+                </p>
+            {% endfor %}
         </div>
-        
-        <div id="modal-imagen" class="modal">
-            <span class="cerrar-modal">&times;</span>
-            <img class="modal-contenido" id="imagen-ampliada">
-        </div>
+    </div> 
+    <div id="modal-imagen" class="modal">
+        <span class="cerrar-modal">&times;</span>
+        <img class="modal-contenido" id="imagen-ampliada">
+    </div>
     </section>
 
     <!-- Sección de Contacto -->

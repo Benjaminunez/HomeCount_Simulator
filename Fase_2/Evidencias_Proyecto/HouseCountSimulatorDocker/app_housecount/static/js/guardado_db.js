@@ -2,25 +2,41 @@
 async function procesarGuardado(objetos, camera, controles, costoTotal, miEscena, miRenderer, proyectoId = null, proyectoNombre = "", esPrefabricada = false) {
     if (!objetos || objetos.length <= 1) {
         await DialogoUI.alert("La escena está vacía. Añade elementos antes de guardar.");
-        return;
+        return { exito: false };
     }
 
     let nombreProyecto = proyectoNombre;
 
+    // 1. Validar nombre o actualización del diseño
     if (proyectoId) {
         const confirmarActualizacion = await DialogoUI.confirm(`Actualmente estás editando "${proyectoNombre}".\n\n¿Deseas actualizar y sobrescribir este diseño con los nuevos cambios?`);
-        if (!confirmarActualizacion) return; 
+        if (!confirmarActualizacion) return { exito: false }; 
     } else {
         nombreProyecto = await DialogoUI.prompt("Nombre para este nuevo proyecto:");
-        if (!nombreProyecto) return;
+        if (!nombreProyecto) return { exito: false };
     }
 
+    // 2. NUEVO: Pedir descripción SOLO si es modelo público (prefabricada)
+    let descripcionPrefabricada = "";
+    if (esPrefabricada) {
+        descripcionPrefabricada = await DialogoUI.prompt(
+            "Ingresa una descripción para el catálogo público (Opcional):", 
+            "Ej: Casa compacta de 2 habitaciones, ideal para terrenos pequeños..."
+        );
+        
+        // Si el usuario presiona "Cancelar" en el prompt de la descripción, detenemos el guardado.
+        // Si quieres que no se cancele al darle a 'Cancelar', borra esta línea.
+        if (descripcionPrefabricada === null) return { exito: false };
+    }
+
+    // 3. Captura de pantalla del modelo
     let capturaBase64 = null;
     if (miEscena && miRenderer) {
         miRenderer.render(miEscena, camera); 
         capturaBase64 = miRenderer.domElement.toDataURL("image/png");
     }
 
+    // 4. Mapeo de la escena 3D
     const datosEscena = [];
     for (let i = 1; i < objetos.length; i++) {
         const obj = objetos[i];
@@ -33,9 +49,11 @@ async function procesarGuardado(objetos, camera, controles, costoTotal, miEscena
         });
     }
 
+    // 5. Construcción del Payload final
     const payload = {
         proyecto_id: proyectoId, 
         nombre_proyecto: nombreProyecto,
+        descripcion: descripcionPrefabricada, // <--- Se envía a Django
         costo_total: costoTotal,
         datos_escena: datosEscena,
         datos_camara: {
@@ -43,15 +61,16 @@ async function procesarGuardado(objetos, camera, controles, costoTotal, miEscena
             targetX: controles.target.x, targetY: controles.target.y, targetZ: controles.target.z
         },
         captura_base64: capturaBase64,
-        es_prefabricada: esPrefabricada // Recibe la bandera enviada desde script_casa1.js
+        es_prefabricada: esPrefabricada 
     };
 
+    // 6. Envío al servidor
     try {
         const response = await fetch('/api/guardar-diseno/', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'X-CSRFToken': obtenerCookieCSRF('csrftoken') 
+                'X-CSRFToken': typeof obtenerCookieCSRF === 'function' ? obtenerCookieCSRF('csrftoken') : ''
             },
             body: JSON.stringify(payload)
         });
@@ -59,7 +78,6 @@ async function procesarGuardado(objetos, camera, controles, costoTotal, miEscena
         const data = await response.json();
         if (response.ok && data.estado === 'exito') {
             await DialogoUI.alert("¡Diseño guardado con éxito!");
-            // Retorna los datos al script_casa1.js para encender el botón de actualizar
             return { exito: true, id: data.id, nombre: nombreProyecto };
         } else {
             await DialogoUI.alert("Error al guardar: " + data.mensaje);

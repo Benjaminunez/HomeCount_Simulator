@@ -154,6 +154,7 @@ class CodigoRecuperacion(models.Model):
 
 class CasaPrefabricada(models.Model):
     nombre = models.CharField(max_length=100)
+    descripcion = models.TextField(verbose_name="Descripción del Modelo", blank=True, null=True, help_text="Descripción publica de la casa prefabricada")
     costo_total = models.DecimalField(max_digits=12, decimal_places=2, default=0.0)
     datos_escena = models.JSONField(help_text="JSON con objetos y posiciones")
     datos_camara = models.JSONField(help_text="JSON con posición y target de la cámara")

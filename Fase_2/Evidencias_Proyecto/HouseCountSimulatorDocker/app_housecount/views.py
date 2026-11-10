@@ -23,6 +23,7 @@ from .models import ModeloCasa, Material, Habitacion, Proyecto3D, CategoriaMater
 
 def inicio(request): 
     casas = CasaPrefabricada.objects.all().order_by('-fecha_creacion')[:6]
+    
     return render(request, 'inicio.html', {'casas_prefabricadas': casas})
 
 def contrucion(request): 
@@ -35,24 +36,21 @@ def casas_modelo_1(request):
     return render(request, 'casas_modelo_1.html')
 
 def casas_rapidas(request):
-    modelos = ModeloCasa.objects.all()
+    # 1. Cargamos los diseños registrados por el admin
+    modelos = CasaPrefabricada.objects.all()
 
+    # 2. Capturamos solo los filtros que mantuvimos en el HTML
     precio_max = request.GET.get('precio_max')
     m2_min = request.GET.get('m2_min')
-    habitaciones = request.GET.get('habitaciones')
-    banos = request.GET.get('banos')
     
+    # 3. Filtramos usando los nombres exactos de los campos de CasaPrefabricada
     if precio_max:
-        modelos = modelos.filter(precio__lte=precio_max)
+        modelos = modelos.filter(costo_total__lte=precio_max)
     if m2_min:
-        modelos = modelos.filter(metros_cuadrados__gte=m2_min)
-    if habitaciones:
-        modelos = modelos.filter(habitaciones__gte=habitaciones)
-    if banos:
-        modelos = modelos.filter(banos__gte=banos)
+        modelos = modelos.filter(area_cuadrada__gte=m2_min)
 
+    # 4. Lógica de la API del mercado (se mantiene intacta)
     casas_mercado = []
-    
     try:
         url_api = "https://gist.githubusercontent.com/Benjaminunez/b367b26daa23044dd9ee7ee14ad3a8e0/raw/ac4792063436f31d0218f2025dccac3a2a285753/casas_api.json" 
         respuesta = requests.get(url_api, timeout=5)
@@ -61,13 +59,12 @@ def casas_rapidas(request):
     except Exception as e:
         print(f"Error al conectar con la API: {e}")
     
+    # 5. Pasamos todo al contexto
     context = {
         'modelos': modelos,
         'filtros': {
             'precio_max': precio_max or '',
             'm2_min': m2_min or '',
-            'habitaciones': habitaciones or '',
-            'banos': banos or '',
         },
         'casas_mercado': casas_mercado,
     }
@@ -342,8 +339,9 @@ def guardar_diseno(request):
         proyecto_id = data.get('proyecto_id')
         nombre = data.get('nombre_proyecto', 'Sin Nombre')
         es_prefabricada = data.get('es_prefabricada', False)
+        descripcion = data.get('descripcion', '') # <-- NUEVO: Capturamos la descripción
         
-        # 1. Parámetros solo de texto y JSON (sin la imagen)
+        # 1. Parámetros solo de texto y JSON (comunes para todos)
         parametros_guardado = {
             'nombre': nombre,
             'costo_total': data.get('costo_total', 0),
@@ -364,15 +362,19 @@ def guardar_diseno(request):
         
         # Flujo 1: Guardado en catálogo global público (Solo Administradores)
         if es_prefabricada and request.user.is_superuser:
+            # Creamos una copia de los parámetros y le añadimos la descripción
+            parametros_prefabricada = parametros_guardado.copy()
+            parametros_prefabricada['descripcion'] = descripcion 
+            
             if proyecto_id:
-                CasaPrefabricada.objects.filter(id=proyecto_id).update(**parametros_guardado)
+                CasaPrefabricada.objects.filter(id=proyecto_id).update(**parametros_prefabricada)
                 # Guardamos la imagen de forma segura
                 if archivo_imagen:
                     obj = CasaPrefabricada.objects.get(id=proyecto_id)
                     obj.imagen_captura.save(nombre_archivo, archivo_imagen, save=True)
                 obj_id = str(proyecto_id)
             else:
-                nueva_casa = CasaPrefabricada.objects.create(**parametros_guardado)
+                nueva_casa = CasaPrefabricada.objects.create(**parametros_prefabricada)
                 if archivo_imagen:
                     nueva_casa.imagen_captura.save(nombre_archivo, archivo_imagen, save=True)
                 obj_id = str(nueva_casa.id)
