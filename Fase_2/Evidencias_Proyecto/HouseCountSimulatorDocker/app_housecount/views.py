@@ -342,8 +342,9 @@ def guardar_diseno(request):
         proyecto_id = data.get('proyecto_id')
         nombre = data.get('nombre_proyecto', 'Sin Nombre')
         es_prefabricada = data.get('es_prefabricada', False)
+        descripcion = data.get('descripcion', '') # <-- NUEVO: Capturamos la descripción
         
-        # 1. Parámetros solo de texto y JSON (sin la imagen)
+        # 1. Parámetros solo de texto y JSON (comunes para todos)
         parametros_guardado = {
             'nombre': nombre,
             'costo_total': data.get('costo_total', 0),
@@ -364,15 +365,19 @@ def guardar_diseno(request):
         
         # Flujo 1: Guardado en catálogo global público (Solo Administradores)
         if es_prefabricada and request.user.is_superuser:
+            # Creamos una copia de los parámetros y le añadimos la descripción
+            parametros_prefabricada = parametros_guardado.copy()
+            parametros_prefabricada['descripcion'] = descripcion 
+            
             if proyecto_id:
-                CasaPrefabricada.objects.filter(id=proyecto_id).update(**parametros_guardado)
+                CasaPrefabricada.objects.filter(id=proyecto_id).update(**parametros_prefabricada)
                 # Guardamos la imagen de forma segura
                 if archivo_imagen:
                     obj = CasaPrefabricada.objects.get(id=proyecto_id)
                     obj.imagen_captura.save(nombre_archivo, archivo_imagen, save=True)
                 obj_id = str(proyecto_id)
             else:
-                nueva_casa = CasaPrefabricada.objects.create(**parametros_guardado)
+                nueva_casa = CasaPrefabricada.objects.create(**parametros_prefabricada)
                 if archivo_imagen:
                     nueva_casa.imagen_captura.save(nombre_archivo, archivo_imagen, save=True)
                 obj_id = str(nueva_casa.id)
