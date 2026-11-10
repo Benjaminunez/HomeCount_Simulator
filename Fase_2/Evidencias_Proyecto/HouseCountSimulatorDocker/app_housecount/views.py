@@ -182,7 +182,9 @@ def api_propiedades_unica(request):
 def api_materiales_3d(request):
     if request.method == 'GET':
         materiales = Material.objects.all()
-        habitaciones = Habitacion.objects.prefetch_related('detalles_materiales__material').all()
+        
+        # AQUÍ ESTÁ EL CAMBIO: Consultamos CasaPrefabricada en lugar de Habitacion
+        casas_db = CasaPrefabricada.objects.all() 
         
         lista_materiales = [
             {
@@ -197,29 +199,23 @@ def api_materiales_3d(request):
             for mat in materiales
         ]
             
-        lista_habitaciones = [
+        # AQUÍ ESTÁ EL SEGUNDO CAMBIO: Mapeamos los campos exactos del modelo CasaPrefabricada
+        lista_casas = [
             {
-                "id": hab.id,
-                "nombre": hab.nombre_modulo,
-                "dimensiones": hab.dimensiones,
-                "coste_total": hab.coste_total,  
-                "materiales": [
-                    {
-                        "material": detalle.material.nombre,
-                        "cantidad": detalle.cantidad,
-                        "subtotal": detalle.coste_subtotal
-                    }
-                    for detalle in hab.detalles_materiales.all()
-                ],
-                "archivo_3d": hab.archivo_3d.url if hab.archivo_3d and hab.archivo_3d.name else None,
-                "imagen": hab.imagen.url if hab.imagen and hab.imagen.name else None
+                "id": casa.id,
+                "nombre": casa.nombre,
+                "area_cuadrada": casa.area_cuadrada, 
+                "costo_total": casa.costo_total,    
+                "datos_escena": casa.datos_escena, # Traemos el JSON
+                "datos_camara": casa.datos_camara, # Traemos la cámara
+                "imagen_captura": casa.imagen_captura.url if casa.imagen_captura and casa.imagen_captura.name else None 
             }
-            for hab in habitaciones
+            for casa in casas_db
         ]
             
         return JsonResponse({
             "materiales": lista_materiales,
-            "habitaciones": lista_habitaciones
+            "casas": lista_casas 
         }, safe=False)
         
     elif request.method == 'POST':

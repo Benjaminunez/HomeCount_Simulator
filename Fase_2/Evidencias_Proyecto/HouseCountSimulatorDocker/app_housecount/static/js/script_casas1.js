@@ -229,7 +229,6 @@ document.addEventListener('DOMContentLoaded', () => {
         canvas.height = 128;
         
         context.font = 'Bold 28px Arial';
-        // LÓGICA DE COLOR: Blanco en modo oscuro, gris oscuro en modo claro
         context.fillStyle = esModoOscuro ? '#ffffff' : '#1e293b'; 
         context.textAlign = 'center';
         context.textBaseline = 'middle';
@@ -252,16 +251,12 @@ document.addEventListener('DOMContentLoaded', () => {
         const colorLinea = esModoOscuro ? 0xffffff : 0x1e293b;
         const materialLinea = new THREE.LineBasicMaterial({ color: colorLinea, depthTest: false });
 
-        // Vector para alejar la línea del muro
         const offsetVector = direccionOffset.clone().normalize().multiplyScalar(distanciaOffset);
-        
-        // Puntos de la línea de dimensión (paralela al muro)
         const cotaP1 = new THREE.Vector3().copy(p1).add(offsetVector);
         const cotaP2 = new THREE.Vector3().copy(p2).add(offsetVector);
 
-        // Puntos de las líneas de extensión (perpendiculares al muro)
-        const gapInicio = 10; // Separación para que la línea no toque el muro
-        const extensionFin = distanciaOffset + 15; // Qué tanto sobresale la cruz
+        const gapInicio = 10; 
+        const extensionFin = distanciaOffset + 15; 
         
         const ext1Inicio = new THREE.Vector3().copy(p1).add(direccionOffset.clone().normalize().multiplyScalar(gapInicio));
         const ext1Fin = new THREE.Vector3().copy(p1).add(direccionOffset.clone().normalize().multiplyScalar(extensionFin));
@@ -269,18 +264,16 @@ document.addEventListener('DOMContentLoaded', () => {
         const ext2Inicio = new THREE.Vector3().copy(p2).add(direccionOffset.clone().normalize().multiplyScalar(gapInicio));
         const ext2Fin = new THREE.Vector3().copy(p2).add(direccionOffset.clone().normalize().multiplyScalar(extensionFin));
 
-        // LineSegments requiere pares de vértices para dibujar líneas desconectadas
         const puntos = [
-            cotaP1, cotaP2,      // Segmento 1: La línea principal de cota
-            ext1Inicio, ext1Fin, // Segmento 2: Extensión desde la primera esquina
-            ext2Inicio, ext2Fin  // Segmento 3: Extensión desde la segunda esquina
+            cotaP1, cotaP2,     
+            ext1Inicio, ext1Fin, 
+            ext2Inicio, ext2Fin  
         ];
 
         const geometria = new THREE.BufferGeometry().setFromPoints(puntos);
         const lineas = new THREE.LineSegments(geometria, materialLinea);
         lineas.renderOrder = 999;
 
-        // Posicionar el texto un poco más afuera de la línea principal
         const medio = new THREE.Vector3().addVectors(cotaP1, cotaP2).multiplyScalar(0.5);
         medio.add(direccionOffset.clone().normalize().multiplyScalar(15));
 
@@ -294,14 +287,12 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function actualizarCotasVisuales() {
-        // 1. Limpiar líneas anteriores
         while(grupoCotas.children.length > 0){ 
             grupoCotas.remove(grupoCotas.children[0]); 
         }
 
         if (objetosInteractuables.length <= 1) return;
 
-        // 2. Agrupar objetos contiguos (estructuras independientes)
         const grupos = [];
         const visitados = new Set();
         const margenEpsilon = 5; 
@@ -333,7 +324,6 @@ document.addEventListener('DOMContentLoaded', () => {
             grupos.push(grupoActual);
         }
 
-        // 3. Dibujar cotas por cada grupo independiente
         const offsetExterior = 45; 
         const yNivel = 2; 
 
@@ -345,22 +335,18 @@ document.addEventListener('DOMContentLoaded', () => {
             const maxX = boxGrupo.max.x;
             const minZ = boxGrupo.min.z;
             const maxZ = boxGrupo.max.z;
-            // NUEVO: Extraer valores de altura
             const minY = boxGrupo.min.y; 
             const maxY = boxGrupo.max.y; 
 
-            // Calcular dimensiones en metros
             const anchoMundo = maxX - minX;
             const anchoMetros = (anchoMundo / 50).toFixed(2); 
             
             const largoMundo = maxZ - minZ;
             const largoMetros = (largoMundo / 50).toFixed(2);
 
-            // NUEVO: Calcular altura
             const altoMundo = maxY - minY; 
             const altoMetros = (altoMundo / 50).toFixed(2); 
 
-            // Cota Eje X (Ancho)
             if (anchoMundo > 1) {
                 const p1X = new THREE.Vector3(minX, yNivel, maxZ);
                 const p2X = new THREE.Vector3(maxX, yNivel, maxZ);
@@ -368,7 +354,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 grupoCotas.add(crearLineaCotaArquitectonica(p1X, p2X, dirOffset, offsetExterior, `${anchoMetros} m`));
             }
 
-            // Cota Eje Z (Largo)
             if (largoMundo > 1) {
                 const p1Z = new THREE.Vector3(minX, yNivel, minZ);
                 const p2Z = new THREE.Vector3(minX, yNivel, maxZ);
@@ -376,19 +361,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 grupoCotas.add(crearLineaCotaArquitectonica(p1Z, p2Z, dirOffset, offsetExterior, `${largoMetros} m`));
             }
 
-            // NUEVO: Cota Eje Y (Altura)
             if (altoMundo > 1) {
-                // Tomamos la esquina derecha-frontal de la estructura
                 const p1Y = new THREE.Vector3(maxX, minY, maxZ);
                 const p2Y = new THREE.Vector3(maxX, maxY, maxZ);
-                
-                // Proyectamos la medida hacia la derecha (eje +X) para separarla del muro
                 const dirOffsetY = new THREE.Vector3(1, 0, 0); 
-                
                 grupoCotas.add(crearLineaCotaArquitectonica(p1Y, p2Y, dirOffsetY, offsetExterior, `${altoMetros} m`));
             }
         });
     }
+
     function recalcularTamanoTerreno() {
         let maxDistancia = 0;
         const margen = 150; 
@@ -536,9 +517,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 contenedorHabitaciones.innerHTML = '';
                 contenedorHabitaciones.style.display = 'none'; 
             }
+            
             const contenedorFiltros = document.getElementById('filtros-categorias');
+            
             if (data.materiales && data.materiales.length > 0) {
-                
                 let categoriasDB = [...new Set(data.materiales.map(mat => mat.categoria))];
                 const otrasCategorias = categoriasDB.filter(c => c !== 'Estructura' && c !== 'Sin Categoría');
                 
@@ -547,7 +529,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 categoriasUnicas.push(...otrasCategorias.sort()); 
                 if (categoriasDB.includes('Sin Categoría')) categoriasUnicas.push('Sin Categoría');
                 
-                if (data.habitaciones && data.habitaciones.length > 0) {
+                if (data.casas && data.casas.length > 0) {
                     categoriasUnicas.push('Módulos Prehechos');
                 }
                 
@@ -558,6 +540,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         const btnTab = document.createElement('button');
                         btnTab.textContent = cat;
                         btnTab.className = `tab-categoria ${index === 0 ? 'activa' : ''}`;
+                        
                         btnTab.addEventListener('click', () => {
                             document.querySelectorAll('.tab-categoria').forEach(b => b.classList.remove('activa'));
                             btnTab.classList.add('activa');
@@ -583,6 +566,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     });
                 }
                 
+                // --- RENDERIZADO DE MATERIALES ---
                 data.materiales.forEach((mat, index) => {
                     const btn = document.createElement('button');
                     btn.className = `btn-mat-3d ${index === 0 ? 'activo' : ''}`;
@@ -594,6 +578,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     } else {
                         btn.innerHTML = `<span style="font-size: 1.8rem; pointer-events: none;">🧱</span>`;
                     }
+                    
                     btn.addEventListener('mouseenter', () => {
                         tooltipCatalogo.innerHTML = `<span style="font-size: 10px; color: #a0aec0;">${mat.categoria}</span><br>${mat.nombre}<br><strong>$${precioFormateado} CLP</strong>`;
                         tooltipCatalogo.style.display = 'block';
@@ -601,44 +586,79 @@ document.addEventListener('DOMContentLoaded', () => {
                         tooltipCatalogo.style.left = (rect.left + (rect.width / 2)) + 'px';
                         tooltipCatalogo.style.top = (rect.top - tooltipCatalogo.offsetHeight - 8) + 'px';
                     });
+                    
                     btn.addEventListener('mouseleave', () => {
                         tooltipCatalogo.style.display = 'none';
                     });
+                    
                     btn.addEventListener('click', function() {
-                        document.querySelectorAll('.btn-mat-3d, .btn-hab-3d').forEach(b => b.classList.remove('activo'));
+                        document.querySelectorAll('.btn-mat-3d, .btn-hab-3d, .btn-casa-3d').forEach(b => b.classList.remove('activo'));
                         this.classList.add('activo');
                         seleccionarElemento(mat.archivo_3d, mat.coste, false, mat.textura_key, mat.nombre);
                     });
+                    
                     if (contenedorMateriales) contenedorMateriales.appendChild(btn);
                     if (index === 0) seleccionarElemento(mat.archivo_3d, mat.coste, false, mat.textura_key, mat.nombre);
                 });
             }
             
-            if (data.habitaciones && data.habitaciones.length > 0) {
-                data.habitaciones.forEach(hab => {
+            // --- RENDERIZADO DE CASAS PREFABRICADAS ---
+            if (data.casas && data.casas.length > 0) {
+                data.casas.forEach(casa => {
                     const btn = document.createElement('button');
-                    btn.className = 'btn-hab-3d'; 
-                    const costoTotalFormateado = new Intl.NumberFormat('es-CL').format(hab.coste_total);
+                    btn.className = 'btn-casa-3d btn-hab-3d'; 
+                    const costoTotalFormateado = new Intl.NumberFormat('es-CL').format(casa.costo_total);
                     
-                    if (hab.imagen) {
-                        btn.innerHTML = `<img src="${hab.imagen}" alt="${hab.nombre}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 8px; pointer-events: none;">`;
+                    if (casa.imagen_captura) {
+                        btn.innerHTML = `<img src="${casa.imagen_captura}" alt="${casa.nombre}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 8px; pointer-events: none;">`;
                     } else {
                         btn.innerHTML = `<span style="font-size: 1.8rem; pointer-events: none;">🏠</span>`;
                     }
+                    
                     btn.addEventListener('mouseenter', () => {
-                        tooltipCatalogo.innerHTML = `${hab.nombre} (${hab.dimensiones})<br><strong>$${costoTotalFormateado} CLP</strong>`;
+                        tooltipCatalogo.innerHTML = `${casa.nombre} (Área: ${casa.area_cuadrada} m²)<br><strong>$${costoTotalFormateado} CLP</strong>`;
                         tooltipCatalogo.style.display = 'block';
                         const rect = btn.getBoundingClientRect();
                         tooltipCatalogo.style.left = (rect.left + (rect.width / 2)) + 'px';
                         tooltipCatalogo.style.top = (rect.top - tooltipCatalogo.offsetHeight - 8) + 'px';
                     });
+                    
                     btn.addEventListener('mouseleave', () => {
                         tooltipCatalogo.style.display = 'none';
                     });
-                    btn.addEventListener('click', function() {
-                        document.querySelectorAll('.btn-mat-3d, .btn-hab-3d').forEach(b => b.classList.remove('activo'));
+                    
+                    btn.addEventListener('click', async function() {
+                        document.querySelectorAll('.btn-mat-3d, .btn-hab-3d, .btn-casa-3d').forEach(b => b.classList.remove('activo'));
                         this.classList.add('activo');
-                        seleccionarElemento(hab.archivo_3d, hab.coste_total, true, 'concreto', hab.nombre);
+                        
+                        const confirmacion = await DialogoUI.confirm(`¿Deseas cargar la casa prefabricada "${casa.nombre}"? Esto reemplazará tu diseño actual en pantalla.`);
+                        
+                        if (confirmacion) {
+                            // 1. Limpiamos las medidas (cotas) flotantes del diseño anterior
+                            if (typeof grupoCotas !== 'undefined') {
+                                while(grupoCotas.children.length > 0) {
+                                    grupoCotas.remove(grupoCotas.children[0]);
+                                }
+                            }
+                            
+                            // 2. Preparamos los datos JSON (id: null asegura que se use como plantilla)
+                            const proyectoCopia = { ...casa, id: null }; 
+                            
+                            // 3. Cargamos la escena multiobjeto desde el JSON
+                            cargarEscenaDesdeJSON(proyectoCopia, scene, objetosInteractuables, camera, controles, (nuevoCosto, idProyecto, nombreProyecto) => {
+                                costoTotal = nuevoCosto; 
+                                proyectoCargadoId = null;       
+                                proyectoCargadoNombre = nombreProyecto; 
+                                
+                                if (uiTotal) uiTotal.textContent = `$${new Intl.NumberFormat('es-CL').format(costoTotal)}`;
+                                actualizarListaUI();       
+                                recalcularTamanoTerreno(); 
+                                actualizarEstadoBotones(); 
+                                
+                                // Recalcula las medidas correctas para la nueva casa
+                                if (typeof calcularYMostrarPerimetro === 'function') calcularYMostrarPerimetro();
+                            });
+                        }
                     });
                     
                     if (contenedorHabitaciones) contenedorHabitaciones.appendChild(btn);
@@ -824,7 +844,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // --- 1. FUNCIÓN NATIVA PARA DIBUJAR ESCENAS (Disponible para todos) ---
+    // --- 1. FUNCIÓN NATIVA PARA DIBUJAR ESCENAS MULTIBLOQUE (Disponible para todos) ---
     async function cargarEscenaDesdeJSON(proyecto, scene, objetos, camera, controles, callbackActualizarUI) {
         console.log("▶️ [A] Iniciando dibujo de escena con datos:", proyecto);
         let datosEscena = typeof proyecto.datos_escena === 'string' ? JSON.parse(proyecto.datos_escena) : proyecto.datos_escena;
@@ -912,7 +932,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     let temporizadorAutoGuardado = null;
 
-    // 1. Inyectar los estilos de la animación para la ruedita de carga
     if (!document.getElementById('estilo-spinner-guardado')) {
         const style = document.createElement('style');
         style.id = 'estilo-spinner-guardado';
@@ -935,14 +954,13 @@ document.addEventListener('DOMContentLoaded', () => {
         document.head.appendChild(style);
     }
 
-    // 2. Crear el cartel visual
     let cartelAutoGuardado = document.getElementById('cartel-autoguardado');
     if (!cartelAutoGuardado) {
         cartelAutoGuardado = document.createElement('div');
         cartelAutoGuardado.id = 'cartel-autoguardado';
         
         cartelAutoGuardado.style.position = 'fixed';
-        cartelAutoGuardado.style.top = '185px'; // Ajustado más abajo como solicitaste
+        cartelAutoGuardado.style.top = '185px'; 
         cartelAutoGuardado.style.left = '50%';
         cartelAutoGuardado.style.transform = 'translateX(-50%)';
         
@@ -966,10 +984,9 @@ document.addEventListener('DOMContentLoaded', () => {
     async function autoGuardarEnBaseDeDatos() {
         if (!proyectoCargadoId) return;
 
-        // Mostrar la ruedita y el mensaje de guardado
         if (cartelAutoGuardado) {
             cartelAutoGuardado.innerHTML = '<span class="ruedita-carga"></span> Guardando diseño...';
-            cartelAutoGuardado.style.backgroundColor = 'rgba(243, 156, 18, 0.9)'; // Naranja
+            cartelAutoGuardado.style.backgroundColor = 'rgba(243, 156, 18, 0.9)'; 
             cartelAutoGuardado.style.opacity = '1';
         }
 
@@ -1004,7 +1021,6 @@ document.addEventListener('DOMContentLoaded', () => {
         };
 
         try {
-            // 3. Ejecutar la petición a Django Y un temporizador de 3 segundos al mismo tiempo
             const peticionDjango = fetch('/api/guardar-diseno/', {
                 method: 'POST',
                 headers: {
@@ -1016,14 +1032,12 @@ document.addEventListener('DOMContentLoaded', () => {
             
             const esperaVisual = new Promise(resolve => setTimeout(resolve, 1500));
 
-            // Promise.all asegura que el código no avance hasta que pasen los 3 segundos
-            // INCLUSO si Django guardó el archivo en 0.5 segundos.
             const [response] = await Promise.all([peticionDjango, esperaVisual]);
 
             if (response.ok) {
                 if (cartelAutoGuardado) {
                     cartelAutoGuardado.innerHTML = '✔️ Progreso guardado';
-                    cartelAutoGuardado.style.backgroundColor = 'rgba(46, 204, 113, 0.9)'; // Verde
+                    cartelAutoGuardado.style.backgroundColor = 'rgba(46, 204, 113, 0.9)'; 
                     
                     setTimeout(() => {
                         cartelAutoGuardado.style.opacity = '0';
@@ -1034,7 +1048,7 @@ document.addEventListener('DOMContentLoaded', () => {
             console.error("❌ Error en autoguardado:", err);
             if (cartelAutoGuardado) {
                 cartelAutoGuardado.innerHTML = '❌ Error al guardar';
-                cartelAutoGuardado.style.backgroundColor = 'rgba(231, 76, 60, 0.9)'; // Rojo
+                cartelAutoGuardado.style.backgroundColor = 'rgba(231, 76, 60, 0.9)'; 
                 setTimeout(() => {
                     cartelAutoGuardado.style.opacity = '0';
                 }, 3000);
@@ -1053,17 +1067,15 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function limpiarSesion3D() {
-        // Borramos todos los rastros del simulador en la memoria local
         localStorage.removeItem('proyecto_homecount');
         localStorage.removeItem('camara_homecount');
         localStorage.removeItem('proyecto_hc_id');
         localStorage.removeItem('proyecto_hc_nombre');
-        localStorage.removeItem('diseno_temporal_cargado'); // Si usas alguna otra clave, agrégala aquí
+        localStorage.removeItem('diseno_temporal_cargado'); 
     }
     
-    
     // --- 2. CARGA AUTOMÁTICA (PREFABRICADAS Y ÚLTIMO DISEÑO) ---
-async function autocompletarUltimoDiseño() {
+    async function autocompletarUltimoDiseño() {
         const params = new URLSearchParams(window.location.search);
         const prefabId = params.get('prefab_id');
 
@@ -1104,22 +1116,16 @@ async function autocompletarUltimoDiseño() {
             }
         }
 
-        // Si no hay prefab_id, verificar autenticación
         const btnGuardarVerificacion = document.getElementById('btn-guardar-modelo');
         if (!btnGuardarVerificacion) {
             console.log("👤 Usuario invitado. Cargando LocalStorage...");
             
-            // --- NUEVO: TRUCO PARA BORRAR DISEÑO AL CERRAR PESTAÑA ---
             if (!sessionStorage.getItem('pestaña_activa')) {
-                // Si es la primera vez que se abre esta pestaña, destruimos los bloques viejos
                 localStorage.removeItem('proyecto_homecount');
                 localStorage.removeItem('camara_homecount');
-                // Marcamos esta pestaña como iniciada para no borrarla si el usuario aprieta F5
                 sessionStorage.setItem('pestaña_activa', 'true'); 
             }
-            // ---------------------------------------------------------
             
-            // Limpieza de nombres e IDs
             localStorage.removeItem('proyecto_hc_id');
             localStorage.removeItem('proyecto_hc_nombre');
             proyectoCargadoId = null;
@@ -1136,16 +1142,14 @@ async function autocompletarUltimoDiseño() {
             return; 
         }
 
-        // Si está logueado, buscar su último diseño
         try {
             const response = await fetch('/api/obtener-disenos/');
             const data = await response.json();
 
             if (response.ok && data.disenos && data.disenos.length > 0) {
                const idMemoria = localStorage.getItem('proyecto_hc_id');
-                let ultimoProyecto = data.disenos[0]; // Por defecto, el último modificado
+                let ultimoProyecto = data.disenos[0]; 
 
-                // Si el navegador recuerda que abrió otro proyecto, lo buscamos y lo priorizamos
                 if (idMemoria) {
                     const proyectoEspecifico = data.disenos.find(p => String(p.id) === String(idMemoria));
                     if (proyectoEspecifico) {
@@ -1191,7 +1195,6 @@ async function autocompletarUltimoDiseño() {
         }
     }
 
-    // Ejecutar la inicialización
     autocompletarUltimoDiseño();
 
     window.addEventListener('beforeunload', guardarCamaraLocal);
@@ -1291,7 +1294,6 @@ async function autocompletarUltimoDiseño() {
         raycaster.setFromCamera(mouse, camera);
 
         if (event.shiftKey) { 
-            // --- MODO BORRADO CON SHIFT ---
             const objetosConstruidos = objetosInteractuables.filter(obj => obj !== plano);
             const intersecciones = raycaster.intersectObjects(objetosConstruidos, true);
 
@@ -1303,7 +1305,6 @@ async function autocompletarUltimoDiseño() {
                 scene.remove(objBorrar);
                 objetosInteractuables.splice(objetosInteractuables.indexOf(objBorrar), 1);
                 
-                // LÓGICA AÑADIDA: Si al borrar ya no queda ningún bloque (solo el piso)
                 if (objetosInteractuables.length <= 1) {
                     proyectoCargadoId = null;
                     proyectoCargadoNombre = "";
@@ -1319,7 +1320,6 @@ async function autocompletarUltimoDiseño() {
                 calcularYMostrarPerimetro();
             }
         } else { 
-            // --- MODO AGREGAR/CONSTRUIR ---
             const intersecciones = raycaster.intersectObjects(objetosInteractuables, true);
             if (intersecciones.length > 0) {
                 const interseccion = intersecciones[0];
@@ -1360,7 +1360,6 @@ async function autocompletarUltimoDiseño() {
         }
     }
 
-    // --- EVENTOS DE BOTONES ---
     const btnGuardarModelo = document.getElementById('btn-guardar-modelo');
     if (btnGuardarModelo) {
         btnGuardarModelo.addEventListener('click', async (e) => {
@@ -1373,7 +1372,6 @@ async function autocompletarUltimoDiseño() {
                 return;
             }
             
-            // Consultar si es administrador global para redirigir el guardado
             let guardarComoPrefabricada = false;
             if (typeof esAdminGlobal !== 'undefined' && esAdminGlobal) {
                 guardarComoPrefabricada = await DialogoUI.confirm(
@@ -1381,13 +1379,11 @@ async function autocompletarUltimoDiseño() {
                 );
             }
             
-            // Recibimos la respuesta de guardado_db.js incluyendo el nuevo flag
             const resultado = await procesarGuardado(
                 objetosInteractuables, camera, controles, costoTotal, scene, renderer, 
                 proyectoCargadoId, proyectoCargadoNombre, guardarComoPrefabricada
             );
             
-            // Si el guardado fue exitoso, vinculamos la sesión activa al nuevo ID y encendemos el botón 🔄
             if (resultado && resultado.exito) {
                 proyectoCargadoId = resultado.id;
                 proyectoCargadoNombre = resultado.nombre;
@@ -1500,7 +1496,6 @@ async function autocompletarUltimoDiseño() {
                 localStorage.removeItem('proyecto_hc_id');
                 localStorage.removeItem('proyecto_hc_nombre');
 
-                // Resetear estado de proyecto actual
                 proyectoCargadoId = null;
                 proyectoCargadoNombre = "";
                 actualizarNombreInterfaz("");
@@ -1579,7 +1574,7 @@ async function autocompletarUltimoDiseño() {
     const mapaCategoriasMateriales = window.mapaCategoriasMateriales || {};
 
     function obtenerCalculoDimensiones() {
-        const TAMANO_CELDA = 50; // 50 unidades = 1 metro
+        const TAMANO_CELDA = 50; 
         const celdas = new Set();
 
         for (let i = 1; i < objetosInteractuables.length; i++) {
@@ -1657,7 +1652,6 @@ async function autocompletarUltimoDiseño() {
     const tutorialCompletado = localStorage.getItem('tutorial_homecount_v1');
     
     if (!tutorialCompletado) {
-        // Pequeño retraso para asegurar que los modelos 3D y botones cargaron
         setTimeout(iniciarTutorialInteractivo, 1000);
     }
 });
@@ -1678,27 +1672,23 @@ async function autocompletarUltimoDiseño() {
             },
             steps: [
                 {
-                    // PASO 1: Bienvenida General (Ahora se centrará con la nueva clase CSS)
                     element: 'body', 
                     popover: {
                         title: '¡Bienvenido al Simulador 3D HouseCount!',
                         description: 'A continuación te daremos un breve recorrido por las herramientas principales para que aprendas a diseñar y presupuestar tu proyecto.',
-                        // Al no especificar 'side', Driver.js no lo atará a ningún borde del elemento
                         align: 'center' 
                     }
                 },
                 {
-                    // PASO 2: Herramientas (El panel que moviste a la izquierda)
-                    element: '.panel-superior-derecho', // Mantenemos la clase HTML existente
+                    element: '.panel-superior-derecho', 
                     popover: {
                         title: 'Herramientas del Proyecto',
                         description: 'Limpia la escena, guarda tu progreso, accede a tus diseños previos o genera el informe técnico desde este panel.',
-                        side: 'right', // Cambiado de 'bottom' a 'right' para que no tape el panel
+                        side: 'right', 
                         align: 'start'
                     }
                 },
                 {
-                    // 2. Botón debajo de las herramientas (Mostrar/Ocultar detalles)
                     element: '#btn-toggle-panel-der',
                     popover: {
                         title: 'Panel de Dimensiones',
@@ -1707,7 +1697,6 @@ async function autocompletarUltimoDiseño() {
                     }
                 },
                 {
-                    // 3. Recuadro superior central (Instrucciones y botón ?)
                     element: '.panel-instrucciones',
                     popover: {
                         title: 'Controles y Ayuda',
@@ -1716,7 +1705,6 @@ async function autocompletarUltimoDiseño() {
                     }
                 },
                 {
-                    // 4. Recuadro superior derecho (Presupuesto)
                     element: '.presupuesto-total',
                     popover: {
                         title: 'Presupuesto en Tiempo Real',
@@ -1725,7 +1713,6 @@ async function autocompletarUltimoDiseño() {
                     }
                 },
                 {
-                    // 5. Recuadro inferior completo (Filtros y catálogo)
                     element: '#zona-menu-inferior',
                     popover: {
                         title: 'Catálogo de Construcción',
@@ -1740,10 +1727,8 @@ async function autocompletarUltimoDiseño() {
     }
 
     window.repetirTutorial = function() {
-        // Borramos el flag para que Driver.js arranque como si fuera la primera vez
         localStorage.removeItem('tutorial_homecount_v1');
         
-        // Llamamos a la función que inicia el recorrido (asegúrate de que iniciarTutorialInteractivo() ya esté definida)
         if (typeof iniciarTutorialInteractivo === 'function') {
             iniciarTutorialInteractivo();
         } else {
@@ -1751,7 +1736,6 @@ async function autocompletarUltimoDiseño() {
         }
     };
 
-    // --- RECOPILACIÓN DE DATOS PARA EL INFORME ---
     function obtenerDatosInforme() {
         const dim = obtenerCalculoDimensiones();
         const conteo = {};
@@ -1817,7 +1801,6 @@ async function autocompletarUltimoDiseño() {
         });
     }
 
-    // --- GENERADOR DE HTML PROFESIONAL PARA EL INFORME ---
     function generarHTMLInforme(datos, paraPDF = false) {
         const formatear = (valor) => new Intl.NumberFormat('es-CL').format(valor);
         const filasTabla = datos.items.map((item, idx) => {
@@ -1910,7 +1893,6 @@ async function autocompletarUltimoDiseño() {
         if (modal) modal.style.display = 'none';
     };
 
-    // Descarga en PDF mediante html2pdf
     window.descargarInformePDF = function() {
         const datos = obtenerDatosInforme();
         if (datos.totalPiezas === 0) return;
@@ -1980,7 +1962,6 @@ async function autocompletarUltimoDiseño() {
         }
     };
 
-    // Eventos para cerrar modal con clic fuera o escape
     document.addEventListener('DOMContentLoaded', () => {
         const modalInformeEl = document.getElementById('modal-informe');
         if (modalInformeEl) {

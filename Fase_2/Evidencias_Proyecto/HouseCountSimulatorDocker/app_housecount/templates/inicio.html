@@ -141,41 +141,59 @@
 
         <!-- Catálogo Dinámico de Casas Prefabricadas (3D) -->
         <div class="galeria-categoria reveal delay-1">
-            <h3 class="categoria-titulo">Modelos 3D de Casas Prefabricadas</h3>
-            <!-- Agrandamos el ancho mínimo de las columnas a 340px para tarjetas más robustas -->
-            <div class="grid-imagenes" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 25px;">
+            <h3 class="categoria-titulo" style="text-align: center; margin-bottom: 2rem; color: #2d3748; font-size: 1.8rem;">Modelos 3D de Casas Prefabricadas</h3>
+            
+            <div class="grid-imagenes" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 30px;">
                 
                 {% for casa in casas_prefabricadas %}
-                    <a href="{% url 'casas_modelo_1' %}?prefab_id={{ casa.id }}" style="text-decoration: none; color: inherit; display: block; transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.02)'" onmouseout="this.style.transform='scale(1)'">
+                    <a href="{% url 'casas_modelo_1' %}?prefab_id={{ casa.id }}" style="text-decoration: none; display: block;">
                         
-                        <!-- Añadimos display flex en columna para que todo el contenido se distribuya bien -->
-                        <div class="espacio-imagen" style="position: relative; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.12); background: white; display: flex; flex-direction: column; min-height: 380px;">
+                        <div style="background: white; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05), 0 10px 15px rgba(0, 0, 0, 0.03); transition: all 0.3s ease; display: flex; flex-direction: column; height: 100%; border: 1px solid #f1f5f9;"
+                            onmouseover="this.style.transform='translateY(-6px)'; this.style.boxShadow='0 12px 20px rgba(0, 0, 0, 0.08), 0 16px 24px rgba(0, 0, 0, 0.05)';" 
+                            onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 6px rgba(0, 0, 0, 0.05), 0 10px 15px rgba(0, 0, 0, 0.03)';">
                             
-                            {% if casa.imagen_captura %}
-                                <!-- Reducimos la imagen a 190px de alto para dar más espacio al texto -->
-                                <img src="{{ casa.imagen_captura.url }}" alt="{{ casa.nombre }}" class="imagen-galeria" style="width: 100%; height: 190px; object-fit: cover;">
-                            {% else %}
-                                <div style="width: 100%; height: 190px; background: #e2e8f0; display: flex; align-items: center; justify-content: center; color: #64748b;">
-                                    Sin Imagen
-                                </div>
-                            {% endif %}
+                            <div style="position: relative; height: 220px; width: 100%; border-bottom: 1px solid #f1f5f9; overflow: hidden; background: #e2e8f0;">
+                                {% if casa.imagen_captura %}
+                                    <img src="{{ casa.imagen_captura.url }}" alt="{{ casa.nombre }}" style="width: 100%; height: 100%; object-fit: cover; transition: transform 0.5s ease;"
+                                        onmouseover="this.style.transform='scale(1.05)';" 
+                                        onmouseout="this.style.transform='scale(1)';">
+                                {% else %}
+                                    <div style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; color: #94a3b8; font-weight: 500;">
+                                        Sin vista previa
+                                    </div>
+                                {% endif %}
+                            </div>
                             
-                            <!-- Padding cómodo y flex-grow para asegurar que el costo siempre quede visible abajo -->
-                            <div style="padding: 18px; text-align: left; display: flex; flex-direction: column; justify-content: space-between; flex-grow: 1;">
-                                <div>
-                                    <h4 style="margin: 0 0 8px 0; color: #1e293b; font-size: 1.2rem; font-weight: 700;">{{ casa.nombre }}</h4>
-                                    <p style="margin: 0 0 12px 0; font-size: 0.95rem; color: #64748b;">📏 Área: {{ casa.area_cuadrada }} m²</p>
+                            <!-- Cuerpo de la Tarjeta -->
+                            <div style="padding: 24px; display: flex; flex-direction: column; flex-grow: 1;">
+                                
+                                <!-- Título -->
+                                <h4 style="margin: 0 0 12px 0; color: #1e293b; font-size: 1.3rem; font-weight: 700; line-height: 1.2;">
+                                    {{ casa.nombre }}
+                                </h4>
+                                
+                                <!-- Etiqueta de Área (Estilo Badge) -->
+                                <div style="margin-bottom: auto; display: inline-flex; align-items: center; background: #f8fafc; border: 1px solid #e2e8f0; padding: 6px 12px; border-radius: 8px; width: fit-content;">
+                                    <span style="font-size: 1.1rem; margin-right: 6px;">📐</span>
+                                    <span style="font-size: 0.9rem; color: #64748b; font-weight: 500;">Área: {{ casa.area_cuadrada }} m²</span>
                                 </div>
-                                <p style="margin: 0; font-size: 1.15rem; color: #e67e22; font-weight: bold; border-top: 1px solid #f1f5f9; padding-top: 10px;">
-                                    💰 $ {{ casa.costo_total }} CLP
-                                </p>
+                                
+                                <!-- Pie de tarjeta (Precio) -->
+                                <div style="margin-top: 24px; padding-top: 16px; border-top: 2px dashed #f1f5f9; display: flex; align-items: center; justify-content: space-between;">
+                                    <span style="font-size: 0.85rem; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px; font-weight: 600;">
+                                        Costo Estimado
+                                    </span>
+                                    <span style="font-size: 1.25rem; color: #16ca43; font-weight: 800;">
+                                        $ {{ casa.costo_total }} CLP
+                                    </span>
+                                </div>
                             </div>
 
                         </div>
                     </a>
                 {% empty %}
-                    <p style="text-align: center; color: #64748b; grid-column: 1 / -1; padding: 2rem;">
-                        Aún no hay diseños prefabricados publicados en el catálogo.
+                    <p style="text-align: center; color: #64748b; grid-column: 1 / -1; padding: 3rem; background: white; border-radius: 12px; border: 1px dashed #cbd5e1;">
+                        No hay modelos disponibles en este momento.
                     </p>
                 {% endfor %}
 
