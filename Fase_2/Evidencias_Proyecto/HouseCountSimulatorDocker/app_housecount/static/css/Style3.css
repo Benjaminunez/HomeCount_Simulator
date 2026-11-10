@@ -360,3 +360,31 @@ footer {
 .sidebar-seccion.colapsado .sidebar-input-text {
     display: none !important;
 }
+
+.catalogo-container {
+    display: flex;
+    gap: 2.5rem; /* Reducimos un poco el gap para aprovechar mejor el espacio */
+    align-items: flex-start;
+    width: 100%;
+}
+
+/* 2. Fijar el ancho del sidebar para que no se aplaste ni empuje de más */
+.sidebar-filtros {
+    width: 280px;      /* Ancho fijo para el panel de filtros */
+    flex-shrink: 0;    /* Evita que el panel se encoja si falta espacio */
+}
+
+/* 3. Contenedor de las tarjetas */
+.catalogo-contenido {
+    flex: 1;
+    min-width: 0; /* Clave en flexbox: evita que el grid interno se desborde o se rompa */
+}
+
+/* 4. Ajuste de la cuadrícula (Grid) */
+.grid-modelos {
+    display: grid;
+    /* Aumentamos el tamaño mínimo a 340px. 
+       Así, si no caben cómodamente, la tarjeta saltará a la siguiente fila en lugar de aplastarse. */
+    grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+    gap: 2rem;
+}
