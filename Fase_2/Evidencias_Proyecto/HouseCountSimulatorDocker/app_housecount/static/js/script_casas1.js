@@ -133,7 +133,7 @@ document.addEventListener('DOMContentLoaded', () => {
     camera.position.set(500, 800, 1300);
     camera.lookAt(0, 0, 0);
 
-    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
+    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false, preserveDrawingBuffer: true});
     renderer.setSize(anchoSeguro, altoSeguro);
     renderer.setClearColor(0xe0e0e0, 1); 
     container.appendChild(renderer.domElement);
@@ -173,6 +173,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const raycaster = new THREE.Raycaster();
     const mouse = new THREE.Vector2();
     const objetosInteractuables = [plano]; 
+    
 
     // --- FUNCIONES DE ESTADO Y UI ---
     function actualizarEstadoBotones() {
@@ -228,7 +229,6 @@ document.addEventListener('DOMContentLoaded', () => {
         canvas.height = 128;
         
         context.font = 'Bold 28px Arial';
-        // LÓGICA DE COLOR: Blanco en modo oscuro, gris oscuro en modo claro
         context.fillStyle = esModoOscuro ? '#ffffff' : '#1e293b'; 
         context.textAlign = 'center';
         context.textBaseline = 'middle';
@@ -251,16 +251,12 @@ document.addEventListener('DOMContentLoaded', () => {
         const colorLinea = esModoOscuro ? 0xffffff : 0x1e293b;
         const materialLinea = new THREE.LineBasicMaterial({ color: colorLinea, depthTest: false });
 
-        // Vector para alejar la línea del muro
         const offsetVector = direccionOffset.clone().normalize().multiplyScalar(distanciaOffset);
-        
-        // Puntos de la línea de dimensión (paralela al muro)
         const cotaP1 = new THREE.Vector3().copy(p1).add(offsetVector);
         const cotaP2 = new THREE.Vector3().copy(p2).add(offsetVector);
 
-        // Puntos de las líneas de extensión (perpendiculares al muro)
-        const gapInicio = 10; // Separación para que la línea no toque el muro
-        const extensionFin = distanciaOffset + 15; // Qué tanto sobresale la cruz
+        const gapInicio = 10; 
+        const extensionFin = distanciaOffset + 15; 
         
         const ext1Inicio = new THREE.Vector3().copy(p1).add(direccionOffset.clone().normalize().multiplyScalar(gapInicio));
         const ext1Fin = new THREE.Vector3().copy(p1).add(direccionOffset.clone().normalize().multiplyScalar(extensionFin));
@@ -268,18 +264,16 @@ document.addEventListener('DOMContentLoaded', () => {
         const ext2Inicio = new THREE.Vector3().copy(p2).add(direccionOffset.clone().normalize().multiplyScalar(gapInicio));
         const ext2Fin = new THREE.Vector3().copy(p2).add(direccionOffset.clone().normalize().multiplyScalar(extensionFin));
 
-        // LineSegments requiere pares de vértices para dibujar líneas desconectadas
         const puntos = [
-            cotaP1, cotaP2,      // Segmento 1: La línea principal de cota
-            ext1Inicio, ext1Fin, // Segmento 2: Extensión desde la primera esquina
-            ext2Inicio, ext2Fin  // Segmento 3: Extensión desde la segunda esquina
+            cotaP1, cotaP2,     
+            ext1Inicio, ext1Fin, 
+            ext2Inicio, ext2Fin  
         ];
 
         const geometria = new THREE.BufferGeometry().setFromPoints(puntos);
         const lineas = new THREE.LineSegments(geometria, materialLinea);
         lineas.renderOrder = 999;
 
-        // Posicionar el texto un poco más afuera de la línea principal
         const medio = new THREE.Vector3().addVectors(cotaP1, cotaP2).multiplyScalar(0.5);
         medio.add(direccionOffset.clone().normalize().multiplyScalar(15));
 
@@ -293,14 +287,12 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function actualizarCotasVisuales() {
-        // 1. Limpiar líneas anteriores
         while(grupoCotas.children.length > 0){ 
             grupoCotas.remove(grupoCotas.children[0]); 
         }
 
         if (objetosInteractuables.length <= 1) return;
 
-        // 2. Agrupar objetos contiguos (estructuras independientes)
         const grupos = [];
         const visitados = new Set();
         const margenEpsilon = 5; 
@@ -332,7 +324,6 @@ document.addEventListener('DOMContentLoaded', () => {
             grupos.push(grupoActual);
         }
 
-        // 3. Dibujar cotas por cada grupo independiente
         const offsetExterior = 45; 
         const yNivel = 2; 
 
@@ -344,22 +335,18 @@ document.addEventListener('DOMContentLoaded', () => {
             const maxX = boxGrupo.max.x;
             const minZ = boxGrupo.min.z;
             const maxZ = boxGrupo.max.z;
-            // NUEVO: Extraer valores de altura
             const minY = boxGrupo.min.y; 
             const maxY = boxGrupo.max.y; 
 
-            // Calcular dimensiones en metros
             const anchoMundo = maxX - minX;
             const anchoMetros = (anchoMundo / 50).toFixed(2); 
             
             const largoMundo = maxZ - minZ;
             const largoMetros = (largoMundo / 50).toFixed(2);
 
-            // NUEVO: Calcular altura
             const altoMundo = maxY - minY; 
             const altoMetros = (altoMundo / 50).toFixed(2); 
 
-            // Cota Eje X (Ancho)
             if (anchoMundo > 1) {
                 const p1X = new THREE.Vector3(minX, yNivel, maxZ);
                 const p2X = new THREE.Vector3(maxX, yNivel, maxZ);
@@ -367,7 +354,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 grupoCotas.add(crearLineaCotaArquitectonica(p1X, p2X, dirOffset, offsetExterior, `${anchoMetros} m`));
             }
 
-            // Cota Eje Z (Largo)
             if (largoMundo > 1) {
                 const p1Z = new THREE.Vector3(minX, yNivel, minZ);
                 const p2Z = new THREE.Vector3(minX, yNivel, maxZ);
@@ -375,19 +361,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 grupoCotas.add(crearLineaCotaArquitectonica(p1Z, p2Z, dirOffset, offsetExterior, `${largoMetros} m`));
             }
 
-            // NUEVO: Cota Eje Y (Altura)
             if (altoMundo > 1) {
-                // Tomamos la esquina derecha-frontal de la estructura
                 const p1Y = new THREE.Vector3(maxX, minY, maxZ);
                 const p2Y = new THREE.Vector3(maxX, maxY, maxZ);
-                
-                // Proyectamos la medida hacia la derecha (eje +X) para separarla del muro
                 const dirOffsetY = new THREE.Vector3(1, 0, 0); 
-                
                 grupoCotas.add(crearLineaCotaArquitectonica(p1Y, p2Y, dirOffsetY, offsetExterior, `${altoMetros} m`));
             }
         });
     }
+
     function recalcularTamanoTerreno() {
         let maxDistancia = 0;
         const margen = 150; 
@@ -535,9 +517,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 contenedorHabitaciones.innerHTML = '';
                 contenedorHabitaciones.style.display = 'none'; 
             }
+            
             const contenedorFiltros = document.getElementById('filtros-categorias');
+            
             if (data.materiales && data.materiales.length > 0) {
-                
                 let categoriasDB = [...new Set(data.materiales.map(mat => mat.categoria))];
                 const otrasCategorias = categoriasDB.filter(c => c !== 'Estructura' && c !== 'Sin Categoría');
                 
@@ -546,7 +529,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 categoriasUnicas.push(...otrasCategorias.sort()); 
                 if (categoriasDB.includes('Sin Categoría')) categoriasUnicas.push('Sin Categoría');
                 
-                if (data.habitaciones && data.habitaciones.length > 0) {
+                if (data.casas && data.casas.length > 0) {
                     categoriasUnicas.push('Módulos Prehechos');
                 }
                 
@@ -557,6 +540,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         const btnTab = document.createElement('button');
                         btnTab.textContent = cat;
                         btnTab.className = `tab-categoria ${index === 0 ? 'activa' : ''}`;
+                        
                         btnTab.addEventListener('click', () => {
                             document.querySelectorAll('.tab-categoria').forEach(b => b.classList.remove('activa'));
                             btnTab.classList.add('activa');
@@ -582,6 +566,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     });
                 }
                 
+                // --- RENDERIZADO DE MATERIALES ---
                 data.materiales.forEach((mat, index) => {
                     const btn = document.createElement('button');
                     btn.className = `btn-mat-3d ${index === 0 ? 'activo' : ''}`;
@@ -593,6 +578,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     } else {
                         btn.innerHTML = `<span style="font-size: 1.8rem; pointer-events: none;">🧱</span>`;
                     }
+                    
                     btn.addEventListener('mouseenter', () => {
                         tooltipCatalogo.innerHTML = `<span style="font-size: 10px; color: #a0aec0;">${mat.categoria}</span><br>${mat.nombre}<br><strong>$${precioFormateado} CLP</strong>`;
                         tooltipCatalogo.style.display = 'block';
@@ -600,44 +586,79 @@ document.addEventListener('DOMContentLoaded', () => {
                         tooltipCatalogo.style.left = (rect.left + (rect.width / 2)) + 'px';
                         tooltipCatalogo.style.top = (rect.top - tooltipCatalogo.offsetHeight - 8) + 'px';
                     });
+                    
                     btn.addEventListener('mouseleave', () => {
                         tooltipCatalogo.style.display = 'none';
                     });
+                    
                     btn.addEventListener('click', function() {
-                        document.querySelectorAll('.btn-mat-3d, .btn-hab-3d').forEach(b => b.classList.remove('activo'));
+                        document.querySelectorAll('.btn-mat-3d, .btn-hab-3d, .btn-casa-3d').forEach(b => b.classList.remove('activo'));
                         this.classList.add('activo');
                         seleccionarElemento(mat.archivo_3d, mat.coste, false, mat.textura_key, mat.nombre);
                     });
+                    
                     if (contenedorMateriales) contenedorMateriales.appendChild(btn);
                     if (index === 0) seleccionarElemento(mat.archivo_3d, mat.coste, false, mat.textura_key, mat.nombre);
                 });
             }
             
-            if (data.habitaciones && data.habitaciones.length > 0) {
-                data.habitaciones.forEach(hab => {
+            // --- RENDERIZADO DE CASAS PREFABRICADAS ---
+            if (data.casas && data.casas.length > 0) {
+                data.casas.forEach(casa => {
                     const btn = document.createElement('button');
-                    btn.className = 'btn-hab-3d'; 
-                    const costoTotalFormateado = new Intl.NumberFormat('es-CL').format(hab.coste_total);
+                    btn.className = 'btn-casa-3d btn-hab-3d'; 
+                    const costoTotalFormateado = new Intl.NumberFormat('es-CL').format(casa.costo_total);
                     
-                    if (hab.imagen) {
-                        btn.innerHTML = `<img src="${hab.imagen}" alt="${hab.nombre}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 8px; pointer-events: none;">`;
+                    if (casa.imagen_captura) {
+                        btn.innerHTML = `<img src="${casa.imagen_captura}" alt="${casa.nombre}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 8px; pointer-events: none;">`;
                     } else {
                         btn.innerHTML = `<span style="font-size: 1.8rem; pointer-events: none;">🏠</span>`;
                     }
+                    
                     btn.addEventListener('mouseenter', () => {
-                        tooltipCatalogo.innerHTML = `${hab.nombre} (${hab.dimensiones})<br><strong>$${costoTotalFormateado} CLP</strong>`;
+                        tooltipCatalogo.innerHTML = `${casa.nombre} (Área: ${casa.area_cuadrada} m²)<br><strong>$${costoTotalFormateado} CLP</strong>`;
                         tooltipCatalogo.style.display = 'block';
                         const rect = btn.getBoundingClientRect();
                         tooltipCatalogo.style.left = (rect.left + (rect.width / 2)) + 'px';
                         tooltipCatalogo.style.top = (rect.top - tooltipCatalogo.offsetHeight - 8) + 'px';
                     });
+                    
                     btn.addEventListener('mouseleave', () => {
                         tooltipCatalogo.style.display = 'none';
                     });
-                    btn.addEventListener('click', function() {
-                        document.querySelectorAll('.btn-mat-3d, .btn-hab-3d').forEach(b => b.classList.remove('activo'));
+                    
+                    btn.addEventListener('click', async function() {
+                        document.querySelectorAll('.btn-mat-3d, .btn-hab-3d, .btn-casa-3d').forEach(b => b.classList.remove('activo'));
                         this.classList.add('activo');
-                        seleccionarElemento(hab.archivo_3d, hab.coste_total, true, 'concreto', hab.nombre);
+                        
+                        const confirmacion = await DialogoUI.confirm(`¿Deseas cargar la casa prefabricada "${casa.nombre}"? Esto reemplazará tu diseño actual en pantalla.`);
+                        
+                        if (confirmacion) {
+                            // 1. Limpiamos las medidas (cotas) flotantes del diseño anterior
+                            if (typeof grupoCotas !== 'undefined') {
+                                while(grupoCotas.children.length > 0) {
+                                    grupoCotas.remove(grupoCotas.children[0]);
+                                }
+                            }
+                            
+                            // 2. Preparamos los datos JSON (id: null asegura que se use como plantilla)
+                            const proyectoCopia = { ...casa, id: null }; 
+                            
+                            // 3. Cargamos la escena multiobjeto desde el JSON
+                            cargarEscenaDesdeJSON(proyectoCopia, scene, objetosInteractuables, camera, controles, (nuevoCosto, idProyecto, nombreProyecto) => {
+                                costoTotal = nuevoCosto; 
+                                proyectoCargadoId = null;       
+                                proyectoCargadoNombre = nombreProyecto; 
+                                
+                                if (uiTotal) uiTotal.textContent = `$${new Intl.NumberFormat('es-CL').format(costoTotal)}`;
+                                actualizarListaUI();       
+                                recalcularTamanoTerreno(); 
+                                actualizarEstadoBotones(); 
+                                
+                                // Recalcula las medidas correctas para la nueva casa
+                                if (typeof calcularYMostrarPerimetro === 'function') calcularYMostrarPerimetro();
+                            });
+                        }
                     });
                     
                     if (contenedorHabitaciones) contenedorHabitaciones.appendChild(btn);
@@ -736,6 +757,8 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         localStorage.setItem('proyecto_homecount', JSON.stringify(datosGuardados));
         guardarCamaraLocal();
+        if (proyectoCargadoId) localStorage.setItem('proyecto_hc_id', proyectoCargadoId);
+        if (proyectoCargadoNombre) localStorage.setItem('proyecto_hc_nombre', proyectoCargadoNombre);
     }
 
     function guardarCamaraLocal() {
@@ -762,7 +785,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function cargarEscenaLocal() {
         const datosString = localStorage.getItem('proyecto_homecount');
+        
         if (!datosString) return;
+        const idLocal = localStorage.getItem('proyecto_hc_id');
+        const nombreLocal = localStorage.getItem('proyecto_hc_nombre');
+        if (idLocal) proyectoCargadoId = idLocal;
+        if (nombreLocal) {
+            proyectoCargadoNombre = nombreLocal;
+            if (typeof actualizarNombreInterfaz === 'function') actualizarNombreInterfaz(proyectoCargadoNombre);
+        }
+
         const datosGuardados = JSON.parse(datosString);
         
         datosGuardados.forEach(item => {
@@ -812,15 +844,302 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    async function autocompletarUltimoDiseño() {
-        const btnGuardarVerificacion = document.getElementById('btn-guardar-modelo');
+    // --- 1. FUNCIÓN NATIVA PARA DIBUJAR ESCENAS MULTIBLOQUE (Disponible para todos) ---
+    async function cargarEscenaDesdeJSON(proyecto, scene, objetos, camera, controles, callbackActualizarUI) {
+        console.log("▶️ [A] Iniciando dibujo de escena con datos:", proyecto);
+        let datosEscena = typeof proyecto.datos_escena === 'string' ? JSON.parse(proyecto.datos_escena) : proyecto.datos_escena;
+
+        for (let i = objetos.length - 1; i >= 1; i--) {
+            scene.remove(objetos[i]);
+        }
+        objetos.length = 1; 
+        let nuevoCostoTotal = 0;
+
+        const promesas = datosEscena.map((item) => {
+            nuevoCostoTotal += Number(item.precio || 0);
+
+            return new Promise((resolve) => {
+                if (item.url3D) {
+                    console.log("📥 [B] Solicitando archivo GLTF:", item.url3D);
+                    cargarModeloOptimizado(item.url3D, (modelo) => {
+                        const boxOriginal = new THREE.Box3().setFromObject(modelo);
+                        const sizeOriginal = boxOriginal.getSize(new THREE.Vector3());
+                        const esHabitacion = item.tipo === 'habitacion';
+                        const maxDimension = Math.max(sizeOriginal.x, sizeOriginal.z);
+                        
+                        if (maxDimension > 0) {
+                            const escalaBase = (esHabitacion ? 200 : 50) / maxDimension;
+                            const escalaFinal = escalaBase * (item.escalaX || item.escala || 1.0); 
+                            modelo.scale.set(escalaFinal, escalaFinal, escalaFinal);
+                            modelo.updateMatrixWorld(true);
+                        }
+
+                        const boxEscalado = new THREE.Box3().setFromObject(modelo);
+                        modelo.position.y -= boxEscalado.min.y;
+
+                        const grupo = new THREE.Group();
+                        grupo.add(modelo);
+                        grupo.position.set(item.posX, item.posY, item.posZ);
+                        grupo.rotation.y = item.rotY || 0;
+                        
+                        grupo.userData = {
+                            precio: item.precio || 0, tipo: item.tipo || "material",
+                            url3D: item.url3D, textura: item.textura || "concreto",
+                            nombre: item.nombre || "Modelo 3D", escala: item.escalaX || item.escala || 1.0
+                        };
+
+                        scene.add(grupo);
+                        objetos.push(grupo); 
+                        resolve();
+                    });
+                } else {
+                    const isHab = item.tipo === 'habitacion';
+                    const geo = isHab ? geometriaHabitacion : geometriaBloque;
+                    const mat = texturas[item.textura] || texturas['concreto']; 
+                    const malla = new THREE.Mesh(geo, mat);
+                    malla.position.set(item.posX, item.posY, item.posZ);
+                    malla.rotation.y = item.rotY || 0;
+                    
+                    const esc = item.escalaX || item.escala || 1.0;
+                    malla.scale.set(esc, esc, esc);
+                    
+                    malla.userData = { 
+                        precio: item.precio, tipo: item.tipo, url3D: null, 
+                        textura: item.textura, nombre: item.nombre, escala: esc 
+                    };
+                    
+                    scene.add(malla);
+                    objetos.push(malla); 
+                    resolve();
+                }
+            });
+        });
+
+        await Promise.all(promesas);
+        console.log("✅ [C] Todos los modelos 3D fueron renderizados.");
+
+        if (proyecto.datos_camara) {
+            let cam = typeof proyecto.datos_camara === 'string' ? JSON.parse(proyecto.datos_camara) : proyecto.datos_camara;
+            camera.position.set(cam.posX, cam.posY, cam.posZ);
+            controles.target.set(cam.targetX, cam.targetY, cam.targetZ);
+            controles.update();
+        }
+
+        if (callbackActualizarUI) {
+            callbackActualizarUI(nuevoCostoTotal, proyecto.id, proyecto.nombre);
+        }
+    }
+
+    let temporizadorAutoGuardado = null;
+
+    if (!document.getElementById('estilo-spinner-guardado')) {
+        const style = document.createElement('style');
+        style.id = 'estilo-spinner-guardado';
+        style.innerHTML = `
+            @keyframes spinAutoGuardado { 
+                to { transform: rotate(360deg); } 
+            }
+            .ruedita-carga {
+                display: inline-block;
+                width: 12px;
+                height: 12px;
+                border: 2px solid rgba(255,255,255,0.3);
+                border-radius: 50%;
+                border-top-color: #fff;
+                animation: spinAutoGuardado 1s linear infinite;
+                margin-right: 8px;
+                vertical-align: middle;
+            }
+        `;
+        document.head.appendChild(style);
+    }
+
+    let cartelAutoGuardado = document.getElementById('cartel-autoguardado');
+    if (!cartelAutoGuardado) {
+        cartelAutoGuardado = document.createElement('div');
+        cartelAutoGuardado.id = 'cartel-autoguardado';
         
+        cartelAutoGuardado.style.position = 'fixed';
+        cartelAutoGuardado.style.top = '185px'; 
+        cartelAutoGuardado.style.left = '50%';
+        cartelAutoGuardado.style.transform = 'translateX(-50%)';
+        
+        cartelAutoGuardado.style.backgroundColor = 'rgba(44, 62, 80, 0.9)'; 
+        cartelAutoGuardado.style.color = '#ffffff';
+        cartelAutoGuardado.style.padding = '8px 20px';
+        cartelAutoGuardado.style.borderRadius = '20px';
+        cartelAutoGuardado.style.fontSize = '13px';
+        cartelAutoGuardado.style.fontWeight = 'bold';
+        cartelAutoGuardado.style.boxShadow = '0px 4px 6px rgba(0,0,0,0.1)';
+        cartelAutoGuardado.style.opacity = '0';
+        cartelAutoGuardado.style.transition = 'opacity 0.3s ease, background-color 0.3s ease';
+        cartelAutoGuardado.style.pointerEvents = 'none';
+        cartelAutoGuardado.style.zIndex = '1000';
+        cartelAutoGuardado.style.display = 'flex';
+        cartelAutoGuardado.style.alignItems = 'center';
+        
+        document.body.appendChild(cartelAutoGuardado);
+    }
+
+    async function autoGuardarEnBaseDeDatos() {
+        if (!proyectoCargadoId) return;
+
+        if (cartelAutoGuardado) {
+            cartelAutoGuardado.innerHTML = '<span class="ruedita-carga"></span> Guardando diseño...';
+            cartelAutoGuardado.style.backgroundColor = 'rgba(243, 156, 18, 0.9)'; 
+            cartelAutoGuardado.style.opacity = '1';
+        }
+
+        let capturaBase64 = null;
+        if (typeof scene !== 'undefined' && typeof renderer !== 'undefined') {
+            renderer.render(scene, camera); 
+            capturaBase64 = renderer.domElement.toDataURL("image/png");
+        }
+
+        const datosEscena = [];
+        for (let i = 1; i < objetosInteractuables.length; i++) {
+            const obj = objetosInteractuables[i];
+            datosEscena.push({
+                posX: obj.position.x, posY: obj.position.y, posZ: obj.position.z,
+                rotY: obj.rotation.y, escalaX: obj.scale.x, escalaY: obj.scale.y, escalaZ: obj.scale.z,
+                precio: obj.userData.precio || 0, tipo: obj.userData.tipo || "material",
+                url3D: obj.userData.url3D || null, textura: obj.userData.textura || "concreto",
+                nombre: obj.userData.nombre || "Bloque"
+            });
+        }
+
+        const payload = {
+            proyecto_id: proyectoCargadoId,
+            nombre_proyecto: proyectoCargadoNombre,
+            costo_total: costoTotal,
+            datos_escena: datosEscena,
+            datos_camara: {
+                posX: camera.position.x, posY: camera.position.y, posZ: camera.position.z,
+                targetX: controles.target.x, targetY: controles.target.y, targetZ: controles.target.z
+            },
+            captura_base64: capturaBase64
+        };
+
+        try {
+            const peticionDjango = fetch('/api/guardar-diseno/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': typeof obtenerCookieCSRF === 'function' ? obtenerCookieCSRF('csrftoken') : ''
+                },
+                body: JSON.stringify(payload)
+            });
+            
+            const esperaVisual = new Promise(resolve => setTimeout(resolve, 1500));
+
+            const [response] = await Promise.all([peticionDjango, esperaVisual]);
+
+            if (response.ok) {
+                if (cartelAutoGuardado) {
+                    cartelAutoGuardado.innerHTML = '✔️ Progreso guardado';
+                    cartelAutoGuardado.style.backgroundColor = 'rgba(46, 204, 113, 0.9)'; 
+                    
+                    setTimeout(() => {
+                        cartelAutoGuardado.style.opacity = '0';
+                    }, 2500);
+                }
+            }
+        } catch (err) {
+            console.error("❌ Error en autoguardado:", err);
+            if (cartelAutoGuardado) {
+                cartelAutoGuardado.innerHTML = '❌ Error al guardar';
+                cartelAutoGuardado.style.backgroundColor = 'rgba(231, 76, 60, 0.9)'; 
+                setTimeout(() => {
+                    cartelAutoGuardado.style.opacity = '0';
+                }, 3000);
+            }
+        }
+    }
+
+    function dispararAutoGuardado() {
+        if (!proyectoCargadoId) return; 
+        
+        if (temporizadorAutoGuardado) clearTimeout(temporizadorAutoGuardado);
+        
+        temporizadorAutoGuardado = setTimeout(() => {
+            autoGuardarEnBaseDeDatos();
+        }, 2000); 
+    }
+
+    function limpiarSesion3D() {
+        localStorage.removeItem('proyecto_homecount');
+        localStorage.removeItem('camara_homecount');
+        localStorage.removeItem('proyecto_hc_id');
+        localStorage.removeItem('proyecto_hc_nombre');
+        localStorage.removeItem('diseno_temporal_cargado'); 
+    }
+    
+    // --- 2. CARGA AUTOMÁTICA (PREFABRICADAS Y ÚLTIMO DISEÑO) ---
+    async function autocompletarUltimoDiseño() {
+        const params = new URLSearchParams(window.location.search);
+        const prefabId = params.get('prefab_id');
+
+        if (prefabId) {
+            console.log("🔍 [1] URL detectada con prefab_id:", prefabId);
+            try {
+                const response = await fetch('/api/obtener-casas-prefabricadas/');
+                console.log("🔍 [2] Estado HTTP de la API:", response.status);
+                
+                if (!response.ok) console.error("La API rechazó la conexión. Revisa los permisos en Django.");
+
+                const data = await response.json();
+                
+                if (data.estado === 'exito' && data.disenos) {
+                    const modelo = data.disenos.find(d => String(d.id) === String(prefabId));
+                    if (modelo) {
+                        console.log(" Modelo prefabricado encontrado. Procediendo a dibujar...");
+                        const proyectoCopia = { ...modelo, id: null };
+                        const callbackActualizarUI = (nuevoCosto, idProyecto, nombreProyecto) => {
+                            costoTotal = nuevoCosto;
+                            proyectoCargadoId = idProyecto;
+                            proyectoCargadoNombre = nombreProyecto;
+                            if (typeof actualizarNombreInterfaz === 'function') actualizarNombreInterfaz(proyectoCargadoNombre);
+                            if (uiTotal) uiTotal.textContent = `$${new Intl.NumberFormat('es-CL').format(costoTotal)}`;
+                            actualizarListaUI();
+                            recalcularTamanoTerreno();
+                            actualizarEstadoBotones();
+                            if (typeof calcularYMostrarPerimetro === 'function') calcularYMostrarPerimetro();
+                        };
+                        await cargarEscenaDesdeJSON(proyectoCopia, scene, objetosInteractuables, camera, controles, callbackActualizarUI);
+                        return;
+                    } else {
+                        console.warn("[3] El ID", prefabId, "no existe en la base de datos.");
+                    }
+                }
+            } catch (err) {
+                console.error("Error de red al consultar la casa prefabricada:", err);
+            }
+        }
+
+        const btnGuardarVerificacion = document.getElementById('btn-guardar-modelo');
         if (!btnGuardarVerificacion) {
+            console.log("👤 Usuario invitado. Cargando LocalStorage...");
+            
+            if (!sessionStorage.getItem('pestaña_activa')) {
+                localStorage.removeItem('proyecto_homecount');
+                localStorage.removeItem('camara_homecount');
+                sessionStorage.setItem('pestaña_activa', 'true'); 
+            }
+            
+            localStorage.removeItem('proyecto_hc_id');
+            localStorage.removeItem('proyecto_hc_nombre');
+            proyectoCargadoId = null;
+            proyectoCargadoNombre = "";
+            
+            if (typeof actualizarNombreInterfaz === 'function') {
+                actualizarNombreInterfaz(""); 
+            }
+            
             cargarEscenaLocal();
             if (typeof cargarCamaraLocal === 'function') cargarCamaraLocal();
             actualizarListaUI();
             actualizarEstadoBotones();
-            return;
+            return; 
         }
 
         try {
@@ -828,27 +1147,40 @@ document.addEventListener('DOMContentLoaded', () => {
             const data = await response.json();
 
             if (response.ok && data.disenos && data.disenos.length > 0) {
-                const ultimoProyecto = data.disenos[0]; 
+               const idMemoria = localStorage.getItem('proyecto_hc_id');
+                let ultimoProyecto = data.disenos[0]; 
+
+                if (idMemoria) {
+                    const proyectoEspecifico = data.disenos.find(p => String(p.id) === String(idMemoria));
+                    if (proyectoEspecifico) {
+                        ultimoProyecto = proyectoEspecifico;
+                    }
+                } 
                 
                 localStorage.removeItem('proyecto_homecount');
                 localStorage.removeItem('camara_homecount');
 
-                if (typeof ejecutarCargaEscena3D === 'function') {
-                    const callbackActualizarUI = (nuevoCosto, idProyecto, nombreProyecto) => {
-                        costoTotal = nuevoCosto; 
-                        proyectoCargadoId = idProyecto;       
-                        proyectoCargadoNombre = nombreProyecto; 
-                        
-                        if (typeof uiTotal !== 'undefined' && uiTotal) {
-                            uiTotal.textContent = `$${new Intl.NumberFormat('es-CL').format(costoTotal)}`;
-                        }
-                        actualizarListaUI();       
-                        recalcularTamanoTerreno(); 
-                        actualizarEstadoBotones(); 
-                    };
+                const callbackActualizarUI = (nuevoCosto, idProyecto, nombreProyecto) => {
+                    costoTotal = nuevoCosto; 
+                    proyectoCargadoId = idProyecto;       
+                    proyectoCargadoNombre = nombreProyecto; 
                     
-                    ejecutarCargaEscena3D(ultimoProyecto, scene, objetosInteractuables, camera, controles, callbackActualizarUI);
-                }
+                    if (uiTotal) {
+                        uiTotal.textContent = `$${new Intl.NumberFormat('es-CL').format(costoTotal)}`;
+                    }
+                    actualizarListaUI();       
+                    recalcularTamanoTerreno(); 
+                    actualizarEstadoBotones(); 
+
+                    if (typeof actualizarNombreInterfaz === 'function') {
+                        actualizarNombreInterfaz(proyectoCargadoNombre);
+                    }
+                    if (proyectoCargadoId) localStorage.setItem('proyecto_hc_id', proyectoCargadoId);
+                    if (proyectoCargadoNombre) localStorage.setItem('proyecto_hc_nombre', proyectoCargadoNombre);
+                    if (typeof calcularYMostrarPerimetro === 'function') calcularYMostrarPerimetro();
+                };
+                
+                await cargarEscenaDesdeJSON(ultimoProyecto, scene, objetosInteractuables, camera, controles, callbackActualizarUI);
             } else {
                 cargarEscenaLocal();
                 if (typeof cargarCamaraLocal === 'function') cargarCamaraLocal();
@@ -856,7 +1188,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 actualizarEstadoBotones(); 
             }
         } catch (err) {
-            console.error("No se pudo cargar el último diseño desde la base de datos:", err);
             cargarEscenaLocal();
             if (typeof cargarCamaraLocal === 'function') cargarCamaraLocal();
             actualizarListaUI(); 
@@ -864,7 +1195,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // Ejecutar la inicialización
     autocompletarUltimoDiseño();
 
     window.addEventListener('beforeunload', guardarCamaraLocal);
@@ -964,7 +1294,6 @@ document.addEventListener('DOMContentLoaded', () => {
         raycaster.setFromCamera(mouse, camera);
 
         if (event.shiftKey) { 
-            // --- MODO BORRADO CON SHIFT ---
             const objetosConstruidos = objetosInteractuables.filter(obj => obj !== plano);
             const intersecciones = raycaster.intersectObjects(objetosConstruidos, true);
 
@@ -976,21 +1305,21 @@ document.addEventListener('DOMContentLoaded', () => {
                 scene.remove(objBorrar);
                 objetosInteractuables.splice(objetosInteractuables.indexOf(objBorrar), 1);
                 
-                // LÓGICA AÑADIDA: Si al borrar ya no queda ningún bloque (solo el piso)
                 if (objetosInteractuables.length <= 1) {
                     proyectoCargadoId = null;
                     proyectoCargadoNombre = "";
+                    actualizarNombreInterfaz("");
                 }
 
                 actualizarPresupuesto(-objBorrar.userData.precio);
                 recalcularTamanoTerreno(); 
                 guardarEscenaLocal();
+                dispararAutoGuardado();
                 actualizarEstadoBotones(); 
                 if (tooltip) tooltip.style.display = 'none';
                 calcularYMostrarPerimetro();
             }
         } else { 
-            // --- MODO AGREGAR/CONSTRUIR ---
             const intersecciones = raycaster.intersectObjects(objetosInteractuables, true);
             if (intersecciones.length > 0) {
                 const interseccion = intersecciones[0];
@@ -1016,13 +1345,21 @@ document.addEventListener('DOMContentLoaded', () => {
                 recalcularTamanoTerreno(); 
                 actualizarPresupuesto(precioActual);
                 guardarEscenaLocal();
+                dispararAutoGuardado();
                 actualizarEstadoBotones(); 
                 calcularYMostrarPerimetro();
             }
         }
     });
 
-    // --- EVENTOS DE BOTONES ---
+    function actualizarNombreInterfaz(nombre) {
+        const displayNombre = document.getElementById('display-nombre-proyecto');
+        if (displayNombre) {
+            const nombreMostrar = nombre && nombre.trim() !== "" ? nombre : "Nuevo Proyecto";
+            displayNombre.innerHTML = `Proyecto: <strong>${nombreMostrar}</strong>`;
+        }
+    }
+
     const btnGuardarModelo = document.getElementById('btn-guardar-modelo');
     if (btnGuardarModelo) {
         btnGuardarModelo.addEventListener('click', async (e) => {
@@ -1035,18 +1372,26 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
             
-            // Recibimos la respuesta de guardado_db.js
-            const resultado = await procesarGuardado(objetosInteractuables, camera, controles, costoTotal, scene, renderer, proyectoCargadoId, proyectoCargadoNombre);
+            let guardarComoPrefabricada = false;
+            if (typeof esAdminGlobal !== 'undefined' && esAdminGlobal) {
+                guardarComoPrefabricada = await DialogoUI.confirm(
+                    "Eres Administrador.\n\n¿Deseas guardar este modelo en el catálogo público de 'Casas Prefabricadas'?\n\n(Aceptar = Catálogo Público | Cancelar = Tu Proyecto Personal)"
+                );
+            }
             
-            // Si el guardado fue exitoso, vinculamos la sesión activa al nuevo ID y encendemos el botón 🔄
+            const resultado = await procesarGuardado(
+                objetosInteractuables, camera, controles, costoTotal, scene, renderer, 
+                proyectoCargadoId, proyectoCargadoNombre, guardarComoPrefabricada
+            );
+            
             if (resultado && resultado.exito) {
                 proyectoCargadoId = resultado.id;
                 proyectoCargadoNombre = resultado.nombre;
                 actualizarEstadoBotones(); 
+                actualizarNombreInterfaz(proyectoCargadoNombre);
             }
         });
     }
-
     const btnGuardarCopia = document.getElementById('btn-guardar-copia');
     if (btnGuardarCopia) {
         btnGuardarCopia.addEventListener('click', async (e) => {
@@ -1073,7 +1418,7 @@ document.addEventListener('DOMContentLoaded', () => {
             let capturaBase64 = null;
             if (typeof scene !== 'undefined' && typeof renderer !== 'undefined') {
                 renderer.render(scene, camera); 
-                capturaBase64 = renderer.domElement.toDataURL("image/png");
+                capturaBase64 = renderer.domElement.toDataURL("image/jpeg", 0.6);
             }
 
             const datosEscena = [];
@@ -1120,7 +1465,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (cambiarNuevo) {
                         proyectoCargadoId = data.id;
                         proyectoCargadoNombre = nuevoNombre;
-                        actualizarEstadoBotones(); 
+                        actualizarEstadoBotones();
+                        actualizarNombreInterfaz(proyectoCargadoNombre);
                     } 
                 } else {
                     await DialogoUI.alert("Error al guardar la copia: " + data.mensaje);
@@ -1147,10 +1493,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 
                 localStorage.removeItem('proyecto_homecount');
                 localStorage.removeItem('camara_homecount');
+                localStorage.removeItem('proyecto_hc_id');
+                localStorage.removeItem('proyecto_hc_nombre');
 
-                // Resetear estado de proyecto actual
                 proyectoCargadoId = null;
                 proyectoCargadoNombre = "";
+                actualizarNombreInterfaz("");
 
                 cambiarTamanoTerreno(1000);
 
@@ -1182,6 +1530,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 actualizarListaUI();       
                 recalcularTamanoTerreno(); 
                 actualizarEstadoBotones();
+                actualizarNombreInterfaz(proyectoCargadoNombre);
             });
         });
     }
@@ -1225,7 +1574,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const mapaCategoriasMateriales = window.mapaCategoriasMateriales || {};
 
     function obtenerCalculoDimensiones() {
-        const TAMANO_CELDA = 50; // 50 unidades = 1 metro
+        const TAMANO_CELDA = 50; 
         const celdas = new Set();
 
         for (let i = 1; i < objetosInteractuables.length; i++) {
@@ -1299,7 +1648,94 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     window.calcularYMostrarPerimetro = calcularYMostrarPerimetro;
 
-    // --- RECOPILACIÓN DE DATOS PARA EL INFORME ---
+    document.addEventListener('DOMContentLoaded', () => {
+    const tutorialCompletado = localStorage.getItem('tutorial_homecount_v1');
+    
+    if (!tutorialCompletado) {
+        setTimeout(iniciarTutorialInteractivo, 1000);
+    }
+});
+
+    function iniciarTutorialInteractivo() {
+        const driver = window.driver.js.driver;
+        const driverObj = driver({
+            showProgress: true,
+            allowClose: false,
+            doneBtnText: '¡Comenzar!',
+            nextBtnText: 'Siguiente',
+            prevBtnText: 'Atrás',
+            onDestroyStarted: () => {
+                if (!driverObj.hasNextStep() || DialogoUI.confirm("¿Seguro que deseas omitir el tutorial?")) {
+                    localStorage.setItem('tutorial_homecount_v1', 'true');
+                    driverObj.destroy();
+                }
+            },
+            steps: [
+                {
+                    element: 'body', 
+                    popover: {
+                        title: '¡Bienvenido al Simulador 3D HouseCount!',
+                        description: 'A continuación te daremos un breve recorrido por las herramientas principales para que aprendas a diseñar y presupuestar tu proyecto.',
+                        align: 'center' 
+                    }
+                },
+                {
+                    element: '.panel-superior-derecho', 
+                    popover: {
+                        title: 'Herramientas del Proyecto',
+                        description: 'Limpia la escena, guarda tu progreso, accede a tus diseños previos o genera el informe técnico desde este panel.',
+                        side: 'right', 
+                        align: 'start'
+                    }
+                },
+                {
+                    element: '#btn-toggle-panel-der',
+                    popover: {
+                        title: 'Panel de Dimensiones',
+                        description: 'Haz clic aquí para desplegar u ocultar el panel con el cálculo de áreas, perímetros y el sumario de materiales.',
+                        side: 'right', align: 'start'
+                    }
+                },
+                {
+                    element: '.panel-instrucciones',
+                    popover: {
+                        title: 'Controles y Ayuda',
+                        description: 'Aquí siempre podrás ver los atajos de teclado para moverte por el entorno 3D. Usa el botón ❓ si necesitas repetir este tutorial.',
+                        side: 'bottom', align: 'center'
+                    }
+                },
+                {
+                    element: '.presupuesto-total',
+                    popover: {
+                        title: 'Presupuesto en Tiempo Real',
+                        description: 'Controla tu inversión. El costo total se actualizará instantáneamente cada vez que agregues o quites elementos de tu diseño.',
+                        side: 'bottom', align: 'end'
+                    }
+                },
+                {
+                    element: '#zona-menu-inferior',
+                    popover: {
+                        title: 'Catálogo de Construcción',
+                        description: 'Navega por las categorías para seleccionar materiales de construcción, muebles o habitaciones completas listas para insertar.',
+                        side: 'top', align: 'center'
+                    }
+                }
+            ]
+        });
+
+        driverObj.drive();
+    }
+
+    window.repetirTutorial = function() {
+        localStorage.removeItem('tutorial_homecount_v1');
+        
+        if (typeof iniciarTutorialInteractivo === 'function') {
+            iniciarTutorialInteractivo();
+        } else {
+            console.error("La función del tutorial no está disponible.");
+        }
+    };
+
     function obtenerDatosInforme() {
         const dim = obtenerCalculoDimensiones();
         const conteo = {};
@@ -1365,7 +1801,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // --- GENERADOR DE HTML PROFESIONAL PARA EL INFORME ---
     function generarHTMLInforme(datos, paraPDF = false) {
         const formatear = (valor) => new Intl.NumberFormat('es-CL').format(valor);
         const filasTabla = datos.items.map((item, idx) => {
@@ -1458,7 +1893,6 @@ document.addEventListener('DOMContentLoaded', () => {
         if (modal) modal.style.display = 'none';
     };
 
-    // Descarga en PDF mediante html2pdf
     window.descargarInformePDF = function() {
         const datos = obtenerDatosInforme();
         if (datos.totalPiezas === 0) return;
@@ -1528,7 +1962,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    // Eventos para cerrar modal con clic fuera o escape
     document.addEventListener('DOMContentLoaded', () => {
         const modalInformeEl = document.getElementById('modal-informe');
         if (modalInformeEl) {

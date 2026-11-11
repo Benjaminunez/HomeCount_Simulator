@@ -1,0 +1,90 @@
+/* =========================================
+   Estilos Personalizados para el Tutorial (Driver.js)
+   ========================================= */
+
+/* Ventana flotante (Popover) */
+.driver-popover {
+    background-color: #1a1a1a !important; /* Fondo oscuro acorde a la UI */
+    color: #ffffff !important;
+    border-radius: 12px !important;
+    padding: 20px !important;
+    border: 1px solid rgba(230, 126, 34, 0.4) !important; /* Borde naranja suave */
+    box-shadow: 0 10px 25px rgba(0,0,0,0.7) !important;
+    font-family: sans-serif !important;
+    /* Aplicar la misma animación de rebote que el menú de perfil[cite: 8] */
+    animation: aparecerMenu 0.3s cubic-bezier(0.25, 0.8, 0.25, 1) forwards !important; 
+}
+
+/* Títulos y textos */
+.driver-popover-title {
+    font-size: 1.25rem !important;
+    font-weight: bold !important;
+    color: #f39c12 !important; /* Título en naranja[cite: 8] */
+    margin-bottom: 12px !important;
+}
+
+.driver-popover-description {
+    font-size: 0.95rem !important;
+    color: #dcdcdc !important; /* Texto gris claro[cite: 8] */
+    line-height: 1.5 !important;
+}
+
+/* Botones de control (Siguiente, Atrás, Completar) */
+.driver-popover-footer button {
+    border-radius: 6px !important;
+    padding: 8px 16px !important;
+    font-weight: bold !important;
+    transition: all 0.2s !important;
+    text-shadow: none !important;
+}
+
+/* Botón Siguiente / Completar (Primario) */
+.driver-popover-next-btn, 
+.driver-popover-done-btn {
+    background-color: #f39c12 !important;
+    color: white !important;
+    border: none !important;
+}
+
+.driver-popover-next-btn:hover, 
+.driver-popover-done-btn:hover {
+    background-color: #e67e22 !important; /* Hover naranja oscuro[cite: 8] */
+}
+
+/* Botón Atrás (Secundario) */
+.driver-popover-prev-btn {
+    background-color: #555 !important;
+    color: white !important;
+    border: none !important;
+}
+
+.driver-popover-prev-btn:hover {
+    background-color: #444 !important; /* Hover gris oscuro[cite: 8] */
+}
+
+/* Contador de progreso (ej. 1 de 5) */
+.driver-popover-progress-text {
+    color: #a0a0a0 !important;
+    font-size: 0.85rem !important;
+}
+
+/* Animación (Reutilizada del menú de perfil[cite: 8]) */
+@keyframes aparecerMenu {
+    0% { opacity: 0; transform: translateY(-15px) scale(0.95); }
+    100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.driver-popover:not([class*="driver-popover-side-"]) {
+    position: fixed !important;
+    top: 50% !important;
+    left: 50% !important;
+    transform: translate(-50%, -50%) !important;
+    margin: 0 !important;
+    /* La animación se sobreescribe para mantener el translate */
+    animation: aparecerCentro 0.3s cubic-bezier(0.25, 0.8, 0.25, 1) forwards !important;
+}
+
+@keyframes aparecerCentro {
+    0% { opacity: 0; transform: translate(-50%, -45%); }
+    100% { opacity: 1; transform: translate(-50%, -50%); }
+}

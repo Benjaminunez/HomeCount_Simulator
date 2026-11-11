@@ -1,5 +1,6 @@
 {% load static %}
 {% load filtros_perfil %}
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -104,7 +105,7 @@
             <!-- Funcionalidad 3: Contacto -->
             <div class="tarjeta-horizontal reveal delay-1">
                 <div class="tarjeta-imagen">
-                    <img src="{% static 'img/contacto.png' %}" alt="Formulario de Contacto">
+                    <img src="{% static 'imagen-galeria/trato.jpg' %}" alt="Formulario de Contacto">
                 </div>
                 <div class="tarjeta-cuerpo">
                     <h3>Asesoría y Contacto</h3>
@@ -118,18 +119,6 @@
         </div>
 
     </section>
-    <!-- Sección de Proyectos y Presupuesto -->
-    <section id="proyectos" class="seccion-moderna">
-        <div class="contenedor-presupuesto reveal">
-            <h2 class="seccion-titulo">Ajusta tu presupuesto.</h2>
-            <p class="seccion-subtitulo">Desliza la barra para indicar cuánto planeas invertir.</p>
-            
-            <input type="range" id="barra-presupuesto" min="0" max="2000000000" step="10000" value="500000">
-            
-            <p class="valor-mostrado">$<span id="valor-pantalla">500.000</span> CLP</p>
-            <a href="{% url 'contrucion' %}" class="btn-principal btn-secundario">Ver opciones de construcción</a>
-        </div>
-    </section>
 
     <!-- Sección de Galería -->
     <section class="seccion-moderna fondo-claro galeria-seccion">
@@ -138,40 +127,59 @@
             <p class="galeria-intro seccion-subtitulo">Explora nuestra colección de planos y los resultados finales.</p>
         </div>
 
-        <div class="galeria-categoria reveal delay-1">
-            <h3 class="categoria-titulo">Planos Arquitectónicos</h3>
-            <div class="grid-imagenes">
-                <div class="espacio-imagen">
-                    <img src="{% static 'imagen-galeria/plano 1.jpg' %}" alt="Plano 1" class="imagen-galeria">
-                </div>
-                <div class="espacio-imagen">
-                    <img src="{% static 'imagen-galeria/plano 2.jpg' %}" alt="Plano 2" class="imagen-galeria">
-                </div>
-                <div class="espacio-imagen">
-                    <img src="{% static 'imagen-galeria/plano 3.png' %}" alt="Plano 3" class="imagen-galeria">
-                </div>
-            </div>
-        </div>
+    <!-- Catálogo Dinámico de Casas Prefabricadas (3D) -->
+    <div class="galeria-categoria reveal delay-1">
+        <div class="prefab-grid">
+            {% for casa in casas_prefabricadas %}
+                <a href="{% url 'casas_modelo_1' %}?prefab_id={{ casa.id }}" class="prefab-card-link">
+                    <div class="prefab-card">
+                        
+                        <!-- Imagen de la tarjeta -->
+                        <div class="prefab-card-img-wrapper">
+                            {% if casa.imagen_captura %}
+                                <img src="{{ casa.imagen_captura.url }}" alt="{{ casa.nombre }}" class="prefab-card-img">
+                            {% else %}
+                                <div class="prefab-no-img">Sin vista previa</div>
+                            {% endif %}
+                        </div>
+                        
+                        <!-- Cuerpo de la Tarjeta -->
+                        <div class="prefab-card-body">
+                            
+                            <!-- Título -->
+                            <h4 class="prefab-title">{{ casa.nombre }}</h4>
+                            
+                            <!-- Etiqueta de Área -->
+                            <div class="prefab-badge">
+                                <span class="prefab-badge-icon">📐</span>
+                                <span class="prefab-badge-text">Área: {{ casa.area_cuadrada }} m²</span>
+                            </div>
 
-        <div class="galeria-categoria reveal delay-2">
-            <h3 class="categoria-titulo">Casas Terminadas</h3>
-            <div class="grid-imagenes">
-                <div class="espacio-imagen">
-                    <img src="{% static 'imagen-galeria/casa1.jpg' %}" alt="Casa 1" class="imagen-galeria">
-                </div>
-                <div class="espacio-imagen">
-                    <img src="{% static 'imagen-galeria/casa2.jpg' %}" alt="Casa 2" class="imagen-galeria">
-                </div>
-                <div class="espacio-imagen">
-                    <img src="{% static 'imagen-galeria/casa3.jpg' %}" alt="Casa 3" class="imagen-galeria">
-                </div>
-            </div>
+                            <!-- Descripción Mejorada -->
+                            <p class="prefab-desc">
+                                {{ casa.descripcion|default:"Sin descripción disponible." }}
+                            </p>
+                            
+                            <!-- Pie de tarjeta (Precio) -->
+                            <div class="prefab-footer">
+                                <span class="prefab-footer-label">Costo Estimado</span>
+                                <span class="prefab-price">$ {{ casa.costo_total }} CLP</span>
+                            </div>
+
+                        </div>
+                    </div>
+                </a>
+            {% empty %}
+                <p class="prefab-empty">
+                    No hay modelos disponibles en este momento.
+                </p>
+            {% endfor %}
         </div>
-        
-        <div id="modal-imagen" class="modal">
-            <span class="cerrar-modal">&times;</span>
-            <img class="modal-contenido" id="imagen-ampliada">
-        </div>
+    </div> 
+    <div id="modal-imagen" class="modal">
+        <span class="cerrar-modal">&times;</span>
+        <img class="modal-contenido" id="imagen-ampliada">
+    </div>
     </section>
 
     <!-- Sección de Contacto -->

@@ -1,6 +1,7 @@
 import json
 import requests
 import base64
+import time
 from django.core.files.base import ContentFile
 import random
 from django.shortcuts import render, redirect
@@ -15,13 +16,15 @@ from django.core.mail import send_mail, EmailMultiAlternatives
 from django.conf import settings
 from django.contrib.auth.models import User
 
-from .models import ModeloCasa, Material, Habitacion, Proyecto3D, CategoriaMaterial, Avatar, CodigoRecuperacion
+from .models import ModeloCasa, Material, Habitacion, Proyecto3D, CategoriaMaterial, Avatar, CodigoRecuperacion, CasaPrefabricada
 
 
 # --- Vistas de Navegación HTML ---
 
 def inicio(request): 
-    return render(request, 'inicio.html')
+    casas = CasaPrefabricada.objects.all().order_by('-fecha_creacion')[:6]
+    
+    return render(request, 'inicio.html', {'casas_prefabricadas': casas})
 
 def contrucion(request): 
     return render(request, 'contrucion.html')
@@ -33,24 +36,21 @@ def casas_modelo_1(request):
     return render(request, 'casas_modelo_1.html')
 
 def casas_rapidas(request):
-    modelos = ModeloCasa.objects.all()
+    # 1. Cargamos los diseños registrados por el admin
+    modelos = CasaPrefabricada.objects.all()
 
+    # 2. Capturamos solo los filtros que mantuvimos en el HTML
     precio_max = request.GET.get('precio_max')
     m2_min = request.GET.get('m2_min')
-    habitaciones = request.GET.get('habitaciones')
-    banos = request.GET.get('banos')
     
+    # 3. Filtramos usando los nombres exactos de los campos de CasaPrefabricada
     if precio_max:
-        modelos = modelos.filter(precio__lte=precio_max)
+        modelos = modelos.filter(costo_total__lte=precio_max)
     if m2_min:
-        modelos = modelos.filter(metros_cuadrados__gte=m2_min)
-    if habitaciones:
-        modelos = modelos.filter(habitaciones__gte=habitaciones)
-    if banos:
-        modelos = modelos.filter(banos__gte=banos)
+        modelos = modelos.filter(area_cuadrada__gte=m2_min)
 
+    # 4. Lógica de la API del mercado (se mantiene intacta)
     casas_mercado = []
-    
     try:
         url_api = "https://gist.githubusercontent.com/Benjaminunez/b367b26daa23044dd9ee7ee14ad3a8e0/raw/ac4792063436f31d0218f2025dccac3a2a285753/casas_api.json" 
         respuesta = requests.get(url_api, timeout=5)
@@ -59,13 +59,12 @@ def casas_rapidas(request):
     except Exception as e:
         print(f"Error al conectar con la API: {e}")
     
+    # 5. Pasamos todo al contexto
     context = {
         'modelos': modelos,
         'filtros': {
             'precio_max': precio_max or '',
             'm2_min': m2_min or '',
-            'habitaciones': habitaciones or '',
-            'banos': banos or '',
         },
         'casas_mercado': casas_mercado,
     }
@@ -180,7 +179,9 @@ def api_propiedades_unica(request):
 def api_materiales_3d(request):
     if request.method == 'GET':
         materiales = Material.objects.all()
-        habitaciones = Habitacion.objects.prefetch_related('detalles_materiales__material').all()
+        
+        # AQUÍ ESTÁ EL CAMBIO: Consultamos CasaPrefabricada en lugar de Habitacion
+        casas_db = CasaPrefabricada.objects.all() 
         
         lista_materiales = [
             {
@@ -195,29 +196,23 @@ def api_materiales_3d(request):
             for mat in materiales
         ]
             
-        lista_habitaciones = [
+        # AQUÍ ESTÁ EL SEGUNDO CAMBIO: Mapeamos los campos exactos del modelo CasaPrefabricada
+        lista_casas = [
             {
-                "id": hab.id,
-                "nombre": hab.nombre_modulo,
-                "dimensiones": hab.dimensiones,
-                "coste_total": hab.coste_total,  
-                "materiales": [
-                    {
-                        "material": detalle.material.nombre,
-                        "cantidad": detalle.cantidad,
-                        "subtotal": detalle.coste_subtotal
-                    }
-                    for detalle in hab.detalles_materiales.all()
-                ],
-                "archivo_3d": hab.archivo_3d.url if hab.archivo_3d and hab.archivo_3d.name else None,
-                "imagen": hab.imagen.url if hab.imagen and hab.imagen.name else None
+                "id": casa.id,
+                "nombre": casa.nombre,
+                "area_cuadrada": casa.area_cuadrada, 
+                "costo_total": casa.costo_total,    
+                "datos_escena": casa.datos_escena, # Traemos el JSON
+                "datos_camara": casa.datos_camara, # Traemos la cámara
+                "imagen_captura": casa.imagen_captura.url if casa.imagen_captura and casa.imagen_captura.name else None 
             }
-            for hab in habitaciones
+            for casa in casas_db
         ]
             
         return JsonResponse({
             "materiales": lista_materiales,
-            "habitaciones": lista_habitaciones
+            "casas": lista_casas 
         }, safe=False)
         
     elif request.method == 'POST':
@@ -336,55 +331,91 @@ def cerrar_sesion(request):
 
 # --- Guardar / Cargar Escenas 3D ---
 
-@login_required
+@csrf_exempt
 def guardar_diseno(request):
     if request.method == 'POST':
-        try:
-            data = json.loads(request.body)
-            proyecto_id = data.get('proyecto_id', None) 
-            nombre = data.get('nombre_proyecto', 'Sin nombre')
-            costo_total = data.get('costo_total', 0)
-            datos_escena = data.get('datos_escena', [])
-            datos_camara = data.get('datos_camara', {})
-            captura_base64 = data.get('captura_base64', None)
+        data = json.loads(request.body)
+        
+        proyecto_id = data.get('proyecto_id')
+        nombre = data.get('nombre_proyecto', 'Sin Nombre')
+        es_prefabricada = data.get('es_prefabricada', False)
+        descripcion = data.get('descripcion', '') # <-- NUEVO: Capturamos la descripción
+        
+        # 1. Parámetros solo de texto y JSON (comunes para todos)
+        parametros_guardado = {
+            'nombre': nombre,
+            'costo_total': data.get('costo_total', 0),
+            'datos_escena': data.get('datos_escena'),
+            'datos_camara': data.get('datos_camara'),
+        }
+
+        # 2. Preparamos la imagen pero NO la metemos al diccionario de update
+        captura_b64 = data.get('captura_base64')
+        archivo_imagen = None
+        nombre_archivo = None
+        if captura_b64 and ';base64,' in captura_b64:
+            format_str, imgstr = captura_b64.split(';base64,')
+            ext = format_str.split('/')[-1]
+            # Agregamos el timestamp (time.time()) para que el navegador no cachee la imagen vieja
+            nombre_archivo = f"diseno_{nombre.replace(' ', '_')}_{int(time.time())}.{ext}"
+            archivo_imagen = ContentFile(base64.b64decode(imgstr))
+        
+        # Flujo 1: Guardado en catálogo global público (Solo Administradores)
+        if es_prefabricada and request.user.is_superuser:
+            # Creamos una copia de los parámetros y le añadimos la descripción
+            parametros_prefabricada = parametros_guardado.copy()
+            parametros_prefabricada['descripcion'] = descripcion 
             
             if proyecto_id:
-                proyecto = Proyecto3D.objects.get(id=proyecto_id, usuario=request.user)
-                proyecto.nombre = nombre
-                proyecto.costo_total = costo_total
-                proyecto.datos_escena = datos_escena
-                proyecto.datos_camara = datos_camara
+                CasaPrefabricada.objects.filter(id=proyecto_id).update(**parametros_prefabricada)
+                # Guardamos la imagen de forma segura
+                if archivo_imagen:
+                    obj = CasaPrefabricada.objects.get(id=proyecto_id)
+                    obj.imagen_captura.save(nombre_archivo, archivo_imagen, save=True)
+                obj_id = str(proyecto_id)
             else:
-                proyecto = Proyecto3D(
-                    usuario=request.user, 
-                    nombre=nombre,
-                    costo_total=costo_total,
-                    datos_escena=datos_escena,
-                    datos_camara=datos_camara
-                )
+                nueva_casa = CasaPrefabricada.objects.create(**parametros_prefabricada)
+                if archivo_imagen:
+                    nueva_casa.imagen_captura.save(nombre_archivo, archivo_imagen, save=True)
+                obj_id = str(nueva_casa.id)
+            return JsonResponse({'estado': 'exito', 'id': obj_id})
             
-            if captura_base64 and ';base64,' in captura_base64:
-                formato, imgstr = captura_base64.split(';base64,') 
-                ext = formato.split('/')[-1] 
-                nombre_archivo = f"diseno_{request.user.username}_{nombre.replace(' ', '_')}.{ext}"
+        # Flujo 2: Guardado en proyectos personales de usuario registrado
+        elif request.user.is_authenticated:
+            parametros_guardado['usuario'] = request.user
+            if proyecto_id:
+                Proyecto3D.objects.filter(id=proyecto_id, usuario=request.user).update(**parametros_guardado)
+                if archivo_imagen:
+                    obj = Proyecto3D.objects.get(id=proyecto_id, usuario=request.user)
+                    obj.imagen_captura.save(nombre_archivo, archivo_imagen, save=True)
+                obj_id = str(proyecto_id)
+            else:
+                nuevo_proyecto = Proyecto3D.objects.create(**parametros_guardado)
+                if archivo_imagen:
+                    nuevo_proyecto.imagen_captura.save(nombre_archivo, archivo_imagen, save=True)
+                obj_id = str(nuevo_proyecto.id)
+            return JsonResponse({'estado': 'exito', 'id': obj_id})
+            
+        # Flujo 3: Guardado anónimo mediante Session ID (Visitantes no registrados)
+        else:
+            session_id = data.get('session_id')
+            if not session_id:
+                return JsonResponse({'estado': 'error', 'mensaje': 'Falta identificador de sesión para invitado'}, status=400)
                 
-                if proyecto_id and proyecto.imagen_captura:
-                    proyecto.imagen_captura.delete(save=False)
-                
-                proyecto.imagen_captura.save(
-                    nombre_archivo, 
-                    ContentFile(base64.b64decode(imgstr)), 
-                    save=False 
-                )
-            
-            proyecto.save()
-            return JsonResponse({'estado': 'exito', 'mensaje': 'Proyecto guardado/actualizado correctamente.', 'id': proyecto.id})
-            
-        except Proyecto3D.DoesNotExist:
-            return JsonResponse({'estado': 'error', 'mensaje': 'El proyecto a modificar no existe o no tienes permisos.'}, status=404)
-        except Exception as e:
-            return JsonResponse({'estado': 'error', 'mensaje': str(e)}, status=400)
-            
+            parametros_guardado['session_id'] = session_id
+            if proyecto_id:
+                Proyecto3D.objects.filter(id=proyecto_id, session_id=session_id).update(**parametros_guardado)
+                if archivo_imagen:
+                    obj = Proyecto3D.objects.get(id=proyecto_id, session_id=session_id)
+                    obj.imagen_captura.save(nombre_archivo, archivo_imagen, save=True)
+                obj_id = str(proyecto_id)
+            else:
+                nuevo_proyecto = Proyecto3D.objects.create(**parametros_guardado)
+                if archivo_imagen:
+                    nuevo_proyecto.imagen_captura.save(nombre_archivo, archivo_imagen, save=True)
+                obj_id = str(nuevo_proyecto.id)
+            return JsonResponse({'estado': 'exito', 'id': obj_id})
+
     return JsonResponse({'estado': 'error', 'mensaje': 'Método no permitido'}, status=405)
 
 @ensure_csrf_cookie
@@ -622,3 +653,26 @@ def enviar_contacto(request):
             return JsonResponse({'status': 'error', 'mensaje': 'Hubo un error al enviar el mensaje. Intenta más tarde.'})
             
     return JsonResponse({'status': 'invalid', 'mensaje': 'Método no permitido.'})
+
+@csrf_exempt
+def obtener_casas_prefabricadas(request):
+    """
+    Devuelve la lista de diseños de Casas Prefabricadas públicas.
+    No requiere autenticación.
+    """
+    if request.method == 'GET':
+        casas = CasaPrefabricada.objects.all().order_by('-fecha_creacion')
+        lista = [
+            {
+                'id': str(c.id),
+                'nombre': c.nombre,
+                'costo_total': float(c.costo_total),
+                'datos_escena': c.datos_escena,
+                'datos_camara': c.datos_camara,
+                'imagen_url': c.imagen_captura.url if c.imagen_captura else None,
+                'area_cuadrada': float(c.area_cuadrada) if c.area_cuadrada else 0.0
+            }
+            for c in casas
+        ]
+        return JsonResponse({'estado': 'exito', 'disenos': lista})
+    return JsonResponse({'estado': 'error', 'mensaje': 'Método no permitido'}, status=405)

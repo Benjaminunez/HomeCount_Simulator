@@ -1,33 +1,42 @@
 // --- 1. FUNCIÓN DE GUARDADO ---
-async function procesarGuardado(objetos, camera, controles, costoTotal, miEscena, miRenderer, proyectoId = null, proyectoNombre = "") {
+async function procesarGuardado(objetos, camera, controles, costoTotal, miEscena, miRenderer, proyectoId = null, proyectoNombre = "", esPrefabricada = false) {
     if (!objetos || objetos.length <= 1) {
         await DialogoUI.alert("La escena está vacía. Añade elementos antes de guardar.");
-        return;
+        return { exito: false };
     }
 
     let nombreProyecto = proyectoNombre;
 
-    // NUEVA LÓGICA: Si existe ID, solo se actualiza. Si no existe, se crea uno nuevo.
+    // 1. Validar nombre o actualización del diseño
     if (proyectoId) {
         const confirmarActualizacion = await DialogoUI.confirm(`Actualmente estás editando "${proyectoNombre}".\n\n¿Deseas actualizar y sobrescribir este diseño con los nuevos cambios?`);
-        
-        // Si el usuario hace clic en "Cancelar", detenemos el proceso de guardado.
-        if (!confirmarActualizacion) {
-            return; 
-        }
+        if (!confirmarActualizacion) return { exito: false }; 
     } else {
-        // Si es un proyecto completamente nuevo (proyectoId es null)
         nombreProyecto = await DialogoUI.prompt("Nombre para este nuevo proyecto:");
-        if (!nombreProyecto) return;
+        if (!nombreProyecto) return { exito: false };
     }
 
-    // Tomar fotografía de la escena
+    // 2. NUEVO: Pedir descripción SOLO si es modelo público (prefabricada)
+    let descripcionPrefabricada = "";
+    if (esPrefabricada) {
+        descripcionPrefabricada = await DialogoUI.prompt(
+            "Ingresa una descripción para el catálogo público (Opcional):", 
+            "Ej: Casa compacta de 2 habitaciones, ideal para terrenos pequeños..."
+        );
+        
+        // Si el usuario presiona "Cancelar" en el prompt de la descripción, detenemos el guardado.
+        // Si quieres que no se cancele al darle a 'Cancelar', borra esta línea.
+        if (descripcionPrefabricada === null) return { exito: false };
+    }
+
+    // 3. Captura de pantalla del modelo
     let capturaBase64 = null;
     if (miEscena && miRenderer) {
         miRenderer.render(miEscena, camera); 
         capturaBase64 = miRenderer.domElement.toDataURL("image/png");
     }
 
+    // 4. Mapeo de la escena 3D
     const datosEscena = [];
     for (let i = 1; i < objetos.length; i++) {
         const obj = objetos[i];
@@ -40,32 +49,35 @@ async function procesarGuardado(objetos, camera, controles, costoTotal, miEscena
         });
     }
 
+    // 5. Construcción del Payload final
     const payload = {
         proyecto_id: proyectoId, 
         nombre_proyecto: nombreProyecto,
+        descripcion: descripcionPrefabricada, // <--- Se envía a Django
         costo_total: costoTotal,
         datos_escena: datosEscena,
         datos_camara: {
             posX: camera.position.x, posY: camera.position.y, posZ: camera.position.z,
             targetX: controles.target.x, targetY: controles.target.y, targetZ: controles.target.z
         },
-        captura_base64: capturaBase64 
+        captura_base64: capturaBase64,
+        es_prefabricada: esPrefabricada 
     };
 
+    // 6. Envío al servidor
     try {
         const response = await fetch('/api/guardar-diseno/', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'X-CSRFToken': obtenerCookieCSRF('csrftoken') 
+                'X-CSRFToken': typeof obtenerCookieCSRF === 'function' ? obtenerCookieCSRF('csrftoken') : ''
             },
             body: JSON.stringify(payload)
         });
 
         const data = await response.json();
         if (response.ok && data.estado === 'exito') {
-            await DialogoUI.alert("¡Proyecto guardado con éxito!");
-            // NUEVO: Retornamos el éxito y los datos clave al script principal
+            await DialogoUI.alert("¡Diseño guardado con éxito!");
             return { exito: true, id: data.id, nombre: nombreProyecto };
         } else {
             await DialogoUI.alert("Error al guardar: " + data.mensaje);
@@ -132,6 +144,7 @@ async function cargarDisenosUsuario(scene, objetos, camera, controles, callbackA
                     if (typeof proyectoCargadoId !== 'undefined' && proyectoCargadoId === proyecto.id) {
                         proyectoCargadoId = null;
                         proyectoCargadoNombre = "";
+                        if (typeof actualizarNombreInterfaz === 'function') actualizarNombreInterfaz("");
                     }
                 }
             };
@@ -139,6 +152,10 @@ async function cargarDisenosUsuario(scene, objetos, camera, controles, callbackA
             card.onclick = (e) => {
                 e.stopPropagation(); 
                 modal.style.display = 'none';
+                localStorage.removeItem('proyecto_homecount');
+                localStorage.removeItem('camara_homecount');
+                localStorage.setItem('proyecto_hc_id', proyecto.id);
+                localStorage.setItem('proyecto_hc_nombre', proyecto.nombre);
                 ejecutarCargaEscena3D(proyecto, scene, objetos, camera, controles, callbackActualizarUI);
             };
 
@@ -313,6 +330,72 @@ document.addEventListener("click", (e) => {
         modal.style.display = "none";
     }
 });
+
+async function cargarCatalogoPrefabricadas(scene, objetos, camera, controles, callbackActualizarUI) {
+    try {
+        const response = await fetch('/api/obtener-casas-prefabricadas/');
+        const data = await response.json();
+
+        if (!response.ok || !data.disenos || data.disenos.length === 0) {
+            await DialogoUI.alert("Actualmente no hay casas prefabricadas en el catálogo público.");
+            return;
+        }
+
+        const modal = document.getElementById('modal-mis-disenos');
+        const grid = document.getElementById('grid-disenos');
+        
+        // Cambiamos el título temporalmente para que quede claro que es el catálogo
+        const headerTitulo = modal.querySelector('.modal-header h2');
+        if (headerTitulo) headerTitulo.textContent = 'Catálogo de Casas Prefabricadas';
+        
+        grid.innerHTML = ''; 
+        modal.style.display = 'block';
+        modal.style.position = 'fixed';
+        modal.style.zIndex = '999999';
+        modal.style.pointerEvents = 'auto';
+
+        data.disenos.forEach(proyecto => {
+            const card = document.createElement('div');
+            card.className = 'tarjeta-diseno';
+            card.style.cursor = 'pointer'; 
+            card.style.position = 'relative';
+
+            const imgUrl = proyecto.imagen_url 
+                ? proyecto.imagen_url
+                : 'data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=';            
+           const costoSeguro = Number(proyecto.costo_total) || 0;
+            
+            // Las tarjetas del catálogo público no tienen botón de eliminar (solo el admin podría hacerlo desde Django Admin)
+            card.innerHTML = `
+                <img src="${imgUrl}" alt="Modelo: ${proyecto.nombre}">
+                <div class="tarjeta-info">
+                    <h3>${proyecto.nombre}</h3>
+                    <p>📐 ${proyecto.area_cuadrada} m²</p>
+                    <p class="precio-tarjeta">💰 $${costoSeguro} CLP</p>
+                </div>
+            `;
+
+            // Al hacer clic, se carga el diseño público en la escena
+            card.onclick = (e) => {
+                e.stopPropagation(); 
+                modal.style.display = 'none';
+                
+                // Restablecemos el título del modal a su original
+                if (headerTitulo) headerTitulo.textContent = 'Mis Diseños Guardados';
+
+                // Llamamos a la misma función de reconstrucción (reutilizamos la lógica)
+                // Se envía "null" en el ID para que, si el usuario decide guardar una modificación, se guarde como su PROYECTO PERSONAL nuevo y no intente sobrescribir el público.
+                const proyectoCopia = {...proyecto, id: null}; 
+                ejecutarCargaEscena3D(proyectoCopia, scene, objetos, camera, controles, callbackActualizarUI);
+            };
+
+            grid.appendChild(card);
+        });
+
+    } catch (err) {
+        console.error("Error al cargar el catálogo de casas prefabricadas:", err);
+    }
+}
 
 function togglePanelDerecho() {
     const panel = document.querySelector('.panel-superior-derecho');

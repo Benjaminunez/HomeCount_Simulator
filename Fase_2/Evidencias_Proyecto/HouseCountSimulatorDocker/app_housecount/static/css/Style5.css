@@ -81,6 +81,7 @@ body.tema-oscuro .btn-contacto:hover { background-color: #d35400 !important; }
     font-size: 1.1rem;
     color: #475569;
     display: flex;
+    flex-direction: column;
     align-items: center;
     gap: 8px;
     z-index: 100;
@@ -301,6 +302,7 @@ body.tema-oscuro #btn-toggle-panel-der:hover { color: #f39c12; }
     background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(8px);
     -webkit-backdrop-filter: blur(8px); padding: 6px 18px; border-radius: 20px;
     box-shadow: 0 4px 15px rgba(0,0,0,0.15); font-size: 0.75rem; color: #333; opacity: 0.85;
+    display: flex;gap: 10px;
 }
 
 /* --- CATÁLOGO INFERIOR --- */
@@ -486,4 +488,41 @@ kbd {
     margin: 0 3px;
     line-height: 1.2;
     text-transform: capitalize;
+}
+
+/* --- Botón Tutorial / Ayuda --- */
+#btn-repetir-tutorial {
+    background-color: var(--color-acento); /* Naranja corporativo[cite: 10] */
+    color: #ffffff;
+    font-size: 18px;
+    font-weight: bold;
+    border: none;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    cursor: pointer;
+    box-shadow: 0 4px 10px rgba(249, 115, 22, 0.3); /* Sombra naranja[cite: 9] */
+    transition: all 0.3s ease;
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+}
+
+#btn-repetir-tutorial:hover {
+    background-color: var(--color-acento-hover); /* Naranja oscuro[cite: 10] */
+    box-shadow: 0 6px 15px rgba(249, 115, 22, 0.4); /* Expansión de sombra[cite: 9] */
+    transform: translateY(-2px); /* Salto sutil[cite: 9] */
+}
+
+#btn-repetir-tutorial:active {
+    transform: translateY(0); /* Vuelve a posición[cite: 9] */
+    box-shadow: 0 2px 5px rgba(249, 115, 22, 0.3);
+}
+
+#display-nombre-proyecto{
+    font-size: 12px; 
+    color: #666; 
+    text-align: right; 
+    margin-top: 5px; 
+    padding-right: 10px;
 }

@@ -34,7 +34,7 @@
                         <i class="fas fa-user-edit"></i> Editar Perfil
                     </a>
                     <div class="separador-menu"></div>
-                    <a href="{% url 'logout' %}" class="btn-salir">
+                    <a href="{% url 'logout' %}" class="btn-salir" onclick="limpiarSesion3D()">
                         <span style="font-size: 16px;">🚪</span>
                         <span>Cerrar Sesión</span>
                     </a>
@@ -50,7 +50,7 @@
     <nav>
         <ul class="nav-links">
             <li><a href="{% url 'inicio' %}">Inicio</a></li>
-            <li><a href="{% url 'contrucion' %}">Servicios</a></li>
+            <li><a href="{% url 'casas_modelo_1' %}">Simulador</a></li>
             <li><a href="{% url 'casas_rapidas' %}">Proyectos</a></li>
             <li><a href="{% url 'inicio' %}#contacto" class="btn-contacto">Contacto</a></li>
             <button id="btn-modo-oscuro">🌙</button>
