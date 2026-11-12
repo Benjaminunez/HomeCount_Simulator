@@ -3,23 +3,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Modalidades de Construcción</title>
-<<<<<<< HEAD
-    <link rel="stylesheet" href="{% static 'css/Style5.css' %}?v=6">
-    <script src="{% static 'js/script_casas1.js' %}?v=6" defer></script>
-    <script src="{% static 'js/guardado_db.js'%}?v=6"></script>
-    <script src="{% static 'js/darkMode.js'%}?v=6"></script>
-=======
-    
     <script>
         const esAdminGlobal = "{{ request.user.is_superuser|yesno:'true,false' }}" === "true";
     </script>
-        
-    <link rel="stylesheet" href="{% static 'css/Style5.css' %}?v=3">
-    <link rel="stylesheet" href="{% static 'css/StyleTutorial.css' %}?v=3">
-    <script src="{% static 'js/script_casas1.js' %}" defer></script>
-    <script src="{% static 'js/guardado_db.js'%}"></script>
 
->>>>>>> origin/main
+    <link rel="stylesheet" href="{% static 'css/Style5.css' %}?v=7">
+    <link rel="stylesheet" href="{% static 'css/StyleTutorial.css' %}?v=7">
+    <script src="{% static 'js/script_casas1.js' %}?v=7" defer></script>
+    <script src="{% static 'js/guardado_db.js'%}?v=7"></script>
+    <script src="{% static 'js/darkMode.js'%}?v=6"></script>
     <link rel="icon" type="image/png" href="media/iconosPestana/martillo.ico"> <!--icono para pestaña de navegador-->
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Henny+Penny&family=Monoton&display=swap');
@@ -95,6 +87,10 @@
                             <p style="margin-bottom: 10px;">
                                 <strong>Perímetro Exterior:</strong> 
                                 <span id="val-perimetro">0</span> metros.
+                            </p>
+                            <p style="margin-bottom: 10px;">
+                                <strong>Área Construida:</strong> 
+                                <span id="val-area">0</span> m².
                             </p>
                         </div>
                     </div>

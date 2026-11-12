@@ -72,6 +72,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let precioActual = 15000;
     let costoTotal = 0;
     let modoConstruccion = 'material'; 
+    let categoriaActual = 'Estructura';
     let rotacionActual = 0;
     let escalaActual = 1.0; 
     let urlActual = null;          
@@ -444,12 +445,13 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    function seleccionarElemento(url3D, precio, esHabitacion, nombreTextura, nombreElemento) {
+    function seleccionarElemento(url3D, precio, esHabitacion, nombreTextura, nombreElemento, categoriaElemento) {
         precioActual = precio;
         modoConstruccion = esHabitacion ? 'habitacion' : 'material';
         urlActual = url3D;                               
         texturaActual = nombreTextura || 'concreto';     
         nombreActual = nombreElemento || (esHabitacion ? 'Módulo Habitacional' : 'Material Base');
+        categoriaActual = categoriaElemento || (esHabitacion ? 'modulo_prehecho' : (window.mapaCategoriasMateriales && window.mapaCategoriasMateriales[nombreElemento] ? window.mapaCategoriasMateriales[nombreElemento] : 'Estructura'));
         modeloActualGLTF = null;
         rotacionActual = 0;
         escalaActual = 1.0; 
@@ -566,6 +568,25 @@ document.addEventListener('DOMContentLoaded', () => {
                     });
                 }
                 
+                // --- Guardar mapa global de categorías ---
+                window.mapaCategoriasMateriales = window.mapaCategoriasMateriales || {};
+                if (data.materiales) {
+                    data.materiales.forEach(m => {
+                        if (m.nombre && m.categoria) {
+                            window.mapaCategoriasMateriales[m.nombre] = m.categoria;
+                            window.mapaCategoriasMateriales[m.nombre.toLowerCase()] = m.categoria;
+                        }
+                    });
+                }
+                if (data.habitaciones) {
+                    data.habitaciones.forEach(h => {
+                        if (h.nombre) {
+                            window.mapaCategoriasMateriales[h.nombre] = 'modulo_prehecho';
+                            window.mapaCategoriasMateriales[h.nombre.toLowerCase()] = 'modulo_prehecho';
+                        }
+                    });
+                }
+
                 // --- RENDERIZADO DE MATERIALES ---
                 data.materiales.forEach((mat, index) => {
                     const btn = document.createElement('button');
@@ -594,11 +615,11 @@ document.addEventListener('DOMContentLoaded', () => {
                     btn.addEventListener('click', function() {
                         document.querySelectorAll('.btn-mat-3d, .btn-hab-3d, .btn-casa-3d').forEach(b => b.classList.remove('activo'));
                         this.classList.add('activo');
-                        seleccionarElemento(mat.archivo_3d, mat.coste, false, mat.textura_key, mat.nombre);
+                        seleccionarElemento(mat.archivo_3d, mat.coste, false, mat.textura_key, mat.nombre, mat.categoria);
                     });
                     
                     if (contenedorMateriales) contenedorMateriales.appendChild(btn);
-                    if (index === 0) seleccionarElemento(mat.archivo_3d, mat.coste, false, mat.textura_key, mat.nombre);
+                    if (index === 0) seleccionarElemento(mat.archivo_3d, mat.coste, false, mat.textura_key, mat.nombre, mat.categoria);
                 });
             }
             
@@ -819,7 +840,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     grupo.add(modelo);
                     grupo.position.set(item.posX, item.posY, item.posZ);
                     grupo.rotation.y = item.rotY;
-                    grupo.userData = { precio: item.precio, tipo: item.tipo, url3D: item.url3D, textura: item.textura, nombre: item.nombre, escala: item.escala || 1.0 };
+                    grupo.userData = { precio: item.precio, tipo: item.tipo, url3D: item.url3D, textura: item.textura, nombre: item.nombre, escala: item.escala || 1.0, categoria: item.categoria || (window.mapaCategoriasMateriales && window.mapaCategoriasMateriales[item.nombre]) || '' };
                     scene.add(grupo);
                     objetosInteractuables.push(grupo);
                     actualizarPresupuesto(item.precio);
@@ -834,7 +855,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 malla.rotation.y = item.rotY;
                 const esc = item.escala || 1.0;
                 malla.scale.set(esc, esc, esc);
-                malla.userData = { precio: item.precio, tipo: item.tipo, url3D: null, textura: item.textura, nombre: item.nombre, escala: esc };
+                malla.userData = { precio: item.precio, tipo: item.tipo, url3D: null, textura: item.textura, nombre: item.nombre, escala: esc, categoria: item.categoria || (window.mapaCategoriasMateriales && window.mapaCategoriasMateriales[item.nombre]) || '' };
                 scene.add(malla);
                 objetosInteractuables.push(malla);
                 actualizarPresupuesto(item.precio);
@@ -885,7 +906,8 @@ document.addEventListener('DOMContentLoaded', () => {
                         grupo.userData = {
                             precio: item.precio || 0, tipo: item.tipo || "material",
                             url3D: item.url3D, textura: item.textura || "concreto",
-                            nombre: item.nombre || "Modelo 3D", escala: item.escalaX || item.escala || 1.0
+                            nombre: item.nombre || "Modelo 3D", escala: item.escalaX || item.escala || 1.0,
+                            categoria: item.categoria || (window.mapaCategoriasMateriales && window.mapaCategoriasMateriales[item.nombre]) || ''
                         };
 
                         scene.add(grupo);
@@ -905,7 +927,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     
                     malla.userData = { 
                         precio: item.precio, tipo: item.tipo, url3D: null, 
-                        textura: item.textura, nombre: item.nombre, escala: esc 
+                        textura: item.textura, nombre: item.nombre, escala: esc,
+                        categoria: item.categoria || (window.mapaCategoriasMateriales && window.mapaCategoriasMateriales[item.nombre]) || ''
                     };
                     
                     scene.add(malla);
@@ -1337,7 +1360,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 nuevoObjeto.position.set(pos.x, pos.y, pos.z);
                 nuevoObjeto.rotation.y = rotacionActual;
                 nuevoObjeto.scale.set(escalaActual, escalaActual, escalaActual);
-                nuevoObjeto.userData = { precio: precioActual, tipo: modoConstruccion, url3D: urlActual, textura: texturaActual, nombre: nombreActual, escala: escalaActual };
+                nuevoObjeto.userData = { precio: precioActual, tipo: modoConstruccion, url3D: urlActual, textura: texturaActual, nombre: nombreActual, escala: escalaActual, categoria: categoriaActual };
                 
                 scene.add(nuevoObjeto);
                 objetosInteractuables.push(nuevoObjeto);
@@ -1585,14 +1608,20 @@ document.addEventListener('DOMContentLoaded', () => {
             const tipo = obj.userData.tipo || '';
             const nombre = (obj.userData.nombre || '').toLowerCase();
 
-            if (!cat && obj.userData.nombre && mapaCategoriasMateriales[obj.userData.nombre]) {
-                cat = mapaCategoriasMateriales[obj.userData.nombre];
-                obj.userData.categoria = cat;
+            if (!cat && obj.userData.nombre) {
+                const mapa = window.mapaCategoriasMateriales || {};
+                cat = mapa[obj.userData.nombre] || mapa[nombre] || '';
+                if (cat) obj.userData.categoria = cat;
             }
 
-            const esModulo = cat === 'modulo_prehecho' || tipo === 'habitacion';
-            const esEstructura = cat.toLowerCase() === 'estructura' ||
-                (!cat && (nombre.includes('wall') || nombre.includes('doorway') || nombre.includes('paneling') || nombre.includes('stairs') || nombre.includes('floor')));
+            const catLower = (cat || '').toLowerCase();
+            const esModulo = catLower === 'modulo_prehecho' || tipo === 'habitacion';
+            const esEstructura = catLower === 'estructura' ||
+                catLower.includes('muro') || catLower.includes('piso') || catLower.includes('techo') ||
+                nombre.includes('muro') || nombre.includes('piso') || nombre.includes('pared') ||
+                nombre.includes('wall') || nombre.includes('doorway') || nombre.includes('paneling') || 
+                nombre.includes('stairs') || nombre.includes('floor') || nombre.includes('escalera') ||
+                nombre.includes('puerta') || nombre.includes('ventana') || nombre.includes('window');
 
             if (!esEstructura && !esModulo) continue; 
 
@@ -1631,11 +1660,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function calcularYMostrarPerimetro() {
         const { perimetro, area } = obtenerCalculoDimensiones(); 
-        const tabDimensiones = document.getElementById('tab-dimensiones');
+        const elPerimetro = document.getElementById('val-perimetro');
+        const elArea = document.getElementById('val-area');
         
-        if (tabDimensiones) {
+        if (elPerimetro) elPerimetro.textContent = perimetro;
+        if (elArea) elArea.textContent = area;
+
+        const tabDimensiones = document.getElementById('tab-dimensiones');
+        if (tabDimensiones && (!elPerimetro || !elArea)) {
             const parrafoInfo = tabDimensiones.querySelector('p.texto-placeholder') || tabDimensiones.querySelector('p');
-            
             if (parrafoInfo) {
                 parrafoInfo.innerHTML = `
                     <strong>Perímetro Exterior:</strong> <span style="color: #e67e22;">${perimetro}</span> metros.<br><br>
