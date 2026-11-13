@@ -1,4 +1,3 @@
-// --- 1. FUNCIÓN DE GUARDADO ---
 async function procesarGuardado(objetos, camera, controles, costoTotal, miEscena, miRenderer, proyectoId = null, proyectoNombre = "", esPrefabricada = false) {
     if (!objetos || objetos.length <= 1) {
         await DialogoUI.alert("La escena está vacía. Añade elementos antes de guardar.");
@@ -241,7 +240,8 @@ async function ejecutarCargaEscena3D(proyecto, scene, objetos, camera, controles
                         grupo.userData = {
                             precio: item.precio || 0, tipo: item.tipo || "material",
                             url3D: item.url3D, textura: item.textura || "concreto",
-                            nombre: item.nombre || "Modelo 3D", escala: item.escalaX || 1.0
+                            nombre: item.nombre || "Modelo 3D", escala: item.escalaX || 1.0,
+                            categoria: item.categoria || (window.mapaCategoriasMateriales && window.mapaCategoriasMateriales[item.nombre]) || ''
                         };
 
                         scene.add(grupo);
@@ -268,7 +268,8 @@ async function ejecutarCargaEscena3D(proyecto, scene, objetos, camera, controles
                 
                 malla.userData = { 
                     precio: item.precio, tipo: item.tipo, url3D: null, 
-                    textura: item.textura, nombre: item.nombre, escala: esc 
+                    textura: item.textura, nombre: item.nombre, escala: esc,
+                    categoria: item.categoria || (window.mapaCategoriasMateriales && window.mapaCategoriasMateriales[item.nombre]) || ''
                 };
                 
                 scene.add(malla);
