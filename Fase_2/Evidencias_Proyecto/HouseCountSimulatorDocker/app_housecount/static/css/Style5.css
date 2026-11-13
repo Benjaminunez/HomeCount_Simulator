@@ -388,13 +388,17 @@ body.tema-oscuro kbd {
 }
 .modal-contenido {
     background-color: #f8fafc; margin: 10% auto; padding: 25px; width: 90%; max-width: 1000px;
-    border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); max-height: 85vh; overflow-y: auto;
+    border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); max-height: 90vh; overflow-y: auto;
 }
 .modal-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #e2e8f0; padding-bottom: 15px; margin-bottom: 20px; }
 .modal-header h2 { margin: 0; color: #1e293b; }
 .cerrar-modal { font-size: 28px; font-weight: bold; cursor: pointer; color: #64748b; }
 .cerrar-modal:hover { color: #ef4444; }
-.grid-disenos { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 20px; }
+.grid-disenos { 
+    display: grid; 
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); 
+    gap: 20px; 
+}
 .tarjeta-diseno { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 10px; overflow: hidden; cursor: pointer; transition: transform 0.2s ease, box-shadow 0.2s ease; position: relative;}
 .tarjeta-diseno:hover { transform: translateY(-5px); box-shadow: 0 8px 15px rgba(0,0,0,0.1); border-color: #e67e22; }
 .tarjeta-diseno img { width: 100%; height: 180px; object-fit: cover; background-color: #e2e8f0; border-bottom: 1px solid #e2e8f0; }
@@ -525,4 +529,26 @@ kbd {
     text-align: right; 
     margin-top: 5px; 
     padding-right: 10px;
+}
+
+@media (max-width: 768px) {
+    .modal-contenido {
+        width: 95%; /* Aprovecha más el ancho de la pantalla */
+        padding: 15px; /* Reduce el relleno interior */
+        margin: 5% auto; 
+    }
+    
+    .grid-disenos {
+        /* Fuerza a que las tarjetas ocupen 1 sola columna en móviles */
+        grid-template-columns: 1fr; 
+        gap: 15px;
+    }
+
+    .tarjeta-diseno img {
+        height: 160px; /* Reduce un poco la altura de la imagen para no ocupar tanta pantalla */
+    }
+
+    .modal-header h2 {
+        font-size: 20px; /* Ajusta el tamaño del título */
+    }
 }

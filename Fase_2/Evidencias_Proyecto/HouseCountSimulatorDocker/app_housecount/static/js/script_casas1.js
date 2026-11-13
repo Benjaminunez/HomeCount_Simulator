@@ -72,6 +72,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let precioActual = 15000;
     let costoTotal = 0;
     let modoConstruccion = 'material'; 
+    let categoriaActual = 'Estructura';
     let rotacionActual = 0;
     let escalaActual = 1.0; 
     let urlActual = null;          
@@ -287,85 +288,164 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function actualizarCotasVisuales() {
-        while(grupoCotas.children.length > 0){ 
-            grupoCotas.remove(grupoCotas.children[0]); 
+        while (grupoCotas.children.length > 0) {
+            grupoCotas.remove(grupoCotas.children[0]);
         }
 
         if (objetosInteractuables.length <= 1) return;
 
-        const grupos = [];
-        const visitados = new Set();
-        const margenEpsilon = 5; 
+        const yNivel = 1.5; // Ligeramente sobre el suelo para evitar cruzar puertas/ventanas
+        const offsetExterior = 20; 
+        const margenAgrupacionEstructuras = 15; // Estrecho: evita unir dos casas que están cerca
+        const margenFusionMuros = 65; // Amplio: salta puertas dentro de una misma casa
+        const margenAlineacion = 15; 
 
+        // 1. Obtener cajas de muros y módulos
+        const cajas = [];
         for (let i = 1; i < objetosInteractuables.length; i++) {
-            if (visitados.has(i)) continue;
+            const obj = objetosInteractuables[i];
+            if (!obj || !obj.userData) continue;
 
-            const grupoActual = [];
-            const cola = [objetosInteractuables[i]];
-            visitados.add(i);
+            const tipo = (obj.userData.tipo || '').toLowerCase();
+            const cat = (obj.userData.categoria || '').toLowerCase();
+            const nombre = (obj.userData.nombre || '').toLowerCase();
 
-            while (cola.length > 0) {
-                const actual = cola.shift();
-                grupoActual.push(actual);
-                
-                const boxActual = new THREE.Box3().setFromObject(actual);
-                boxActual.expandByScalar(margenEpsilon); 
+            const esModulo = cat === 'modulo_prehecho' || tipo === 'habitacion';
+            const esMuro = cat === 'estructura' || cat.includes('muro') || nombre.includes('muro') || nombre.includes('wall') || nombre.includes('pared');
+            const esPiso = cat.includes('piso') || nombre.includes('piso') || nombre.includes('floor');
+            const esTecho = cat.includes('techo') || nombre.includes('techo') || nombre.includes('roof');
 
-                for (let j = 1; j < objetosInteractuables.length; j++) {
-                    if (!visitados.has(j)) {
-                        const boxOtro = new THREE.Box3().setFromObject(objetosInteractuables[j]);
-                        if (boxActual.intersectsBox(boxOtro)) {
-                            visitados.add(j);
-                            cola.push(objetosInteractuables[j]);
-                        }
+            if ((esMuro || esModulo) && !esPiso && !esTecho) {
+                cajas.push(new THREE.Box3().setFromObject(obj));
+            }
+        }
+
+        if (cajas.length === 0) return;
+
+        // 2. Separar construcciones independientes (con margen estricto)
+        const estructuras = [];
+        cajas.forEach(box => {
+            let indicesConectados = [];
+            const boxExpandida = box.clone().expandByScalar(margenAgrupacionEstructuras);
+            
+            for (let i = 0; i < estructuras.length; i++) {
+                for (let b of estructuras[i]) {
+                    if (boxExpandida.intersectsBox(b)) {
+                        indicesConectados.push(i);
+                        break;
                     }
                 }
             }
-            grupos.push(grupoActual);
-        }
 
-        const offsetExterior = 45; 
-        const yNivel = 2; 
+            if (indicesConectados.length === 0) {
+                estructuras.push([box]);
+            } else {
+                const indexPrincipal = indicesConectados[0];
+                estructuras[indexPrincipal].push(box);
+                for (let i = indicesConectados.length - 1; i > 0; i--) {
+                    const idx = indicesConectados[i];
+                    estructuras[indexPrincipal].push(...estructuras[idx]);
+                    estructuras.splice(idx, 1);
+                }
+            }
+        });
 
-        grupos.forEach((grupo) => {
-            const boxGrupo = new THREE.Box3();
-            grupo.forEach(obj => boxGrupo.expandByObject(obj));
+        // 3. Procesar cada construcción por separado
+        estructuras.forEach(cajasEstructura => {
+            const cajaLocal = new THREE.Box3();
+            cajasEstructura.forEach(box => cajaLocal.union(box));
 
-            const minX = boxGrupo.min.x;
-            const maxX = boxGrupo.max.x;
-            const minZ = boxGrupo.min.z;
-            const maxZ = boxGrupo.max.z;
-            const minY = boxGrupo.min.y; 
-            const maxY = boxGrupo.max.y; 
-
-            const anchoMundo = maxX - minX;
-            const anchoMetros = (anchoMundo / 50).toFixed(2); 
-            
-            const largoMundo = maxZ - minZ;
-            const largoMetros = (largoMundo / 50).toFixed(2);
-
-            const altoMundo = maxY - minY; 
-            const altoMetros = (altoMundo / 50).toFixed(2); 
-
-            if (anchoMundo > 1) {
-                const p1X = new THREE.Vector3(minX, yNivel, maxZ);
-                const p2X = new THREE.Vector3(maxX, yNivel, maxZ);
-                const dirOffset = new THREE.Vector3(0, 0, 1); 
-                grupoCotas.add(crearLineaCotaArquitectonica(p1X, p2X, dirOffset, offsetExterior, `${anchoMetros} m`));
+            // Unir muros en X
+            let segmentosX = cajasEstructura.map(b => b.clone());
+            let uniendoX = true;
+            while (uniendoX) {
+                uniendoX = false;
+                for (let i = 0; i < segmentosX.length; i++) {
+                    for (let j = i + 1; j < segmentosX.length; j++) {
+                        const b1 = segmentosX[i];
+                        const b2 = segmentosX[j];
+                        const alineadosZ = Math.abs(b1.min.z - b2.min.z) < margenAlineacion && Math.abs(b1.max.z - b2.max.z) < margenAlineacion;
+                        const seTocanX = b1.max.x >= b2.min.x - margenFusionMuros && b1.min.x <= b2.max.x + margenFusionMuros;
+                        if (alineadosZ && seTocanX) {
+                            b1.union(b2); segmentosX.splice(j, 1); uniendoX = true; break;
+                        }
+                    }
+                    if (uniendoX) break;
+                }
             }
 
-            if (largoMundo > 1) {
-                const p1Z = new THREE.Vector3(minX, yNivel, minZ);
-                const p2Z = new THREE.Vector3(minX, yNivel, maxZ);
-                const dirOffset = new THREE.Vector3(-1, 0, 0); 
-                grupoCotas.add(crearLineaCotaArquitectonica(p1Z, p2Z, dirOffset, offsetExterior, `${largoMetros} m`));
+            // Unir muros en Z
+            let segmentosZ = cajasEstructura.map(b => b.clone());
+            let uniendoZ = true;
+            while (uniendoZ) {
+                uniendoZ = false;
+                for (let i = 0; i < segmentosZ.length; i++) {
+                    for (let j = i + 1; j < segmentosZ.length; j++) {
+                        const b1 = segmentosZ[i];
+                        const b2 = segmentosZ[j];
+                        const alineadosX = Math.abs(b1.min.x - b2.min.x) < margenAlineacion && Math.abs(b1.max.x - b2.max.x) < margenAlineacion;
+                        const seTocanZ = b1.max.z >= b2.min.z - margenFusionMuros && b1.min.z <= b2.max.z + margenFusionMuros;
+                        if (alineadosX && seTocanZ) {
+                            b1.union(b2); segmentosZ.splice(j, 1); uniendoZ = true; break;
+                        }
+                    }
+                    if (uniendoZ) break;
+                }
             }
 
-            if (altoMundo > 1) {
-                const p1Y = new THREE.Vector3(maxX, minY, maxZ);
-                const p2Y = new THREE.Vector3(maxX, maxY, maxZ);
-                const dirOffsetY = new THREE.Vector3(1, 0, 0); 
-                grupoCotas.add(crearLineaCotaArquitectonica(p1Y, p2Y, dirOffsetY, offsetExterior, `${altoMetros} m`));
+            // 4. Dibujar Cotas X (SOLO perímetro exterior real de esta estructura)
+            segmentosX.forEach(box => {
+                const anchoMundo = box.max.x - box.min.x;
+                const largoMundo = box.max.z - box.min.z;
+                
+                if (anchoMundo >= largoMundo && anchoMundo >= 45) {
+                    const esCaraFrontal = Math.abs(box.max.z - cajaLocal.max.z) < margenAlineacion;
+                    const esCaraTrasera = Math.abs(box.min.z - cajaLocal.min.z) < margenAlineacion;
+
+                    // Si es un módulo completo (habitación), dibuja ambos bordes exteriores
+                    if (esCaraFrontal) {
+                        const p1 = new THREE.Vector3(box.min.x, yNivel, box.max.z);
+                        const p2 = new THREE.Vector3(box.max.x, yNivel, box.max.z);
+                        grupoCotas.add(crearLineaCotaArquitectonica(p1, p2, new THREE.Vector3(0, 0, 1), offsetExterior, `${(anchoMundo / 50).toFixed(2)} m`));
+                    }
+                    // Evita duplicar la línea trasera si mide exactamente lo mismo que la frontal
+                    if (esCaraTrasera && !esCaraFrontal) {
+                        const p1 = new THREE.Vector3(box.min.x, yNivel, box.min.z);
+                        const p2 = new THREE.Vector3(box.max.x, yNivel, box.min.z);
+                        grupoCotas.add(crearLineaCotaArquitectonica(p1, p2, new THREE.Vector3(0, 0, -1), offsetExterior, `${(anchoMundo / 50).toFixed(2)} m`));
+                    }
+                }
+            });
+
+            // 5. Dibujar Cotas Z (SOLO perímetro exterior real de esta estructura)
+            segmentosZ.forEach(box => {
+                const anchoMundo = box.max.x - box.min.x;
+                const largoMundo = box.max.z - box.min.z;
+                
+                if (largoMundo > anchoMundo && largoMundo >= 45) {
+                    const esCaraDerecha = Math.abs(box.max.x - cajaLocal.max.x) < margenAlineacion;
+                    const esCaraIzquierda = Math.abs(box.min.x - cajaLocal.min.x) < margenAlineacion;
+
+                    if (esCaraIzquierda) {
+                        const p1 = new THREE.Vector3(box.min.x, yNivel, box.min.z);
+                        const p2 = new THREE.Vector3(box.min.x, yNivel, box.max.z);
+                        grupoCotas.add(crearLineaCotaArquitectonica(p1, p2, new THREE.Vector3(-1, 0, 0), offsetExterior, `${(largoMundo / 50).toFixed(2)} m`));
+                    }
+                    if (esCaraDerecha && !esCaraIzquierda) {
+                        const p1 = new THREE.Vector3(box.max.x, yNivel, box.min.z);
+                        const p2 = new THREE.Vector3(box.max.x, yNivel, box.max.z);
+                        grupoCotas.add(crearLineaCotaArquitectonica(p1, p2, new THREE.Vector3(1, 0, 0), offsetExterior, `${(largoMundo / 50).toFixed(2)} m`));
+                    }
+                }
+            });
+
+            // 6. Cota de Altura (Una sola por cada estructura separada)
+            const altoMundo = cajaLocal.max.y - cajaLocal.min.y;
+            if (altoMundo >= 45) {
+                const p1Y = new THREE.Vector3(cajaLocal.max.x, cajaLocal.min.y, cajaLocal.max.z);
+                const p2Y = new THREE.Vector3(cajaLocal.max.x, cajaLocal.max.y, cajaLocal.max.z);
+                const dirOffsetY = new THREE.Vector3(1, 0, 0);
+                grupoCotas.add(crearLineaCotaArquitectonica(p1Y, p2Y, dirOffsetY, offsetExterior + 15, `${(altoMundo / 50).toFixed(2)} m`));
             }
         });
     }
@@ -444,12 +524,13 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    function seleccionarElemento(url3D, precio, esHabitacion, nombreTextura, nombreElemento) {
+    function seleccionarElemento(url3D, precio, esHabitacion, nombreTextura, nombreElemento, categoriaElemento) {
         precioActual = precio;
         modoConstruccion = esHabitacion ? 'habitacion' : 'material';
         urlActual = url3D;                               
         texturaActual = nombreTextura || 'concreto';     
         nombreActual = nombreElemento || (esHabitacion ? 'Módulo Habitacional' : 'Material Base');
+        categoriaActual = categoriaElemento || (esHabitacion ? 'modulo_prehecho' : (window.mapaCategoriasMateriales && window.mapaCategoriasMateriales[nombreElemento] ? window.mapaCategoriasMateriales[nombreElemento] : 'Estructura'));
         modeloActualGLTF = null;
         rotacionActual = 0;
         escalaActual = 1.0; 
@@ -566,6 +647,25 @@ document.addEventListener('DOMContentLoaded', () => {
                     });
                 }
                 
+                // --- Guardar mapa global de categorías ---
+                window.mapaCategoriasMateriales = window.mapaCategoriasMateriales || {};
+                if (data.materiales) {
+                    data.materiales.forEach(m => {
+                        if (m.nombre && m.categoria) {
+                            window.mapaCategoriasMateriales[m.nombre] = m.categoria;
+                            window.mapaCategoriasMateriales[m.nombre.toLowerCase()] = m.categoria;
+                        }
+                    });
+                }
+                if (data.habitaciones) {
+                    data.habitaciones.forEach(h => {
+                        if (h.nombre) {
+                            window.mapaCategoriasMateriales[h.nombre] = 'modulo_prehecho';
+                            window.mapaCategoriasMateriales[h.nombre.toLowerCase()] = 'modulo_prehecho';
+                        }
+                    });
+                }
+
                 // --- RENDERIZADO DE MATERIALES ---
                 data.materiales.forEach((mat, index) => {
                     const btn = document.createElement('button');
@@ -594,11 +694,11 @@ document.addEventListener('DOMContentLoaded', () => {
                     btn.addEventListener('click', function() {
                         document.querySelectorAll('.btn-mat-3d, .btn-hab-3d, .btn-casa-3d').forEach(b => b.classList.remove('activo'));
                         this.classList.add('activo');
-                        seleccionarElemento(mat.archivo_3d, mat.coste, false, mat.textura_key, mat.nombre);
+                        seleccionarElemento(mat.archivo_3d, mat.coste, false, mat.textura_key, mat.nombre, mat.categoria);
                     });
                     
                     if (contenedorMateriales) contenedorMateriales.appendChild(btn);
-                    if (index === 0) seleccionarElemento(mat.archivo_3d, mat.coste, false, mat.textura_key, mat.nombre);
+                    if (index === 0) seleccionarElemento(mat.archivo_3d, mat.coste, false, mat.textura_key, mat.nombre, mat.categoria);
                 });
             }
             
@@ -819,7 +919,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     grupo.add(modelo);
                     grupo.position.set(item.posX, item.posY, item.posZ);
                     grupo.rotation.y = item.rotY;
-                    grupo.userData = { precio: item.precio, tipo: item.tipo, url3D: item.url3D, textura: item.textura, nombre: item.nombre, escala: item.escala || 1.0 };
+                    grupo.userData = { precio: item.precio, tipo: item.tipo, url3D: item.url3D, textura: item.textura, nombre: item.nombre, escala: item.escala || 1.0, categoria: item.categoria || (window.mapaCategoriasMateriales && window.mapaCategoriasMateriales[item.nombre]) || '' };
                     scene.add(grupo);
                     objetosInteractuables.push(grupo);
                     actualizarPresupuesto(item.precio);
@@ -834,7 +934,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 malla.rotation.y = item.rotY;
                 const esc = item.escala || 1.0;
                 malla.scale.set(esc, esc, esc);
-                malla.userData = { precio: item.precio, tipo: item.tipo, url3D: null, textura: item.textura, nombre: item.nombre, escala: esc };
+                malla.userData = { precio: item.precio, tipo: item.tipo, url3D: null, textura: item.textura, nombre: item.nombre, escala: esc, categoria: item.categoria || (window.mapaCategoriasMateriales && window.mapaCategoriasMateriales[item.nombre]) || '' };
                 scene.add(malla);
                 objetosInteractuables.push(malla);
                 actualizarPresupuesto(item.precio);
@@ -885,7 +985,8 @@ document.addEventListener('DOMContentLoaded', () => {
                         grupo.userData = {
                             precio: item.precio || 0, tipo: item.tipo || "material",
                             url3D: item.url3D, textura: item.textura || "concreto",
-                            nombre: item.nombre || "Modelo 3D", escala: item.escalaX || item.escala || 1.0
+                            nombre: item.nombre || "Modelo 3D", escala: item.escalaX || item.escala || 1.0,
+                            categoria: item.categoria || (window.mapaCategoriasMateriales && window.mapaCategoriasMateriales[item.nombre]) || ''
                         };
 
                         scene.add(grupo);
@@ -905,7 +1006,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     
                     malla.userData = { 
                         precio: item.precio, tipo: item.tipo, url3D: null, 
-                        textura: item.textura, nombre: item.nombre, escala: esc 
+                        textura: item.textura, nombre: item.nombre, escala: esc,
+                        categoria: item.categoria || (window.mapaCategoriasMateriales && window.mapaCategoriasMateriales[item.nombre]) || ''
                     };
                     
                     scene.add(malla);
@@ -1337,7 +1439,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 nuevoObjeto.position.set(pos.x, pos.y, pos.z);
                 nuevoObjeto.rotation.y = rotacionActual;
                 nuevoObjeto.scale.set(escalaActual, escalaActual, escalaActual);
-                nuevoObjeto.userData = { precio: precioActual, tipo: modoConstruccion, url3D: urlActual, textura: texturaActual, nombre: nombreActual, escala: escalaActual };
+                nuevoObjeto.userData = { precio: precioActual, tipo: modoConstruccion, url3D: urlActual, textura: texturaActual, nombre: nombreActual, escala: escalaActual, categoria: categoriaActual };
                 
                 scene.add(nuevoObjeto);
                 objetosInteractuables.push(nuevoObjeto);
@@ -1574,8 +1676,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const mapaCategoriasMateriales = window.mapaCategoriasMateriales || {};
 
     function obtenerCalculoDimensiones() {
-        const TAMANO_CELDA = 50; 
-        const celdas = new Set();
+        const cajaTotal = new THREE.Box3();
+        let hayElementos = false;
 
         for (let i = 1; i < objetosInteractuables.length; i++) {
             const obj = objetosInteractuables[i];
@@ -1585,57 +1687,63 @@ document.addEventListener('DOMContentLoaded', () => {
             const tipo = obj.userData.tipo || '';
             const nombre = (obj.userData.nombre || '').toLowerCase();
 
-            if (!cat && obj.userData.nombre && mapaCategoriasMateriales[obj.userData.nombre]) {
-                cat = mapaCategoriasMateriales[obj.userData.nombre];
-                obj.userData.categoria = cat;
+            // Mantenemos tu excelente lógica para identificar qué es estructura
+            if (!cat && obj.userData.nombre) {
+                const mapa = window.mapaCategoriasMateriales || {};
+                cat = mapa[obj.userData.nombre] || mapa[nombre] || '';
+                if (cat) obj.userData.categoria = cat;
             }
 
-            const esModulo = cat === 'modulo_prehecho' || tipo === 'habitacion';
-            const esEstructura = cat.toLowerCase() === 'estructura' ||
-                (!cat && (nombre.includes('wall') || nombre.includes('doorway') || nombre.includes('paneling') || nombre.includes('stairs') || nombre.includes('floor')));
+            const catLower = (cat || '').toLowerCase();
+            const esModulo = catLower === 'modulo_prehecho' || tipo === 'habitacion';
+            const esEstructura = catLower === 'estructura' ||
+                catLower.includes('muro') || catLower.includes('piso') || catLower.includes('techo') ||
+                nombre.includes('muro') || nombre.includes('piso') || nombre.includes('pared') ||
+                nombre.includes('wall') || nombre.includes('doorway') || nombre.includes('paneling') || 
+                nombre.includes('stairs') || nombre.includes('floor') || nombre.includes('escalera') ||
+                nombre.includes('puerta') || nombre.includes('ventana') || nombre.includes('window');
 
-            if (!esEstructura && !esModulo) continue; 
-
-            const tamCeldasOcupadas = esModulo ? 4 : 1;
-            const tamMundo = tamCeldasOcupadas * TAMANO_CELDA;
-
-            const gridX = Math.round((obj.position.x - tamMundo / 2) / TAMANO_CELDA);
-            const gridZ = Math.round((obj.position.z - tamMundo / 2) / TAMANO_CELDA);
-
-            for (let dx = 0; dx < tamCeldasOcupadas; dx++) {
-                for (let dz = 0; dz < tamCeldasOcupadas; dz++) {
-                    celdas.add(`${gridX + dx},${gridZ + dz}`);
-                }
-            }
-        }
-
-        if (celdas.size === 0) return { perimetro: 0, area: 0 };
-
-        const vecinos = [[1, 0], [-1, 0], [0, 1], [0, -1]];
-        let ladosExteriores = 0;
-
-        for (const celda of celdas) {
-            const parts = celda.split(',');
-            const cx = parseInt(parts[0], 10);
-            const cz = parseInt(parts[1], 10);
-            for (const [vx, vz] of vecinos) {
-                if (!celdas.has(`${cx + vx},${cz + vz}`)) {
-                    ladosExteriores++;
-                }
+            // Si es parte de la casa, expandimos la "caja invisible" para que lo cubra
+            if (esEstructura || esModulo) {
+                cajaTotal.expandByObject(obj);
+                hayElementos = true;
             }
         }
 
-        return { perimetro: ladosExteriores, area: celdas.size };
+        // Si no hay nada construido, devolvemos 0
+        if (!hayElementos) return { perimetro: "0.00", area: "0.00" };
+
+        // 1. Calculamos las dimensiones físicas en el mundo 3D
+        const anchoMundo = cajaTotal.max.x - cajaTotal.min.x;
+        const largoMundo = cajaTotal.max.z - cajaTotal.min.z;
+
+        // 2. Convertimos a Metros (50 unidades de Three.js = 1 metro)
+        const anchoMetros = anchoMundo / 50;
+        const largoMetros = largoMundo / 50;
+
+        // 3. Matemática exacta
+        const area = anchoMetros * largoMetros;
+        const perimetro = (anchoMetros * 2) + (largoMetros * 2);
+
+        // Retornamos los valores con 2 decimales para mayor precisión
+        return { 
+            perimetro: perimetro.toFixed(2), 
+            area: area.toFixed(2) 
+        };
     }
     window.obtenerCalculoDimensiones = obtenerCalculoDimensiones;
 
     function calcularYMostrarPerimetro() {
         const { perimetro, area } = obtenerCalculoDimensiones(); 
-        const tabDimensiones = document.getElementById('tab-dimensiones');
+        const elPerimetro = document.getElementById('val-perimetro');
+        const elArea = document.getElementById('val-area');
         
-        if (tabDimensiones) {
+        if (elPerimetro) elPerimetro.textContent = perimetro;
+        if (elArea) elArea.textContent = area;
+
+        const tabDimensiones = document.getElementById('tab-dimensiones');
+        if (tabDimensiones && (!elPerimetro || !elArea)) {
             const parrafoInfo = tabDimensiones.querySelector('p.texto-placeholder') || tabDimensiones.querySelector('p');
-            
             if (parrafoInfo) {
                 parrafoInfo.innerHTML = `
                     <strong>Perímetro Exterior:</strong> <span style="color: #e67e22;">${perimetro}</span> metros.<br><br>
@@ -1765,10 +1873,17 @@ document.addEventListener('DOMContentLoaded', () => {
         const horaFormateada = ahora.toLocaleTimeString('es-CL', { hour: '2-digit', minute: '2-digit' });
         const folio = 'HC-' + ahora.getFullYear() + '-' + Math.floor(1000 + Math.random() * 9000);
 
+        // --- NUEVO: Capturamos la imagen del lienzo 3D en formato JPEG (más ligero que PNG) ---
+        let imagenCaptura = "";
+        if (typeof renderer !== 'undefined') {
+            imagenCaptura = renderer.domElement.toDataURL("image/jpeg", 0.8);
+        }
+
         return {
             folio: folio, fecha: `${fechaFormateada}, ${horaFormateada} hrs`,
             perimetro: dim.perimetro, area: dim.area, costoTotal: costoTotal,
-            totalPiezas: totalPiezas, items: Object.values(conteo)
+            totalPiezas: totalPiezas, items: Object.values(conteo),
+            imagenProyecto: imagenCaptura // <-- Pasamos la imagen a la plantilla HTML
         };
     }
 
@@ -1819,6 +1934,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 </tr>`;
         }).join('');
 
+        // --- NUEVO: Generamos el HTML de la imagen solo si se capturó correctamente ---
+        const bloqueImagen = datos.imagenProyecto 
+            ? `<div style="text-align: center; margin-bottom: 24px;">
+                 <img src="${datos.imagenProyecto}" alt="Vista 3D del Proyecto" style="max-width: 100%; max-height: 350px; object-fit: contain; border-radius: 8px; border: 1px solid #cbd5e1; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
+               </div>` 
+            : '';
+
         return `<!DOCTYPE html>
     <html lang="es">
     <head>
@@ -1850,6 +1972,10 @@ document.addEventListener('DOMContentLoaded', () => {
             <div class="logo-box"><h1>HomeCount <span>Simulator</span></h1><p>Informe Técnico de Construcción</p></div>
             <div class="meta-box"><div class="meta-folio">FOLIO: ${datos.folio}</div><div>Fecha: ${datos.fecha}</div></div>
         </div>
+        
+        <!-- --- AQUI SE INSERTA LA IMAGEN 3D --- -->
+        ${bloqueImagen}
+
         <div style="display:flex; justify-content:space-between; margin-bottom: 20px;">
             <div><strong>Perímetro:</strong> <span style="color:#e67e22">${datos.perimetro} m</span></div>
             <div><strong>Área:</strong> <span style="color:#2c3e50">${datos.area} m²</span></div>
@@ -1866,7 +1992,6 @@ document.addEventListener('DOMContentLoaded', () => {
     </body>
     </html>`;
     }
-
     // --- ACCIONES DEL MODAL Y DESCARGA ---
     window.abrirModalInforme = function() {
         const datos = obtenerDatosInforme();

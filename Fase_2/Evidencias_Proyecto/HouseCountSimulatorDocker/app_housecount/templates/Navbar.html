@@ -27,12 +27,23 @@
                     {% endif %}
                     <span style="font-weight: bold;">{{ user.username|quitar_barras }}</span>
                 </div>
-            
                 <div id="menu-desplegable-perfil" class="menu-perfil-oculto">
-                    <a href="#" id="btn-editar-perfil" class="opcion-menu">
-                        <i class="fas fa-user-edit"></i> Editar Perfil
-                    </a>
+                    
+                    {% if user.is_superuser or user.is_staff %}
+                        <!-- Opción SOLO para Administradores -->
+                        <a href="{% url 'admin:index' %}" class="opcion-menu">
+                            <i class="fas fa-tools"></i> Panel de Administración
+                        </a>
+                    {% else %}
+                        <!-- Opción SOLO para Usuarios Normales -->
+                        <a href="#" id="btn-editar-perfil" class="opcion-menu">
+                            <i class="fas fa-user-edit"></i> Editar Perfil
+                        </a>
+                    {% endif %}
+
                     <div class="separador-menu"></div>
+                    
+                    <!-- Cerrar sesión (Visible para todos) -->
                     <a href="{% url 'logout' %}" class="btn-salir" onclick="limpiarSesion3D()">
                         <span style="font-size: 16px;">🚪</span>
                         <span>Cerrar Sesión</span>
