@@ -4,13 +4,18 @@ document.addEventListener('DOMContentLoaded', function() {
     const previewImg = document.getElementById('avatar-preview');
     const defaultIcon = document.getElementById('default-avatar-icon');
     const labelContainer = document.querySelector('.avatar-preview-label');
+    const textoUpload = document.getElementById('texto-upload');
 
     // 1. RESTAURAR: Si la página recargó por un error y hay una imagen guardada
+    // Se verifica que base64Input exista y contenga información válida
     if (base64Input && base64Input.value.includes('base64,')) {
         previewImg.src = base64Input.value;
         previewImg.style.display = 'block';
         defaultIcon.style.display = 'none';
-        labelContainer.classList.add('has-image');
+        
+        // Clases y textos del nuevo diseño
+        labelContainer.classList.add('has-file');
+        if (textoUpload) textoUpload.textContent = '¡Imagen seleccionada!';
     }
 
     // 2. NUEVA SUBIDA: Cuando el usuario elige una foto nueva
@@ -20,11 +25,14 @@ document.addEventListener('DOMContentLoaded', function() {
             if (file) {
                 const reader = new FileReader();
                 reader.onload = function(e) {
-                    // Mostrar preview
+                    // Mostrar miniatura
                     previewImg.src = e.target.result;
                     previewImg.style.display = 'block';
                     defaultIcon.style.display = 'none';
-                    labelContainer.classList.add('has-image');
+                    
+                    // Clases y textos del nuevo diseño
+                    labelContainer.classList.add('has-file');
+                    if (textoUpload) textoUpload.textContent = '¡Imagen seleccionada!';
                     
                     // Guardar en el input oculto como texto para sobrevivir recargas
                     if (base64Input) base64Input.value = e.target.result;
@@ -35,9 +43,31 @@ document.addEventListener('DOMContentLoaded', function() {
                 previewImg.src = '';
                 previewImg.style.display = 'none';
                 defaultIcon.style.display = 'block';
-                labelContainer.classList.remove('has-image');
+                
+                // Restauramos el diseño a su estado original
+                labelContainer.classList.remove('has-file');
+                if (textoUpload) textoUpload.textContent = 'Subir foto de perfil';
                 if (base64Input) base64Input.value = '';
             }
         });
     }
+
+    // 3. AUTOCOMPLETAR PLACEHOLDERS: Poner nombre a los campos que genera Django
+    const formInputs = document.querySelectorAll('.login-form input[type="text"], .login-form input[type="password"]');
+        formInputs.forEach(input => {
+            if (!input.placeholder) {
+                const nombreCampo = input.name.toLowerCase();
+                
+                // Asignar placeholders personalizados en español según el nombre del campo
+                if (nombreCampo.includes('username')) {
+                    input.placeholder = 'Ej: Juan Perez'; 
+                } else if (nombreCampo.includes('pass1') || nombreCampo === 'password' || nombreCampo.includes('new_password1')) {
+                    input.placeholder = 'Escribe una contraseña'; // También puedes usar '••••••••'
+                } else if (nombreCampo.includes('pass2') || nombreCampo.includes('confirm') || nombreCampo.includes('new_password2')) {
+                    input.placeholder = 'Repite tu contraseña'; // También puedes usar '••••••••'
+                } else {
+                    input.placeholder = 'Escribe aquí...';
+                }
+            }
+        });
 });

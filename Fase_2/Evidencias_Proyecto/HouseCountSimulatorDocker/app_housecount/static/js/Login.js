@@ -24,3 +24,22 @@ document.addEventListener('DOMContentLoaded', () => {
         }, 4000); 
     }
 });
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Buscar el input del nombre de usuario
+    const usernameInput = document.querySelector('input[name="username"]') || document.getElementById('id_username');
+    
+    if (usernameInput) {
+        // 1. Limpiar el valor al recargar la página (reemplaza "_" por espacios)
+        if (usernameInput.value) {
+            usernameInput.value = usernameInput.value.replace(/_/g, ' ');
+        }
+
+        // 2. Prevenir que el usuario escriba guiones bajos manualmente por error
+        usernameInput.addEventListener('input', function() {
+            if (this.value.includes('_')) {
+                this.value = this.value.replace(/_/g, ' ');
+            }
+        });
+    }
+});
