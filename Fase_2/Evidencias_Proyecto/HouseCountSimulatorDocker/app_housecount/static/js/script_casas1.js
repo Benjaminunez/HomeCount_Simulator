@@ -2030,47 +2030,45 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     window.descargarInformePDF = function() {
-        const datos = obtenerDatosInforme();
-        if (datos.totalPiezas === 0) return;
+    const datos = obtenerDatosInforme();
+    if (datos.totalPiezas === 0) return;
 
-        if (typeof html2pdf !== 'undefined') {
-            const tempDiv = document.createElement('div');
-            tempDiv.innerHTML = generarHTMLInforme(datos, true);
-            tempDiv.style.position = 'fixed';
-            tempDiv.style.left = '-9999px';
-            tempDiv.style.top = '0';
-            tempDiv.style.width = '780px';
-            tempDiv.style.background = '#ffffff';
-            document.body.appendChild(tempDiv);
+    if (typeof html2pdf !== 'undefined') {
+        // 1. Generamos el HTML como texto (string) directamente
+        const htmlString = generarHTMLInforme(datos, true);
 
-            const btnPdf = document.querySelector('.btn-descarga-pdf strong');
-            const textoOriginal = btnPdf ? btnPdf.textContent : '';
-            if (btnPdf) btnPdf.textContent = 'Generando archivo PDF...';
+        const btnPdf = document.querySelector('.btn-descarga-pdf strong');
+        const textoOriginal = btnPdf ? btnPdf.textContent : '';
+        if (btnPdf) btnPdf.textContent = 'Generando archivo PDF...';
 
-            const opt = {
-                margin: [8, 8, 8, 8],
-                filename: `Informe_Construccion_HomeCount_${datos.folio}.pdf`,
-                image: { type: 'jpeg', quality: 0.98 },
-                html2canvas: { scale: 2, useCORS: true, logging: false },
-                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-            };
+        const opt = {
+            margin: [8, 8, 8, 8],
+            filename: `Informe_Construccion_HomeCount_${datos.folio}.pdf`,
+            image: { type: 'jpeg', quality: 0.98 },
+            html2canvas: { 
+                scale: 2, 
+                useCORS: true, 
+                logging: false,
+                letterRendering: true
+            },
+            jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+        };
 
-            html2pdf().set(opt).from(tempDiv).save()
-                .then(() => {
-                    if (btnPdf) btnPdf.textContent = textoOriginal;
-                    if (tempDiv.parentNode) tempDiv.parentNode.removeChild(tempDiv);
-                    cerrarModalInforme();
-                })
-                .catch(err => {
-                    console.error("Error generando PDF con html2pdf:", err);
-                    if (btnPdf) btnPdf.textContent = textoOriginal;
-                    if (tempDiv.parentNode) tempDiv.parentNode.removeChild(tempDiv);
-                    descargarInformeHTML();
-                });
-        } else {
-            descargarInformeHTML();
-        }
-    };
+        // 2. Le pasamos el string de HTML directamente al método .from()
+        html2pdf().set(opt).from(htmlString).save()
+            .then(() => {
+                if (btnPdf) btnPdf.textContent = textoOriginal;
+                cerrarModalInforme();
+            })
+            .catch(err => {
+                console.error("Error generando PDF con html2pdf:", err);
+                if (btnPdf) btnPdf.textContent = textoOriginal;
+                descargarInformeHTML();
+            });
+    } else {
+        descargarInformeHTML();
+    }
+};
 
     window.descargarInformeHTML = function() {
         const datos = obtenerDatosInforme();
