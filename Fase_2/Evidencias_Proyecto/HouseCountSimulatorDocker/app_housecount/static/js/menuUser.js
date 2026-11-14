@@ -116,7 +116,12 @@ if (btnModoOscuro) {
         esModoOscuro = !esModoOscuro;
         localStorage.setItem('modo_oscuro_homecount', esModoOscuro);
         aplicarTemaVisual(esModoOscuro);
+        cambiarTamanoTerreno(tamanoTerreno);
+        if (typeof actualizarCotasVisuales === 'function') {
+            actualizarCotasVisuales();
+        }
     });
 }
+
 
  

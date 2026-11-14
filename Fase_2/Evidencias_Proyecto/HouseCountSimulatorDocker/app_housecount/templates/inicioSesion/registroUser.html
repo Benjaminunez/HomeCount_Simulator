@@ -64,8 +64,6 @@
                 <input type="email" name="email" id="id_email" value="{{ email_ingresado }}" required placeholder="tu@correo.com">
             </div>
             
-            <!-- 2. CAMPOS DJANGO (Usuario, Contraseña 1, Contraseña 2) -->
-            <!-- Quitamos la lógica de "campo-completo" para que todos midan lo mismo -->
             {% for field in form %}
                 <div class="campo-form">
                     {{ field.label_tag }}

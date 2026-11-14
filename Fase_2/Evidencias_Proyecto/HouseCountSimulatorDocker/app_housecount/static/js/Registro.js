@@ -54,10 +54,20 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // 3. AUTOCOMPLETAR PLACEHOLDERS: Poner nombre a los campos que genera Django
     const formInputs = document.querySelectorAll('.login-form input[type="text"], .login-form input[type="password"]');
-    formInputs.forEach(input => {
-        if (!input.placeholder) {
-            // Capitaliza la primera letra y reemplaza los guiones bajos por espacios
-            input.placeholder = input.name.charAt(0).toUpperCase() + input.name.slice(1).replace('_', ' ');
-        }
-    });
+        formInputs.forEach(input => {
+            if (!input.placeholder) {
+                const nombreCampo = input.name.toLowerCase();
+                
+                // Asignar placeholders personalizados en español según el nombre del campo
+                if (nombreCampo.includes('username')) {
+                    input.placeholder = 'Ej: Juan Perez'; 
+                } else if (nombreCampo.includes('pass1') || nombreCampo === 'password' || nombreCampo.includes('new_password1')) {
+                    input.placeholder = 'Escribe una contraseña'; // También puedes usar '••••••••'
+                } else if (nombreCampo.includes('pass2') || nombreCampo.includes('confirm') || nombreCampo.includes('new_password2')) {
+                    input.placeholder = 'Repite tu contraseña'; // También puedes usar '••••••••'
+                } else {
+                    input.placeholder = 'Escribe aquí...';
+                }
+            }
+        });
 });
