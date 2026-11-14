@@ -1,0 +1,273 @@
+/* --- Fondo de la página interactivo global --- */
+body {
+    --bg-color: rgb(26, 32, 44); 
+    font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    margin: 0;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: var(--bg-color); 
+    transition: background-color 0.1s ease;
+}
+
+/* --- Efecto adicional en la tarjeta --- */
+.login-card {
+    background-color: #ffffff;
+    padding: 40px;
+    border-radius: 12px;
+    box-shadow: 0 10px 25px var(--card-glow, rgba(0, 0, 0, 0.3)); 
+    width: 100%;
+    max-width: 400px;
+    box-sizing: border-box;
+    text-align: center;
+    position: relative; 
+    z-index: 10; 
+    transition: box-shadow 0.2s ease;
+}
+
+.login-card .logo {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 15px; 
+}
+
+.login-card .logo-img {
+    width: 250px; 
+    height: auto;
+    object-fit: contain;
+    transition: transform 0.3s ease;
+}
+
+.login-card .logo-img:hover {
+    transform: scale(1.05);
+}
+
+/* --- Título principal --- */
+.login-card h2 {
+    margin: 0 0 25px 0;
+    color: #1e293b;
+    font-size: 26px;
+    font-weight: 700;
+}
+
+/* --- Contenedor de campos (reemplaza p) --- */
+.login-form .campo-form {
+    display: flex;
+    flex-direction: column;
+    text-align: left;
+    margin-bottom: 18px;
+    position: relative; 
+}
+
+/* --- Etiquetas (Nombre de usuario, Contraseña) --- */
+.login-form label {
+    margin-bottom: 6px;
+    color: #475569;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+/* --- Inputs de texto --- */
+.login-form input {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    font-size: 15px;
+    box-sizing: border-box;
+    transition: all 0.3s ease;
+    background-color: #f8fafc;
+    color: #1e293b;
+}
+
+.login-form input:focus {
+    outline: none;
+    border-color: #f97316; 
+    background-color: #ffffff;
+    box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.15);
+}
+
+/* --- Botón Ingresar --- */
+.btn-ingresar {
+    width: 100%;
+    padding: 14px;
+    background-color: #f97316;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    margin-top: 10px;
+}
+
+.btn-ingresar:hover {
+    background-color: #ea580c;
+}
+
+/* --- Enlace de registro --- */
+.login-footer {
+    margin-top: 25px;
+    font-size: 14px;
+    color: #64748b;
+}
+
+.login-footer a {
+    color: #f97316;
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.login-footer a:hover {
+    text-decoration: underline;
+}
+
+/* =========================================
+   ALERTAS MODERNAS (ÉXITOS Y ERRORES)
+========================================= */
+.contenedor-alertas {
+    position: fixed;
+    top: 24px;
+    right: 24px; /* Posición en la esquina superior derecha */
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    z-index: 9999; /* Asegura que flote sobre todo lo demás */
+    width: 100%;
+    max-width: 350px;
+    pointer-events: none; /* Permite hacer clics a través del contenedor invisible */
+}
+
+.alerta-moderna {
+    display: flex;
+    align-items: flex-start;
+    border-radius: 8px;
+    padding: 14px 16px;
+    font-size: 13.5px;
+    line-height: 1.4;
+    text-align: left;
+    pointer-events: auto;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    animation: slideInRight 0.4s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+}
+
+/* 1. Variante Error (Rojo) */
+.alerta-moderna.error,
+.alerta-moderna.warning {
+    background-color: #fef2f2;
+    border: 1px solid #fecaca;
+    color: #991b1b;
+    box-shadow: 0 2px 4px rgba(239, 68, 68, 0.05);
+}
+
+.alerta-moderna.error .icono-alerta,
+.alerta-moderna.warning .icono-alerta {
+    color: #ef4444;
+}
+
+/* 2. Variante Éxito/Información (Verde) */
+.alerta-moderna.success,
+.alerta-moderna.info,
+.alerta-moderna:not(.error):not(.warning) {
+    background-color: #f0fdf4;
+    border: 1px solid #bbf7d0;
+    color: #166534;
+    box-shadow: 0 2px 4px rgba(34, 197, 94, 0.05);
+}
+
+.alerta-moderna.success .icono-alerta,
+.alerta-moderna.info .icono-alerta,
+.alerta-moderna:not(.error):not(.warning) .icono-alerta {
+    color: #22c55e;
+}
+
+/* Estilos compartidos del ícono y texto */
+.alerta-moderna .icono-alerta {
+    width: 20px;
+    height: 20px;
+    margin-right: 10px;
+    flex-shrink: 0;
+    margin-top: 1px;
+}
+
+.alerta-moderna .texto-errores {
+    display: flex;
+    flex-direction: column;
+}
+
+.alerta-moderna .texto-errores span {
+    margin-bottom: 4px;
+}
+
+.alerta-moderna .texto-errores span:last-child {
+    margin-bottom: 0;
+}
+
+/* =========================================
+   PANELES FLOTANTES DE AYUDA (TOOLTIPS)
+========================================= */
+.login-form .tooltip-ayuda {
+    position: absolute;
+    top: 100%; 
+    left: 0;
+    width: 100%;
+    background-color: #ffffff;
+    border: 1px solid #cbd5e1;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+    border-radius: 6px;
+    padding: 10px;
+    z-index: 100;
+    
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-5px);
+    transition: all 0.2s ease-in-out;
+    
+    font-size: 12px;
+    color: #475569;
+    line-height: 1.4;
+    box-sizing: border-box;
+    pointer-events: none; 
+}
+
+.login-form .campo-form:focus-within .tooltip-ayuda {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(4px);
+}
+
+.login-form .tooltip-ayuda ul {
+    margin: 0;
+    padding-left: 18px;
+}
+
+.login-form .tooltip-ayuda ul li {
+    margin-bottom: 4px;
+    list-style-type: disc;
+}
+
+/* Errores de campo específicos */
+.login-form .campo-form ul.errorlist {
+    position: static;
+    display: block;
+    color: #ef4444;
+    padding-left: 0;
+    list-style-type: none;
+    font-weight: 600;
+    margin: 4px 0 10px 0;
+    font-size: 13px;
+}
+
+@keyframes slideInRight {
+    from {
+        transform: translateX(120%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}

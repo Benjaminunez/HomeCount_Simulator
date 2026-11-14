@@ -61,6 +61,12 @@
                     <button id="btn-guardar-copia">💾</button>
                     <a href="#" id="btn-mis-modelos" style="text-decoration: none;">📁</a>
                     <button id="btn-generar-informe" onclick="abrirModalInforme()">📄</button>
+                {% else %}
+                    <!-- Mensaje directo para invitados -->
+                    <div class="mensaje-registro-invitado">
+                        <span>¿Quieres guardar tu diseño?</span>
+                        <a href="{% url 'registro' %}" class="enlace-registro-simulador">Regístrate aquí</a>
+                    </div>
                 {% endif %}
             </div>
             
@@ -156,6 +162,13 @@
                     </p>
                     <div id="resumen-modal-informe" class="resumen-modal-grid"></div>
                     <div class="modal-opciones-descarga">
+                        <button class="btn-opcion-descarga btn-descarga-pdf" onclick="descargarInformePDF()">
+                            <span class="icono-opcion">📄</span>
+                            <div class="texto-opcion">
+                                <strong>Descargar en PDF</strong>
+                                <small>Documento portátil listo para compartir</small>
+                            </div>
+                        </button>
                         <button class="btn-opcion-descarga btn-descarga-html" onclick="descargarInformeHTML()">
                             <span class="icono-opcion">🌐</span>
                             <div class="texto-opcion">

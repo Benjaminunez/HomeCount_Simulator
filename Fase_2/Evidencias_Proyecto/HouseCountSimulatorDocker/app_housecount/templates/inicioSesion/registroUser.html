@@ -12,7 +12,9 @@
         <div class="logo">
             <img src="{% static 'imagen-galeria/logo_pagina.png' %}" alt="Logo HouseCount Simulator" class="logo-img">
         </div>
-        <h2>Iniciar Sesión</h2>
+        
+        <!-- Título corregido para la vista de registro -->
+        <h2>Creación de Cuenta</h2>
         
         {% if messages %}
             <ul class="mensajes-alerta">
@@ -24,17 +26,31 @@
 
         <form method="POST" class="login-form">
             {% csrf_token %}
-            {{ form.as_p }}
-            <button type="submit" class="btn-ingresar">Ingresar</button>
+            
+            <!-- Renderizamos los campos manualmente para evitar el error de Django -->
+            {% for field in form %}
+                <div class="campo-form">
+                    {{ field.label_tag }}
+                    {{ field }}
+                    
+                    {% if field.help_text %}
+                        <div class="tooltip-ayuda">
+                            {{ field.help_text|safe }}
+                        </div>
+                    {% endif %}
+                    
+                    {{ field.errors }}
+                </div>
+            {% endfor %}
+
+            <button type="submit" class="btn-ingresar">Registrarse</button>
         </form>
 
         <div class="login-footer">
-            <p>¿No tienes cuenta? <a href="{% url 'registro' %}">Regístrate aquí</a></p>
-            <p style="margin-top: 10px;">
-                <a href="{% url 'recuperar_clave_correo' %}">¿Olvidaste tu contraseña?</a>
-            </p>
-            <p style="margin-top: 10px;">
-                <a href="{% url 'inicio' %}">Volver</a>
+            <!-- Enlaces adaptados para un usuario que se está registrando -->
+            <p>¿Ya tienes una cuenta? <a href="{% url 'login' %}">Inicia sesión aquí</a></p>
+            <p style="margin-top: 15px;">
+                <a href="{% url 'inicio' %}">Volver al inicio</a>
             </p>
         </div>
     </div>
