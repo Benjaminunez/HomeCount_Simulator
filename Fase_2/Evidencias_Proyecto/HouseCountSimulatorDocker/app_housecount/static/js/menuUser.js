@@ -94,34 +94,33 @@ document.addEventListener('DOMContentLoaded', function() {
 
 });
 
-const btnModoOscuro = document.getElementById('btn-modo-oscuro');
-esModoOscuro = localStorage.getItem('modo_oscuro_homecount') === 'true';
-function aplicarTemaVisual(oscuro) {
-    document.body.classList.toggle('tema-oscuro', oscuro);
+document.addEventListener('DOMContentLoaded', function() {
+    const btnModoOscuro = document.getElementById('btn-modo-oscuro');
+    let esModoOscuro = localStorage.getItem('modo_oscuro_homecount') === 'true';
 
-    if (oscuro) {
-        renderer.setClearColor(0x1a1a1a, 1); 
-        if (gridHelper && gridHelper.material) gridHelper.material.color.setHex(0x777777); 
-        if (btnModoOscuro) btnModoOscuro.textContent = '☀️'; 
-    } else {
-        renderer.setClearColor(0xe0e0e0, 1); 
-        if (gridHelper && gridHelper.material) gridHelper.material.color.setHex(0x888888); 
-        if (btnModoOscuro) btnModoOscuro.textContent = '🌙'; 
+    function aplicarTemaVisualBase(oscuro) {
+        // 1. Cambia la clase en el body (afecta a toda la web)
+        document.body.classList.toggle('tema-oscuro', oscuro);
+        
+        // 2. Cambia el ícono del botón
+        if (btnModoOscuro) btnModoOscuro.textContent = oscuro ? '☀️' : '🌙';
+
+        // 3. EMITE UNA SEÑAL GLOBAL para que el entorno 3D reaccione (si existe)
+        const eventoModoOscuro = new CustomEvent('cambioModoOscuroGlobal', { 
+            detail: { estadoOscuro: oscuro } 
+        });
+        window.dispatchEvent(eventoModoOscuro);
     }
-}
-aplicarTemaVisual(esModoOscuro);
 
-if (btnModoOscuro) {
-    btnModoOscuro.addEventListener('click', () => {
-        esModoOscuro = !esModoOscuro;
-        localStorage.setItem('modo_oscuro_homecount', esModoOscuro);
-        aplicarTemaVisual(esModoOscuro);
-        cambiarTamanoTerreno(tamanoTerreno);
-        if (typeof actualizarCotasVisuales === 'function') {
-            actualizarCotasVisuales();
-        }
-    });
-}
+    // Aplicar el estado inicial al cargar la página
+    aplicarTemaVisualBase(esModoOscuro);
 
-
+    if (btnModoOscuro) {
+        btnModoOscuro.addEventListener('click', () => {
+            esModoOscuro = !esModoOscuro;
+            localStorage.setItem('modo_oscuro_homecount', esModoOscuro);
+            aplicarTemaVisualBase(esModoOscuro);
+        });
+    }
+});
  
