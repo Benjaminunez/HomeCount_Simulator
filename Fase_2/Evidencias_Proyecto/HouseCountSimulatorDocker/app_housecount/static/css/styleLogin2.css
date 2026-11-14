@@ -271,3 +271,83 @@ body {
         opacity: 1;
     }
 }
+
+.login-card {
+    max-width: 650px; /* Aumentado desde 400px */
+}
+
+/* Reducimos un poco el logo para ahorrar espacio vertical */
+.login-card .logo-img {
+    width: 200px; 
+}
+
+/* Contenedor Grid para los inputs */
+.form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr; /* Dos columnas del mismo ancho */
+    gap: 0 20px; /* Espacio horizontal de 20px entre columnas, 0 vertical */
+}
+
+/* Ajustes a los campos dentro del grid */
+.login-form .campo-form {
+    margin-bottom: 15px; /* Reducimos un poco el margen inferior */
+}
+
+/* Si hay un número impar de campos, el último ocupa ambas columnas */
+.form-grid .campo-completo {
+    grid-column: 1 / -1; 
+}
+
+/* =========================================
+   RESPONSIVO PARA CELULARES
+========================================= */
+@media (max-width: 600px) {
+    /* En pantallas pequeñas, volvemos a una sola columna */
+    .form-grid {
+        grid-template-columns: 1fr; 
+        gap: 0;
+    }
+    
+    .form-grid .campo-completo {
+        grid-column: auto;
+    }
+}
+
+.avatar-circular-preview {
+    width: 90px;
+    height: 90px;
+    border-radius: 50%;
+    background-color: #f97316; /* Color naranja igual al botón */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    margin-bottom: 8px; 
+}
+
+.avatar-circular-preview:hover {
+    transform: scale(1.05);
+    /* Sombra con un tono naranja translúcido al pasar el mouse */
+    box-shadow: 0 6px 15px rgba(249, 115, 22, 0.4); 
+}
+
+.avatar-circular-preview svg {
+    width: 45px;
+    height: 45px;
+    color: white; /* El ícono seguirá siendo blanco */
+}
+
+#avatar-preview {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 50%;
+    z-index: 2; 
+}

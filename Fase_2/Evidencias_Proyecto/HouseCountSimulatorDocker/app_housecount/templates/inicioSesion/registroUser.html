@@ -3,8 +3,8 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Iniciar Sesión - HomeCount Simulator</title>
-    <link rel="stylesheet" href="{% static 'css/StyleLogin.css' %}">
+    <title>Creación de Cuenta - HouseCount Simulator</title>
+    <link rel="stylesheet" href="{% static 'css/StyleLogin2.css' %}">
     <link rel="icon" type="image/png" href="{% static 'media/iconosPestana/Login.ico' %}">
 </head>
 <body>
@@ -13,21 +13,59 @@
             <img src="{% static 'imagen-galeria/logo_pagina.png' %}" alt="Logo HouseCount Simulator" class="logo-img">
         </div>
         
-        <!-- Título corregido para la vista de registro -->
         <h2>Creación de Cuenta</h2>
         
-        {% if messages %}
-            <ul class="mensajes-alerta">
-                {% for message in messages %}
-                    <li>{{ message }}</li>
-                {% endfor %}
-            </ul>
+        <!-- Contenedor de Alertas Modernas -->
+        {% if messages or form.non_field_errors %}
+            <div class="contenedor-alertas">
+                {% if messages %}
+                    {% for message in messages %}
+                        <div class="alerta-moderna {% if message.tags %}{{ message.tags }}{% else %}success{% endif %}">
+                            <span>{{ message }}</span>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+                {% if form.non_field_errors %}
+                    <div class="alerta-moderna error">
+                        <div class="texto-errores">
+                            {% for error in form.non_field_errors %}
+                                <span>{{ error }}</span>
+                            {% endfor %}
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
         {% endif %}
 
-        <form method="POST" class="login-form">
-            {% csrf_token %}
+        <!-- IMPORTANTE: enctype="multipart/form-data" es obligatorio para subir imágenes -->
+    <form method="POST" class="login-form" enctype="multipart/form-data">
+        {% csrf_token %}
+        
+        <!-- AVATAR CENTRADO EN LA PARTE SUPERIOR -->
+        <div class="campo-form campo-avatar" style="display: flex; flex-direction: column; align-items: center; margin-bottom: 25px;">
+            <input type="file" name="avatar_file" id="id_avatar_input" accept="image/png, image/jpeg, image/jpg" style="display: none;">
+            <input type="hidden" name="avatar_base64" id="id_avatar_base64" value="{{ avatar_base64 }}">
             
-            <!-- Renderizamos los campos manualmente para evitar el error de Django -->
+            <label for="id_avatar_input" class="avatar-circular-preview avatar-preview-label" id="label-upload">
+                <svg id="default-avatar-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
+                </svg>
+                <img id="avatar-preview" src="" alt="Previsualización" style="display: none;">
+            </label>
+            <span style="font-size: 13px; color: #64748b; margin-top: 10px; font-weight: 600;">Foto de Perfil</span>
+        </div>
+
+        <!-- CUADRÍCULA 2x2 PARA LOS TEXTOS -->
+        <div class="form-grid">
+            
+            <!-- 1. CAMPO CORREO (Manual) -->
+            <div class="campo-form">
+                <label for="id_email">Correo Electrónico:</label>
+                <input type="email" name="email" id="id_email" value="{{ email_ingresado }}" required placeholder="tu@correo.com">
+            </div>
+            
+            <!-- 2. CAMPOS DJANGO (Usuario, Contraseña 1, Contraseña 2) -->
+            <!-- Quitamos la lógica de "campo-completo" para que todos midan lo mismo -->
             {% for field in form %}
                 <div class="campo-form">
                     {{ field.label_tag }}
@@ -42,18 +80,21 @@
                     {{ field.errors }}
                 </div>
             {% endfor %}
+            
+        </div>
 
-            <button type="submit" class="btn-ingresar">Registrarse</button>
-        </form>
+        <button type="submit" class="btn-ingresar">Registrarse</button>
+    </form>
 
         <div class="login-footer">
-            <!-- Enlaces adaptados para un usuario que se está registrando -->
             <p>¿Ya tienes una cuenta? <a href="{% url 'login' %}">Inicia sesión aquí</a></p>
             <p style="margin-top: 15px;">
                 <a href="{% url 'inicio' %}">Volver al inicio</a>
             </p>
         </div>
     </div>
+    
     <script src="{% static 'js/Background.js' %}"></script>
+    <script src="{% static 'js/Registro.js' %}"></script>
 </body>
 </html>
