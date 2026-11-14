@@ -1779,14 +1779,17 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             },
             steps: [
+                // Paso 1: Bienvenida - Mejorado
                 {
                     element: 'body', 
                     popover: {
                         title: '¡Bienvenido al Simulador 3D HouseCount!',
                         description: 'A continuación te daremos un breve recorrido por las herramientas principales para que aprendas a diseñar y presupuestar tu proyecto.',
+                        side: 'center', // Añadido para forzar que flote en el centro exacto de la pantalla
                         align: 'center' 
                     }
                 },
+                // Paso 2: Herramientas del Proyecto
                 {
                     element: '.panel-superior-derecho', 
                     popover: {
@@ -1796,36 +1799,44 @@ document.addEventListener('DOMContentLoaded', () => {
                         align: 'start'
                     }
                 },
+                // Paso 3: Panel de Dimensiones
                 {
                     element: '#btn-toggle-panel-der',
                     popover: {
                         title: 'Panel de Dimensiones',
                         description: 'Haz clic aquí para desplegar u ocultar el panel con el cálculo de áreas, perímetros y el sumario de materiales.',
-                        side: 'right', align: 'start'
+                        side: 'right', 
+                        align: 'start'
                     }
                 },
+                // Paso 4: Controles y Ayuda - Mejorado
                 {
                     element: '.panel-instrucciones',
                     popover: {
                         title: 'Controles y Ayuda',
                         description: 'Aquí siempre podrás ver los atajos de teclado para moverte por el entorno 3D. Usa el botón ❓ si necesitas repetir este tutorial.',
-                        side: 'bottom', align: 'center'
+                        side: 'top', // Cambiado de 'bottom' a 'top' para que el globo aparezca por encima del panel inferior, no debajo (donde se corta)
+                        align: 'start' // Alineado al inicio (izquierda) para que fluya con el texto
                     }
                 },
+                // Paso 5: Presupuesto Total - Mejorado
                 {
                     element: '.presupuesto-total',
                     popover: {
                         title: 'Presupuesto en Tiempo Real',
                         description: 'Controla tu inversión. El costo total se actualizará instantáneamente cada vez que agregues o quites elementos de tu diseño.',
-                        side: 'bottom', align: 'end'
+                        side: 'left', // Cambiado a 'left' para que aparezca al lado izquierdo de la caja de presupuesto, evitando que se pegue al borde derecho
+                        align: 'center' // Centrado verticalmente respecto a la caja
                     }
                 },
+                // Paso 6: Catálogo
                 {
                     element: '#zona-menu-inferior',
                     popover: {
                         title: 'Catálogo de Construcción',
                         description: 'Navega por las categorías para seleccionar materiales de construcción, muebles o habitaciones completas listas para insertar.',
-                        side: 'top', align: 'center'
+                        side: 'top', 
+                        align: 'center'
                     }
                 }
             ]

@@ -4,7 +4,8 @@
 <head>
     <meta charset="UTF-8">
     <title>Iniciar Sesión - HomeCount Simulator</title>
-    <link rel="stylesheet" href="{% static 'css/StyleLogin.css' %}">
+    <link rel="stylesheet" href="{% static 'css/StyleLogin2.css' %}">
+    <script src="{% static 'js/login.js' %}" defer></script>
     <link rel="icon" type="image/png" href="{% static 'media/iconosPestana/Login.ico' %}">
 </head>
 <body>
@@ -14,17 +15,57 @@
         </div>
         <h2>Iniciar Sesión</h2>
         
-        {% if messages %}
-            <ul class="mensajes-alerta">
-                {% for message in messages %}
-                    <li>{{ message }}</li>
-                {% endfor %}
-            </ul>
-        {% endif %}
-
         <form method="POST" class="login-form">
             {% csrf_token %}
-            {{ form.as_p }}
+            
+            <!-- 1. ALERTAS DEL SISTEMA (Ej. "Has cerrado sesión") -->
+            {% if messages or form.non_field_errors %}
+    <div class="contenedor-alertas">
+        
+        <!-- Mensajes del sistema -->
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alerta-moderna {% if message.tags %}{{ message.tags }}{% else %}success{% endif %}">
+                    {% if message.tags == 'error' %}
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icono-alerta" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+                        </svg>
+                    {% else %}
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icono-alerta" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                        </svg>
+                    {% endif %}
+                    <span>{{ message }}</span>
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        <!-- Errores del formulario -->
+        {% if form.non_field_errors %}
+                    <div class="alerta-moderna error">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icono-alerta" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+                        </svg>
+                        <div class="texto-errores">
+                            {% for error in form.non_field_errors %}
+                                <span>{{ error }}</span>
+                            {% endfor %}
+                        </div>
+                    </div>
+                {% endif %}
+
+            </div>
+        {% endif %}
+
+            <!-- Renderizamos los campos normales -->
+            {% for field in form %}
+                <div class="campo-form">
+                    {{ field.label_tag }}
+                    {{ field }}
+                    {{ field.errors }}
+                </div>
+            {% endfor %}
+
             <button type="submit" class="btn-ingresar">Ingresar</button>
         </form>
 

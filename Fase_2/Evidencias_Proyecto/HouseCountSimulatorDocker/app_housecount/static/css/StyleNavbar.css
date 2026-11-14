@@ -399,29 +399,65 @@ body.tema-oscuro .btn-login:hover {
     border-color: #94a3b8;
 }
 
-/* 5. Adaptación automática al Modo Oscuro */
+/* --- Adaptación automática al Modo Oscuro (Navbar) --- */
 body.tema-oscuro .navbar {
-    background-color: #605f5fa1;
+    background-color: #605f5f;
     border-bottom: 1px solid #333333;
 }
-
-body.tema-oscuro .logo {
-    color: #f1f5f9;
-}
-
-body.tema-oscuro .nav-links a {
-    color: #cbd5e1;
-}
-
-body.tema-oscuro .nav-links a:hover {
-    color: #e67e22;
-}
-
+body.tema-oscuro .logo { color: #f1f5f9; }
+body.tema-oscuro .nav-links a { color: #cbd5e1; }
+body.tema-oscuro .nav-links a:hover { color: #e67e22; }
 body.tema-oscuro .btn-contacto {
     background-color: #e67e22 !important;
     color: #ffffff !important;
 }
+body.tema-oscuro .btn-contacto:hover { background-color: #d35400 !important; }
 
-body.tema-oscuro .btn-contacto:hover {
-    background-color: #d35400 !important;
+#btn-modo-oscuro{
+    width: 42px; 
+    height: 42px; 
+    border-radius: 50%;
+    display: flex; 
+    justify-content: center; 
+    align-items: center;
+    margin: 0; 
+    flex-shrink: 0; 
+    background-color: #f1f5f9;
+    border: 1px solid #cbd5e1; 
+    font-size: 18px; 
+    cursor: pointer;
+    position: relative; 
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05); color: inherit;
+}
+
+#btn-modo-oscuro:hover { 
+    background-color: #e0e7ff; 
+    border-color: #818cf8; 
+    transform: scale(1.1) rotate(-8deg); 
+    box-shadow: 0 4px 8px rgba(99, 102, 241, 0.2); 
+}
+
+#btn-modo-oscuro::before{
+    content: ""; 
+    position: absolute; 
+    top: 105%; 
+    left: 50%; 
+    z-index: 10;
+    border-width: 5px; 
+    border-style: solid; 
+    border-color: transparent transparent #1e293b transparent;
+    opacity: 0; 
+    visibility: hidden; 
+    transform: translateX(-50%) translateY(-10px); 
+    transition: all 0.3s ease; 
+    pointer-events: none;
+}
+
+#btn-modo-oscuro:hover::after, #btn-modo-oscuro:hover::before{
+    opacity: 1; visibility: visible; transform: translateX(-50%) translateY(0);
+}
+
+#btn-modo-oscuro:active{
+    transform: scale(0.95);
 }

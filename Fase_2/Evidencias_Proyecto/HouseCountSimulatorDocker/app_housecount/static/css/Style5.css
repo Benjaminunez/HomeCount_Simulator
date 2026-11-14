@@ -552,3 +552,43 @@ kbd {
         font-size: 20px; /* Ajusta el tamaño del título */
     }
 }
+
+.mensaje-registro-invitado {
+    display: flex;
+    flex-direction: column; /* Apila el texto arriba y el enlace abajo */
+    align-items: center;
+    justify-content: center;
+    background-color: rgba(255, 255, 255, 0.9);
+    padding: 6px 10px; 
+    border-radius: 6px;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+    font-size: 12px; /* Letra un poco más pequeña para que quepa bien */
+    color: #475569;
+    border: 1px solid #e2e8f0;
+    margin-left: 8px;
+    text-align: center;
+    line-height: 1.3;
+    max-width: 140px; /* Limita el ancho máximo para evitar que se corte */
+}
+/* Estilo del enlace de registro */
+.enlace-registro-simulador {
+    color: var(--color-acento, #e67e22);
+    font-weight: 700;
+    text-decoration: none;
+    transition: color 0.3s ease;
+    font-size: 12px;
+    margin-top: 2px; /* Pequeña separación vertical */
+}
+
+.enlace-registro-simulador:hover {
+    color: var(--color-acento-hover, #d35400);
+    text-decoration: underline;
+}
+
+/* Modo Oscuro (Mantenemos el mismo estilo adaptado) */
+body.tema-oscuro .mensaje-registro-invitado {
+    background-color: #1c1c1e;
+    color: #a1a1a6;
+    border-color: #3a3a3c;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+}

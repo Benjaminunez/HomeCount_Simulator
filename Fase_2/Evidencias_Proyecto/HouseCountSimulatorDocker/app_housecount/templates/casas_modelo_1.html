@@ -61,6 +61,12 @@
                     <button id="btn-guardar-copia">💾</button>
                     <a href="#" id="btn-mis-modelos" style="text-decoration: none;">📁</a>
                     <button id="btn-generar-informe" onclick="abrirModalInforme()">📄</button>
+                {% else %}
+                    <!-- Mensaje directo para invitados -->
+                    <div class="mensaje-registro-invitado">
+                        <span>¿Quieres guardar tu diseño?</span>
+                        <a href="{% url 'registro' %}" class="enlace-registro-simulador">Regístrate aquí</a>
+                    </div>
                 {% endif %}
             </div>
             

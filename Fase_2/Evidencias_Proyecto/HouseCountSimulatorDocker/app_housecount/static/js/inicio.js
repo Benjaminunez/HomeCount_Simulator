@@ -66,3 +66,31 @@ function reiniciarTemporizador() {
 
 // Iniciar cuando cargue la página
 document.addEventListener("DOMContentLoaded", iniciarCarrusel);
+
+
+document.addEventListener('DOMContentLoaded', () => {
+    const btnModoOscuro = document.getElementById('btn-modo-oscuro');
+    const body = document.body;
+
+    // 1. Revisar si el usuario ya tenía el modo oscuro activado (guardado en LocalStorage)
+    if (localStorage.getItem('modo-oscuro') === 'activado') {
+        body.classList.add('tema-oscuro');
+        if (btnModoOscuro) btnModoOscuro.textContent = '☀️'; // Cambia el icono al sol
+    }
+
+    // 2. Evento para alternar entre modos al hacer clic
+    if (btnModoOscuro) {
+        btnModoOscuro.addEventListener('click', () => {
+            body.classList.toggle('tema-oscuro');
+            
+            // Guardar preferencia y cambiar el icono
+            if (body.classList.contains('tema-oscuro')) {
+                localStorage.setItem('modo-oscuro', 'activado');
+                btnModoOscuro.textContent = '☀️';
+            } else {
+                localStorage.setItem('modo-oscuro', 'desactivado');
+                btnModoOscuro.textContent = '🌙';
+            }
+        });
+    }
+});
