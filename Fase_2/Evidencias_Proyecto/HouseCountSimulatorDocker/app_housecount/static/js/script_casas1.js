@@ -1365,7 +1365,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const intersecciones = raycaster.intersectObjects(objetosInteractuables, true);
             if (intersecciones.length > 0) {
-                const pos = calcularPosicionSnappeada(intersecciones[0], !event.altKey);
+                const pos = calcularPosicionSnappeada(interseccion, !event.altKey);
                 bloqueFantasma.position.set(pos.x, pos.y, pos.z);
                 bloqueFantasma.visible = true;
                 materialFantasma.color.setHex(0x00ff00); 
@@ -1687,7 +1687,6 @@ document.addEventListener('DOMContentLoaded', () => {
             const tipo = obj.userData.tipo || '';
             const nombre = (obj.userData.nombre || '').toLowerCase();
 
-            // Mantenemos tu excelente lógica para identificar qué es estructura
             if (!cat && obj.userData.nombre) {
                 const mapa = window.mapaCategoriasMateriales || {};
                 cat = mapa[obj.userData.nombre] || mapa[nombre] || '';
@@ -1703,33 +1702,22 @@ document.addEventListener('DOMContentLoaded', () => {
                 nombre.includes('stairs') || nombre.includes('floor') || nombre.includes('escalera') ||
                 nombre.includes('puerta') || nombre.includes('ventana') || nombre.includes('window');
 
-            // Si es parte de la casa, expandimos la "caja invisible" para que lo cubra
             if (esEstructura || esModulo) {
                 cajaTotal.expandByObject(obj);
                 hayElementos = true;
             }
         }
 
-        // Si no hay nada construido, devolvemos 0
         if (!hayElementos) return { perimetro: "0.00", area: "0.00" };
 
-        // 1. Calculamos las dimensiones físicas en el mundo 3D
         const anchoMundo = cajaTotal.max.x - cajaTotal.min.x;
         const largoMundo = cajaTotal.max.z - cajaTotal.min.z;
-
-        // 2. Convertimos a Metros (50 unidades de Three.js = 1 metro)
         const anchoMetros = anchoMundo / 50;
         const largoMetros = largoMundo / 50;
-
-        // 3. Matemática exacta
         const area = anchoMetros * largoMetros;
         const perimetro = (anchoMetros * 2) + (largoMetros * 2);
 
-        // Retornamos los valores con 2 decimales para mayor precisión
-        return { 
-            perimetro: perimetro.toFixed(2), 
-            area: area.toFixed(2) 
-        };
+        return { perimetro: perimetro.toFixed(2), area: area.toFixed(2) };
     }
     window.obtenerCalculoDimensiones = obtenerCalculoDimensiones;
 
@@ -1779,66 +1767,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             },
             steps: [
-                // Paso 1: Bienvenida - Mejorado
-                {
-                    element: 'body', 
-                    popover: {
-                        title: '¡Bienvenido al Simulador 3D HouseCount!',
-                        description: 'A continuación te daremos un breve recorrido por las herramientas principales para que aprendas a diseñar y presupuestar tu proyecto.',
-                        side: 'center', // Añadido para forzar que flote en el centro exacto de la pantalla
-                        align: 'center' 
-                    }
-                },
-                // Paso 2: Herramientas del Proyecto
-                {
-                    element: '.panel-superior-derecho', 
-                    popover: {
-                        title: 'Herramientas del Proyecto',
-                        description: 'Limpia la escena, guarda tu progreso, accede a tus diseños previos o genera el informe técnico desde este panel.',
-                        side: 'right', 
-                        align: 'start'
-                    }
-                },
-                // Paso 3: Panel de Dimensiones
-                {
-                    element: '#btn-toggle-panel-der',
-                    popover: {
-                        title: 'Panel de Dimensiones',
-                        description: 'Haz clic aquí para desplegar u ocultar el panel con el cálculo de áreas, perímetros y el sumario de materiales.',
-                        side: 'right', 
-                        align: 'start'
-                    }
-                },
-                // Paso 4: Controles y Ayuda - Mejorado
-                {
-                    element: '.panel-instrucciones',
-                    popover: {
-                        title: 'Controles y Ayuda',
-                        description: 'Aquí siempre podrás ver los atajos de teclado para moverte por el entorno 3D. Usa el botón ❓ si necesitas repetir este tutorial.',
-                        side: 'top', // Cambiado de 'bottom' a 'top' para que el globo aparezca por encima del panel inferior, no debajo (donde se corta)
-                        align: 'start' // Alineado al inicio (izquierda) para que fluya con el texto
-                    }
-                },
-                // Paso 5: Presupuesto Total - Mejorado
-                {
-                    element: '.presupuesto-total',
-                    popover: {
-                        title: 'Presupuesto en Tiempo Real',
-                        description: 'Controla tu inversión. El costo total se actualizará instantáneamente cada vez que agregues o quites elementos de tu diseño.',
-                        side: 'left', // Cambiado a 'left' para que aparezca al lado izquierdo de la caja de presupuesto, evitando que se pegue al borde derecho
-                        align: 'center' // Centrado verticalmente respecto a la caja
-                    }
-                },
-                // Paso 6: Catálogo
-                {
-                    element: '#zona-menu-inferior',
-                    popover: {
-                        title: 'Catálogo de Construcción',
-                        description: 'Navega por las categorías para seleccionar materiales de construcción, muebles o habitaciones completas listas para insertar.',
-                        side: 'top', 
-                        align: 'center'
-                    }
-                }
+                { element: 'body', popover: { title: '¡Bienvenido al Simulador 3D HouseCount!', description: 'A continuación te daremos un breve recorrido por las herramientas principales para que aprendas a diseñar y presupuestar tu proyecto.', side: 'center', align: 'center' } },
+                { element: '.panel-superior-derecho', popover: { title: 'Herramientas del Proyecto', description: 'Limpia la escena, guarda tu progreso, accede a tus diseños previos o genera el informe técnico desde este panel.', side: 'right', align: 'start' } },
+                { element: '#btn-toggle-panel-der', popover: { title: 'Panel de Dimensiones', description: 'Haz clic aquí para desplegar u ocultar el panel con el cálculo de áreas, perímetros y el sumario de materiales.', side: 'right', align: 'start' } },
+                { element: '.panel-instrucciones', popover: { title: 'Controles y Ayuda', description: 'Aquí siempre podrás ver los atajos de teclado para moverte por el entorno 3D. Usa el botón ❓ si necesitas repetir este tutorial.', side: 'top', align: 'start' } },
+                { element: '.presupuesto-total', popover: { title: 'Presupuesto en Tiempo Real', description: 'Controla tu inversión. El costo total se actualizará instantáneamente cada vez que agregues o quites elementos de tu diseño.', side: 'left', align: 'center' } },
+                { element: '#zona-menu-inferior', popover: { title: 'Catálogo de Construcción', description: 'Navega por las categorías para seleccionar materiales de construcción, muebles o habitaciones completas listas para insertar.', side: 'top', align: 'center' } }
             ]
         });
 
@@ -1884,7 +1818,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const horaFormateada = ahora.toLocaleTimeString('es-CL', { hour: '2-digit', minute: '2-digit' });
         const folio = 'HC-' + ahora.getFullYear() + '-' + Math.floor(1000 + Math.random() * 9000);
 
-        // --- NUEVO: Capturamos la imagen del lienzo 3D en formato JPEG (más ligero que PNG) ---
         let imagenCaptura = "";
         if (typeof renderer !== 'undefined') {
             imagenCaptura = renderer.domElement.toDataURL("image/jpeg", 0.8);
@@ -1894,38 +1827,48 @@ document.addEventListener('DOMContentLoaded', () => {
             folio: folio, fecha: `${fechaFormateada}, ${horaFormateada} hrs`,
             perimetro: dim.perimetro, area: dim.area, costoTotal: costoTotal,
             totalPiezas: totalPiezas, items: Object.values(conteo),
-            imagenProyecto: imagenCaptura // <-- Pasamos la imagen a la plantilla HTML
+            imagenProyecto: imagenCaptura
         };
     }
 
     // ==========================================
-        // RECEPTOR 3D: MODO OSCURO
-        // ==========================================
+    // RECEPTOR 3D: MODO OSCURO (Sincronizado con inicio.js)
+    // ==========================================
         
-        // Función centralizada para actualizar los colores 3D
+    // Función centralizada para actualizar los colores 3D
     function actualizarColores3D(oscuro) {
-            if (typeof renderer !== 'undefined') {
-                renderer.setClearColor(oscuro ? 0x1a1a1a : 0xe0e0e0, 1);
-            }
-            if (typeof gridHelper !== 'undefined' && gridHelper.material) {
-                gridHelper.material.color.setHex(oscuro ? 0x777777 : 0x888888);
-            }
+        if (typeof renderer !== 'undefined') {
+            renderer.setClearColor(oscuro ? 0x1a1a1a : 0xe0e0e0, 1);
         }
+        if (typeof gridHelper !== 'undefined' && gridHelper.material) {
+            gridHelper.material.color.setHex(oscuro ? 0x777777 : 0x888888);
+        }
+    }
 
-        // 1. Sincronizar y aplicar inmediatamente (sin eventos extra)
-        esModoOscuro = localStorage.getItem('modo_oscuro_homecount') === 'true';
-        actualizarColores3D(esModoOscuro);
+    // 1. Inicialización basada en la clave configurada por inicio.js
+    esModoOscuro = localStorage.getItem('modo-oscuro') === 'activado';
+    actualizarColores3D(esModoOscuro);
 
-        // 2. Escuchar la "señal" de menuUser.js si hacen clic estando dentro de la vista 3D
-        window.addEventListener('cambioModoOscuroGlobal', (e) => {
-            esModoOscuro = e.detail.estadoOscuro; // Actualiza la variable interna
-            
-            actualizarColores3D(esModoOscuro); // Aplica los colores
+    // 2. Observar dinámicamente si inicio.js agrega o quita la clase del body
+    const observerModoOscuro = new MutationObserver((mutations) => {
+        mutations.forEach((mutation) => {
+            if (mutation.attributeName === 'class') {
+                const ahoraEsOscuro = document.body.classList.contains('tema-oscuro');
+                if (ahoraEsOscuro !== esModoOscuro) {
+                    esModoOscuro = ahoraEsOscuro;
+                    actualizarColores3D(esModoOscuro);
 
-            // Refresca las dimensiones del terreno para que adopte el nuevo color
-            if (typeof cambiarTamanoTerreno === 'function') cambiarTamanoTerreno(tamanoTerreno);
-            if (typeof actualizarCotasVisuales === 'function') actualizarCotasVisuales();
+                    // Refresca las dimensiones del terreno para que adopte el nuevo color
+                    if (typeof cambiarTamanoTerreno === 'function') cambiarTamanoTerreno(tamanoTerreno);
+                    if (typeof actualizarCotasVisuales === 'function') actualizarCotasVisuales();
+                }
+            }
+        });
     });
+
+    observerModoOscuro.observe(document.body, { attributes: true });
+    // ==========================================
+
 
     function generarHTMLInforme(datos, paraPDF = false) {
         const formatear = (valor) => new Intl.NumberFormat('es-CL').format(valor);
@@ -1945,7 +1888,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 </tr>`;
         }).join('');
 
-        // --- NUEVO: Generamos el HTML de la imagen solo si se capturó correctamente ---
         const bloqueImagen = datos.imagenProyecto 
             ? `<div style="text-align: center; margin-bottom: 24px;">
                  <img src="${datos.imagenProyecto}" alt="Vista 3D del Proyecto" style="max-width: 100%; max-height: 350px; object-fit: contain; border-radius: 8px; border: 1px solid #cbd5e1; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
@@ -2034,7 +1976,6 @@ document.addEventListener('DOMContentLoaded', () => {
     if (datos.totalPiezas === 0) return;
 
     if (typeof html2pdf !== 'undefined') {
-        // 1. Generamos el HTML como texto (string) directamente
         const htmlString = generarHTMLInforme(datos, true);
 
         const btnPdf = document.querySelector('.btn-descarga-pdf strong');
@@ -2054,7 +1995,6 @@ document.addEventListener('DOMContentLoaded', () => {
             jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
         };
 
-        // 2. Le pasamos el string de HTML directamente al método .from()
         html2pdf().set(opt).from(htmlString).save()
             .then(() => {
                 if (btnPdf) btnPdf.textContent = textoOriginal;
@@ -2133,4 +2073,31 @@ document.addEventListener('DOMContentLoaded', () => {
             elementoBoton.classList.add('activo');
         }
     };
+});
+
+document.addEventListener('DOMContentLoaded', () => {
+    const btnModoOscuro = document.getElementById('btn-modo-oscuro');
+    const body = document.body;
+
+    // 1. Revisar si el usuario ya tenía el modo oscuro activado (guardado en LocalStorage)
+    if (localStorage.getItem('modo-oscuro') === 'activado') {
+        body.classList.add('tema-oscuro');
+        if (btnModoOscuro) btnModoOscuro.textContent = '☀️'; // Cambia el icono al sol
+    }
+
+    // 2. Evento para alternar entre modos al hacer clic
+    if (btnModoOscuro) {
+        btnModoOscuro.addEventListener('click', () => {
+            body.classList.toggle('tema-oscuro');
+            
+            // Guardar preferencia y cambiar el icono
+            if (body.classList.contains('tema-oscuro')) {
+                localStorage.setItem('modo-oscuro', 'activado');
+                btnModoOscuro.textContent = '☀️';
+            } else {
+                localStorage.setItem('modo-oscuro', 'desactivado');
+                btnModoOscuro.textContent = '🌙';
+            }
+        });
+    }
 });

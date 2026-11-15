@@ -94,33 +94,5 @@ document.addEventListener('DOMContentLoaded', function() {
 
 });
 
-document.addEventListener('DOMContentLoaded', function() {
-    const btnModoOscuro = document.getElementById('btn-modo-oscuro');
-    let esModoOscuro = localStorage.getItem('modo_oscuro_homecount') === 'true';
 
-    function aplicarTemaVisualBase(oscuro) {
-        // 1. Cambia la clase en el body (afecta a toda la web)
-        document.body.classList.toggle('tema-oscuro', oscuro);
-        
-        // 2. Cambia el ícono del botón
-        if (btnModoOscuro) btnModoOscuro.textContent = oscuro ? '☀️' : '🌙';
-
-        // 3. EMITE UNA SEÑAL GLOBAL para que el entorno 3D reaccione (si existe)
-        const eventoModoOscuro = new CustomEvent('cambioModoOscuroGlobal', { 
-            detail: { estadoOscuro: oscuro } 
-        });
-        window.dispatchEvent(eventoModoOscuro);
-    }
-
-    // Aplicar el estado inicial al cargar la página
-    aplicarTemaVisualBase(esModoOscuro);
-
-    if (btnModoOscuro) {
-        btnModoOscuro.addEventListener('click', () => {
-            esModoOscuro = !esModoOscuro;
-            localStorage.setItem('modo_oscuro_homecount', esModoOscuro);
-            aplicarTemaVisualBase(esModoOscuro);
-        });
-    }
-});
  

@@ -1,16 +1,16 @@
 /* --- Footer Estilo Limpio (4 Columnas) --- */
 .footer-limpio {
-    background-color: #111111; /* Fondo negro mate */
+    background-color: #111111;
     color: #ffffff;
     font-family: var(--fuente-principal);
-    padding-top: 5px;
+    padding-top: 50px;
 }
 
 .footer-contenedor-limpio {
     max-width: 1200px;
     margin: 0 auto;
     display: grid;
-    grid-template-columns: 1.5fr 1fr 1fr 1.5fr; /* Proporciones para dar más espacio a info y formulario */
+    grid-template-columns: 2fr 1fr 1fr; 
     gap: 40px;
     padding: 0 40px 60px 40px;
 }
@@ -22,16 +22,21 @@
     letter-spacing: 1px;
     margin-bottom: 25px;
     color: #ffffff;
+    text-transform: uppercase;
 }
 
 /* --- Columna 1: Logo e Info --- */
 .footer-logo {
-    margin-bottom: 100px;
+    margin-bottom: 25px; /* Reducido de 100px a 25px */
 }
 
 .footer-logo img {
-    max-width: 150px; /* Ajusta el tamaño de tu logo */
+    max-width: 180px; 
     height: auto;
+    background-color: #ffffff; 
+    padding: 10px 15px;      
+    border-radius: 8px;       
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3); 
 }
 
 .lista-info {
@@ -50,7 +55,7 @@
 }
 
 .lista-info i {
-    color: var(--color-acento); /* Íconos con el color del proyecto */
+    color: var(--color-acento, #f97316); /* Íconos con el color del proyecto (naranja de fallback) */
     font-size: 16px;
     width: 20px;
     text-align: center;

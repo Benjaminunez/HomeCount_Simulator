@@ -6,6 +6,7 @@
     <link rel="stylesheet" href="{% static 'css/StyleNavbar.css' %}?v=3">
     <link rel="stylesheet" href="{% static 'css/StyleUserMenu.css' %}?v=3">
     <script src="{% static 'js/MenuUser.js'%}"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <header class="navbar">
     <div class="logo">
@@ -25,7 +26,7 @@
                             {{ user.username|make_list|first|upper }}
                         </div>
                     {% endif %}
-                    <span style="font-weight: bold;">{{ user.username|quitar_barras }}</span>
+                    <span id="nombre_user" style="font-weight: bold;">{{ user.username|quitar_barras }}</span>
                 </div>
                 <div id="menu-desplegable-perfil" class="menu-perfil-oculto">
                     
@@ -45,7 +46,7 @@
                     
                     <!-- Cerrar sesión (Visible para todos) -->
                     <a href="{% url 'logout' %}" class="btn-salir" onclick="limpiarSesion3D()">
-                        <span style="font-size: 16px;">🚪</span>
+                        <i class="fa-solid fa-user-minus" style="font-size: 16px;"></i>
                         <span>Cerrar Sesión</span>
                     </a>
                 </div>
