@@ -44,6 +44,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'csp.middleware.CSPMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -144,3 +145,67 @@ EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 EMAIL_HOST_USER = 'housecountsimulator@gmail.com'  # Reemplaza con tu correo de Gmail
 EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD')
+
+# Cookies y sesiones
+SESSION_COOKIE_HTTPONLY = True
+SESSION_COOKIE_SAMESITE = 'Lax'
+
+CSRF_COOKIE_SAMESITE = 'Lax'
+
+# Cabeceras de seguridad
+SECURE_CONTENT_TYPE_NOSNIFF = True
+SECURE_REFERRER_POLICY = 'same-origin'
+X_FRAME_OPTIONS = 'DENY'
+
+# Protección HTTPS: activar cuando el sitio funcione con HTTPS.
+SECURE_SSL_REDIRECT = os.environ.get(
+    'DJANGO_SECURE_SSL_REDIRECT', 'False'
+).lower() == 'true'
+
+SESSION_COOKIE_SECURE = SECURE_SSL_REDIRECT
+CSRF_COOKIE_SECURE = SECURE_SSL_REDIRECT
+
+# --- CONFIGURACIÓN DE CONTENT SECURITY POLICY (CSP) ---
+CSP_DEFAULT_SRC = ("'self'",)
+
+# Permitir scripts propios y de los CDNs que utilizas
+CSP_SCRIPT_SRC = (
+    "'self'",
+    "'unsafe-inline'", # Necesario a veces para scripts inline en plantillas, idealmente remover después
+    "https://cdnjs.cloudflare.com",
+    "https://cdn.jsdelivr.net",
+)
+
+# Permitir estilos propios y de CDNs (para Fuentes, Driver.js, etc.)
+CSP_STYLE_SRC = (
+    "'self'",
+    "'unsafe-inline'",
+    "https://cdnjs.cloudflare.com",
+    "https://cdn.jsdelivr.net",
+    "https://fonts.googleapis.com",
+)
+
+# Permitir imágenes (texturas 3D, avatares, logos)
+CSP_IMG_SRC = ("'self'", "data:", "https:")
+
+# Permitir fuentes (ej. FontAwesome)
+CSP_FONT_SRC = (
+    "'self'",
+    "https://cdnjs.cloudflare.com",
+    "https://cdn.jsdelivr.net",
+    "https://fonts.gstatic.com",
+)
+
+# Permitir conexión a modelos 3D externos o APIs si los hubiera
+CSP_CONNECT_SRC = ("'self'", "https://cdnjs.cloudflare.com", "https://cdn.jsdelivr.net")
+
+
+# --- OTRAS CABECERAS DE SEGURIDAD IMPORTANTES ---
+# Evita que tu sitio sea embebido en iframes maliciosos (Protección contra Clickjacking)
+X_FRAME_OPTIONS = 'DENY'
+
+# Previene que el navegador adivine el tipo MIME (MIME-sniffing)
+SECURE_CONTENT_TYPE_OPTIONS_NOSNIFF = True
+
+# Protección básica contra XSS en navegadores antiguos
+SECURE_BROWSER_XSS_FILTER = True
