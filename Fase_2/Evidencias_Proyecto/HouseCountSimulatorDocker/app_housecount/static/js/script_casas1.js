@@ -575,8 +575,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const contenedorMateriales = document.getElementById('lista-materiales');
     const contenedorHabitaciones = document.getElementById('lista-habitaciones');
+    const contenedorMisDisenos = document.getElementById('grid-disenos');
 
-    [contenedorMateriales, contenedorHabitaciones].forEach(contenedor => {
+    [contenedorMateriales, contenedorHabitaciones, contenedorMisDisenos].forEach(contenedor => {
         if (!contenedor) return;
         contenedor.addEventListener('wheel', (evento) => {
             if (evento.deltaY !== 0) {
@@ -1831,11 +1832,6 @@ document.addEventListener('DOMContentLoaded', () => {
         };
     }
 
-    // ==========================================
-    // RECEPTOR 3D: MODO OSCURO (Sincronizado con inicio.js)
-    // ==========================================
-        
-    // Función centralizada para actualizar los colores 3D
     function actualizarColores3D(oscuro) {
         if (typeof renderer !== 'undefined') {
             renderer.setClearColor(oscuro ? 0x1a1a1a : 0xe0e0e0, 1);
