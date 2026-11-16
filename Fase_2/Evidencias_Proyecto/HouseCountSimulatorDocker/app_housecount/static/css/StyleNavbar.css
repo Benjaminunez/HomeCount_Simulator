@@ -401,7 +401,7 @@ body.tema-oscuro .btn-login:hover {
 
 /* --- Adaptación automática al Modo Oscuro (Navbar) --- */
 body.tema-oscuro .navbar {
-    background-color: #969595;
+    background-color: #3b3a3a;
     border-bottom: 1px solid #333333;
 }
 body.tema-oscuro .logo { color: #f1f5f9; }
@@ -464,4 +464,24 @@ body.tema-oscuro #nombre_user{
 
 #btn-modo-oscuro:active{
     transform: scale(0.95);
+}
+
+body.tema-oscuro .logo-img {
+    /* Un blanco mucho más puro y legible, no tan transparente */
+    background: rgba(255, 255, 255, 0.9); 
+    
+    /* Bordes de píldora para igualar la estética de la interfaz */
+    border-radius: 50px; 
+    
+    /* Más espacio lateral para que el texto respire */
+    padding: 0px 12px; 
+    
+    border: 1px solid rgba(255, 255, 255, 1);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.25);
+    transition: transform 0.2s ease, background 0.3s ease;
+}
+
+body.tema-oscuro .logo-img:hover {
+    background: #ffffff;
+    transform: scale(1.02);
 }
