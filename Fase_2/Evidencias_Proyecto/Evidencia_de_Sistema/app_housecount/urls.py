@@ -31,6 +31,8 @@ urlpatterns = [
     path('contacto/enviar/', views.enviar_contacto, name='enviar_contacto'),
 
     path('api/obtener-casas-prefabricadas/', views.obtener_casas_prefabricadas, name='obtener_casas_prefabricadas'),
+
+    path('api/enviar-informe-correo/', views.enviar_informe_correo_view, name='enviar_informe_correo'),
 ]
 
 # ESTO PERMITE VER LAS IMÁGENES SUBIDAS EN LOCALHOST

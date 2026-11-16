@@ -1366,10 +1366,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const intersecciones = raycaster.intersectObjects(objetosInteractuables, true);
             if (intersecciones.length > 0) {
+                const interseccion = intersecciones[0]; // <-- AGREGA ESTA LÍNEA
                 const pos = calcularPosicionSnappeada(interseccion, !event.altKey);
                 bloqueFantasma.position.set(pos.x, pos.y, pos.z);
                 bloqueFantasma.visible = true;
-                materialFantasma.color.setHex(0x00ff00); 
+                materialFantasma.color.setHex(0x00ff00);
             } else {
                 bloqueFantasma.visible = false;
             }
@@ -1864,7 +1865,48 @@ document.addEventListener('DOMContentLoaded', () => {
 
     observerModoOscuro.observe(document.body, { attributes: true });
     // ==========================================
+    function generarArchivoPDF(datos) {
+        return new Promise((resolve, reject) => {
+            if (typeof html2pdf === 'undefined') {
+                return reject("La librería html2pdf no está cargada.");
+            }
 
+            const contenedorTemporal = document.createElement('div');
+            contenedorTemporal.innerHTML = generarHTMLInforme(datos, true);
+            
+            // Estilos de rescate para asegurar que se dibuje correctamente
+            contenedorTemporal.style.position = 'absolute';
+            contenedorTemporal.style.left = '-9999px';
+            contenedorTemporal.style.top = '-9999px';
+            contenedorTemporal.style.fontFamily = "'Segoe UI', sans-serif";
+            contenedorTemporal.style.color = "#1e293b";
+            contenedorTemporal.style.padding = "16px";
+            contenedorTemporal.style.backgroundColor = "#ffffff";
+            document.body.appendChild(contenedorTemporal);
+
+            const opt = {
+                margin: [8, 8, 8, 8],
+                filename: `Informe_Construccion_HomeCount_${datos.folio}.pdf`,
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { 
+                    scale: 2, 
+                    useCORS: true, 
+                    logging: false,
+                    letterRendering: true,
+                    windowWidth: 850 // Evita que los elementos se aplasten
+                },
+                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+            };
+
+            html2pdf().set(opt).from(contenedorTemporal).toPdf().get('pdf').then(function(pdfObj) {
+                document.body.removeChild(contenedorTemporal);
+                resolve(pdfObj.output('blob'));
+            }).catch(err => {
+                if (document.body.contains(contenedorTemporal)) document.body.removeChild(contenedorTemporal);
+                reject(err);
+            });
+        });
+    }
 
     function generarHTMLInforme(datos, paraPDF = false) {
         const formatear = (valor) => new Intl.NumberFormat('es-CL').format(valor);
@@ -1879,68 +1921,74 @@ document.addEventListener('DOMContentLoaded', () => {
                     <td><strong>${item.nombre}</strong></td>
                     <td><span class="badge ${badgeClass}">${item.categoria}</span></td>
                     <td class="td-num"><strong>${item.cantidad}</strong></td>
-                    <td class="td-num">$${formatear(item.precioUnitario)} CLP</td>
-                    <td class="td-num" style="color: #2c3e50; font-weight: 700;">$${formatear(item.subtotal)} CLP</td>
+                    <td class="td-num">$${formatear(item.precioUnitario)}</td>
+                    <td class="td-num" style="color: #2c3e50; font-weight: 700;">$${formatear(item.subtotal)}</td>
                 </tr>`;
         }).join('');
 
+        // 1. Reducimos la altura estricta a 250px para dar espacio obligatorio a la tabla
         const bloqueImagen = datos.imagenProyecto 
-            ? `<div style="text-align: center; margin-bottom: 24px;">
-                 <img src="${datos.imagenProyecto}" alt="Vista 3D del Proyecto" style="max-width: 100%; max-height: 350px; object-fit: contain; border-radius: 8px; border: 1px solid #cbd5e1; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
+            ? `<div style="height: 250px; text-align: center; margin-bottom: 15px;">
+                 <img src="${datos.imagenProyecto}" alt="Vista 3D del Proyecto" style="max-width: 100%; height: 100%; object-fit: contain; border-radius: 8px; border: 1px solid #cbd5e1; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
                </div>` 
             : '';
 
         return `<!DOCTYPE html>
-    <html lang="es">
-    <head>
-    <meta charset="UTF-8"><title>Informe de Construcción - Folio ${datos.folio}</title>
-    <style>
-        body { font-family: 'Segoe UI', sans-serif; color: #1e293b; padding: ${paraPDF ? '16px' : '32px 24px'}; line-height: 1.5; }
-        .informe-wrapper { max-width: 820px; margin: 0 auto; }
-        .barra-superior-acciones { display: flex; justify-content: space-between; align-items: center; background: #f8fafc; border: 1px solid #e2e8f0; padding: 12px 18px; margin-bottom: 24px; border-radius: 10px; }
-        .btn-accion-print { background: #e67e22; color: #fff; border: none; padding: 8px 16px; border-radius: 6px; font-weight: bold; cursor: pointer; }
-        .header-informe { display: flex; justify-content: space-between; border-bottom: 3px solid #e67e22; padding-bottom: 18px; margin-bottom: 24px; }
-        .logo-box h1 { margin: 0; color: #2c3e50; } .logo-box h1 span { color: #e67e22; }
-        .meta-folio { font-size: 15px; font-weight: bold; color: #e67e22; }
-        table.tabla-informe { width: 100%; border-collapse: collapse; margin-bottom: 24px; font-size: 12px; }
-        table.tabla-informe th { background: #f1f5f9; text-align: left; padding: 10px; border-bottom: 2px solid #cbd5e1; }
-        table.tabla-informe td { padding: 9px; border-bottom: 1px solid #f1f5f9; }
-        .td-num { text-align: right; }
-        .badge { font-size: 10px; padding: 2px 8px; border-radius: 10px; font-weight: bold; }
-        .badge-estructura { background: #ffedd5; color: #c2410c; }
-        .badge-modulo { background: #e0e7ff; color: #4338ca; }
-        .badge-general { background: #f1f5f9; color: #475569; }
-        .fila-total td { background: #f8fafc; font-weight: bold; font-size: 14px; padding: 12px; }
-        @media print { .no-print { display: none !important; } }
-    </style>
-    </head>
-    <body>
-    <div class="informe-wrapper">
-        ${!paraPDF ? `<div class="barra-superior-acciones no-print"><span>📄 Vista previa.</span><button class="btn-accion-print" onclick="window.print()">🖨️ Imprimir / PDF</button></div>` : ''}
-        <div class="header-informe">
-            <div class="logo-box"><h1>HomeCount <span>Simulator</span></h1><p>Informe Técnico de Construcción</p></div>
-            <div class="meta-box"><div class="meta-folio">FOLIO: ${datos.folio}</div><div>Fecha: ${datos.fecha}</div></div>
-        </div>
-        
-        <!-- --- AQUI SE INSERTA LA IMAGEN 3D --- -->
-        ${bloqueImagen}
+        <html lang="es">
+        <head>
+        <meta charset="UTF-8"><title>Informe de Construcción</title>
+        <style>
+            body { font-family: 'Segoe UI', sans-serif; color: #1e293b; padding: ${paraPDF ? '12px' : '32px 24px'}; line-height: 1.4; }
+            .informe-wrapper { max-width: 800px; margin: 0 auto; }
+            
+            .header-informe { display: flex; justify-content: space-between; border-bottom: 3px solid #e67e22; padding-bottom: 12px; margin-bottom: 15px; }
+            .logo-box h1 { margin: 0; color: #2c3e50; font-size: 22px; } .logo-box h1 span { color: #e67e22; }
+            .meta-folio { font-size: 13px; font-weight: bold; color: #e67e22; }
+            
+            /* 2. Resumen más compacto con fondo claro para diferenciarlo */
+            .bloque-resumen { display: flex; justify-content: space-between; margin-bottom: 15px; font-size: 13px; padding: 10px 15px; background: #f8fafc; border-radius: 6px; border: 1px solid #e2e8f0; }
+            
+            /* 3. Ajustes de la tabla para evitar cortes (page-break) */
+            table.tabla-informe { width: 100%; border-collapse: collapse; margin-bottom: 10px; font-size: 11px; page-break-inside: auto; }
+            table.tabla-informe th { background: #f1f5f9; text-align: left; padding: 7px; border-bottom: 2px solid #cbd5e1; }
+            table.tabla-informe td { padding: 7px; border-bottom: 1px solid #f1f5f9; }
+            tr { page-break-inside: avoid; page-break-after: auto; }
+            .td-num { text-align: right; }
+            
+            .badge { font-size: 9px; padding: 2px 6px; border-radius: 10px; font-weight: bold; }
+            .badge-estructura { background: #ffedd5; color: #c2410c; }
+            .badge-modulo { background: #e0e7ff; color: #4338ca; }
+            .badge-general { background: #f1f5f9; color: #475569; }
+            .fila-total td { background: #f8fafc; font-weight: bold; font-size: 12px; padding: 10px; }
+        </style>
+        </head>
+        <body>
+        <div class="informe-wrapper">
+            <div class="header-informe">
+                <div class="logo-box"><h1>HomeCount <span>Simulator</span></h1><p style="margin:4px 0 0 0; font-size: 11px;">Informe Técnico de Construcción</p></div>
+                <div class="meta-box"><div class="meta-folio">FOLIO: ${datos.folio}</div><div style="font-size: 11px;">Fecha: ${datos.fecha}</div></div>
+            </div>
+            
+            ${bloqueImagen}
 
-        <div style="display:flex; justify-content:space-between; margin-bottom: 20px;">
-            <div><strong>Perímetro:</strong> <span style="color:#e67e22">${datos.perimetro} m</span></div>
-            <div><strong>Área:</strong> <span style="color:#2c3e50">${datos.area} m²</span></div>
-            <div><strong>Costo:</strong> <span style="color:#27ae60">$${formatear(datos.costoTotal)}</span></div>
+            <div class="bloque-resumen">
+                <div><strong>Perímetro:</strong> <span style="color:#e67e22">${datos.perimetro} m</span></div>
+                <div><strong>Área:</strong> <span style="color:#2c3e50">${datos.area} m²</span></div>
+                <div><strong>Costo:</strong> <span style="color:#27ae60">$${formatear(datos.costoTotal)} CLP</span></div>
+            </div>
+
+            <table class="tabla-informe">
+                <thead><tr><th>#</th><th>Artículo</th><th>Categoría</th><th class="td-num">Cant.</th><th class="td-num">P. Unit.</th><th class="td-num">Subtotal</th></tr></thead>
+                <tbody>
+                    ${filasTabla}
+                    <tr class="fila-total"><td colspan="3" align="right">Total (${datos.totalPiezas} piezas):</td><td class="td-num">${datos.totalPiezas}</td><td></td><td class="td-num" style="color: #27ae60;">$${formatear(datos.costoTotal)} CLP</td></tr>
+                </tbody>
+            </table>
         </div>
-        <table class="tabla-informe">
-            <thead><tr><th>#</th><th>Artículo</th><th>Categoría</th><th class="td-num">Cant.</th><th class="td-num">P. Unit.</th><th class="td-num">Subtotal</th></tr></thead>
-            <tbody>
-                ${filasTabla}
-                <tr class="fila-total"><td colspan="3" align="right">Total (${datos.totalPiezas} piezas):</td><td class="td-num">${datos.totalPiezas}</td><td></td><td class="td-num" style="color: #27ae60;">$${formatear(datos.costoTotal)} CLP</td></tr>
-            </tbody>
-        </table>
-    </div>
-    </body>
-    </html>`;
+        </body>
+        </html>`;
     }
+
     // --- ACCIONES DEL MODAL Y DESCARGA ---
     window.abrirModalInforme = function() {
         const datos = obtenerDatosInforme();
@@ -1968,43 +2016,40 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     window.descargarInformePDF = function() {
-    const datos = obtenerDatosInforme();
-    if (datos.totalPiezas === 0) return;
+        const datos = obtenerDatosInforme();
+        if (datos.totalPiezas === 0) return;
 
-    if (typeof html2pdf !== 'undefined') {
-        const htmlString = generarHTMLInforme(datos, true);
+        if (typeof html2pdf !== 'undefined') {
+            const htmlString = generarHTMLInforme(datos, true);
 
-        const btnPdf = document.querySelector('.btn-descarga-pdf strong');
-        const textoOriginal = btnPdf ? btnPdf.textContent : '';
-        if (btnPdf) btnPdf.textContent = 'Generando archivo PDF...';
+            const btnPdf = document.querySelector('.btn-descarga-pdf strong');
+            const textoOriginal = btnPdf ? btnPdf.textContent : '';
+            if (btnPdf) btnPdf.textContent = 'Generando archivo PDF...';
 
-        const opt = {
-            margin: [8, 8, 8, 8],
-            filename: `Informe_Construccion_HomeCount_${datos.folio}.pdf`,
-            image: { type: 'jpeg', quality: 0.98 },
-            html2canvas: { 
-                scale: 2, 
-                useCORS: true, 
-                logging: false,
-                letterRendering: true
-            },
-            jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-        };
+            const opt = {
+                margin: [10, 10, 15, 10], // Margen inferior más grande para obligar al salto de página
+                filename: `Informe_Construccion_HomeCount_${datos.folio}.pdf`,
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2, useCORS: true, logging: false },
+                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+                pagebreak: { mode: ['css', 'legacy'] } // INSTRUCCIÓN CLAVE DE PAGINACIÓN
+            };
 
-        html2pdf().set(opt).from(htmlString).save()
-            .then(() => {
-                if (btnPdf) btnPdf.textContent = textoOriginal;
-                cerrarModalInforme();
-            })
-            .catch(err => {
-                console.error("Error generando PDF con html2pdf:", err);
-                if (btnPdf) btnPdf.textContent = textoOriginal;
-                descargarInformeHTML();
-            });
-    } else {
-        descargarInformeHTML();
-    }
-};
+            // Usamos htmlString directo para que el motor interno no colapse
+            html2pdf().set(opt).from(htmlString).save()
+                .then(() => {
+                    if (btnPdf) btnPdf.textContent = textoOriginal;
+                    cerrarModalInforme();
+                })
+                .catch(err => {
+                    console.error("Error generando PDF:", err);
+                    if (btnPdf) btnPdf.textContent = textoOriginal;
+                    descargarInformeHTML();
+                });
+        } else {
+            descargarInformeHTML();
+        }
+    };
 
     window.descargarInformeHTML = function() {
         const datos = obtenerDatosInforme();
@@ -2029,6 +2074,75 @@ document.addEventListener('DOMContentLoaded', () => {
             setTimeout(() => ventana.print(), 350);
         } else {
             if(typeof DialogoUI !== 'undefined') DialogoUI.alert("El navegador bloqueó la ventana emergente.");
+        }
+    };
+
+    window.enviarInformeCorreo = function() {
+        const datos = obtenerDatosInforme();
+        if (datos.totalPiezas === 0) return;
+
+        if (typeof html2pdf !== 'undefined') {
+            const htmlString = generarHTMLInforme(datos, true);
+            const btnCorreo = document.getElementById('btn-enviar-correo');
+            const textoOriginal = btnCorreo.innerHTML;
+            const modalInforme = document.querySelector('.modal-informe-overlay');
+            
+            const elementoNombre = document.querySelector('#display-nombre-proyecto strong');
+            const nombreProyecto = elementoNombre ? elementoNombre.innerText : 'Mi Proyecto';
+            
+            btnCorreo.innerHTML = `<span class="icono-opcion">⏳</span><div class="texto-opcion"><strong>Enviando...</strong><small>Por favor espera</small></div>`;
+            btnCorreo.disabled = true;
+            btnCorreo.style.opacity = "0.7";
+
+            const opt = {
+                margin: [10, 10, 15, 10],
+                filename: `Informe_Construccion_HomeCount_${datos.folio}.pdf`,
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2, useCORS: true, logging: false },
+                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+                pagebreak: { mode: ['css', 'legacy'] } // INSTRUCCIÓN CLAVE DE PAGINACIÓN
+            };
+
+            html2pdf().set(opt).from(htmlString).toPdf().get('pdf').then(function(pdfObj) {
+                const pdfBlob = pdfObj.output('blob');
+                
+                const formData = new FormData();
+                formData.append('informe_pdf', pdfBlob, opt.filename);
+                formData.append('nombre_proyecto', nombreProyecto);
+
+                fetch('/api/enviar-informe-correo/', {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': typeof obtenerCookieCSRF === 'function' ? obtenerCookieCSRF('csrftoken') : ''
+                    },
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    btnCorreo.innerHTML = textoOriginal;
+                    btnCorreo.disabled = false;
+                    btnCorreo.style.opacity = "1";
+
+                    if (data.status === 'success') {
+                        if (typeof cerrarModalInforme === 'function') cerrarModalInforme(); 
+                        else if (modalInforme) modalInforme.style.display = 'none';
+                        
+                        if (typeof DialogoUI !== 'undefined') DialogoUI.alert("¡El informe ha sido enviado exitosamente a tu correo registrado!");
+                    } else {
+                        if (typeof DialogoUI !== 'undefined') DialogoUI.alert("Hubo un error: " + data.mensaje);
+                    }
+                })
+                .catch(error => {
+                    console.error("Error al enviar el informe:", error);
+                    btnCorreo.innerHTML = textoOriginal;
+                    btnCorreo.disabled = false;
+                    btnCorreo.style.opacity = "1";
+                    
+                    if (typeof DialogoUI !== 'undefined') DialogoUI.alert("Error de conexión al enviar el correo.");
+                });
+            });
+        } else {
+            if (typeof DialogoUI !== 'undefined') DialogoUI.alert("El generador de PDF no está cargado.");
         }
     };
 

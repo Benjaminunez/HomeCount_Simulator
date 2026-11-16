@@ -12,7 +12,7 @@ from django.contrib import messages
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt, ensure_csrf_cookie
 from django.utils import timezone
-from django.core.mail import send_mail, EmailMultiAlternatives
+from django.core.mail import send_mail, EmailMultiAlternatives, EmailMessage
 from django.conf import settings
 from django.contrib.auth.models import User
 
@@ -676,3 +676,67 @@ def obtener_casas_prefabricadas(request):
         ]
         return JsonResponse({'estado': 'exito', 'disenos': lista})
     return JsonResponse({'estado': 'error', 'mensaje': 'Método no permitido'}, status=405)
+
+@login_required
+def enviar_informe_correo_view(request):
+    if request.method == 'POST':
+        if 'informe_pdf' in request.FILES:
+            pdf_file = request.FILES['informe_pdf']
+            usuario = request.user
+            correo_destino = usuario.email
+            
+            asunto = f"Informe de Construcción - Proyecto de {usuario.username}"
+            
+            # Texto plano de respaldo
+            cuerpo_texto = f"Hola {usuario.username},\n\nAdjuntamos el informe detallado de tu proyecto generado desde el plano 3D.\n\nSaludos,\nEquipo de HouseCountSimulator."
+            
+            # Diseño HTML profesional
+            cuerpo_html = f"""
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #ddd; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                <div style="background-color: #f97316; padding: 20px; text-align: center; color: white;">
+                    <h2 style="margin: 0; font-size: 24px;">HouseCount Simulator</h2>
+                    <p style="margin: 5px 0 0 0; font-size: 14px; opacity: 0.9;">Tu Informe Técnico de Construcción</p>
+                </div>
+                <div style="padding: 30px; background-color: #ffffff; color: #333;">
+                    <p style="font-size: 16px; margin-top: 0;">Hola <strong>{usuario.username}</strong>,</p>
+                    <p style="font-size: 16px; line-height: 1.5;">Adjuntamos el informe detallado de tu proyecto generado desde el plano 3D interactivo.</p>
+                    
+                    <div style="background-color: #f8fafc; padding: 15px; border-left: 4px solid #f97316; border-radius: 0 4px 4px 0; margin: 20px 0; border-top: 1px solid #e2e8f0; border-right: 1px solid #e2e8f0; border-bottom: 1px solid #e2e8f0;">
+                        <p style="margin: 0 0 10px 0; font-size: 15px; font-weight: bold; color: #1e293b;">En el PDF adjunto encontrarás:</p>
+                        <ul style="margin: 0; padding-left: 20px; color: #475569; font-size: 14px; line-height: 1.6;">
+                            <li>Cálculo exacto de perímetros y área construida.</li>
+                            <li>Desglose de materiales, módulos y piezas.</li>
+                            <li>Presupuesto total estimado del diseño.</li>
+                        </ul>
+                    </div>
+                    
+                    <p style="font-size: 14px; color: #64748b; margin-top: 25px;">
+                        ¡Gracias por utilizar nuestra herramienta para planificar tus proyectos!
+                    </p>
+                </div>
+                <div style="background-color: #1e293b; color: #94a3b8; text-align: center; padding: 15px; font-size: 12px;">
+                    © 2026 HouseCount Simulator.<br>
+                    Este es un correo generado automáticamente.
+                </div>
+            </div>
+            """
+            
+            try:
+                # Usamos EmailMultiAlternatives para soportar HTML + Adjunto
+                correo = EmailMultiAlternatives(
+                    subject=asunto,
+                    body=cuerpo_texto,
+                    from_email=settings.EMAIL_HOST_USER,
+                    to=[correo_destino]
+                )
+                correo.attach_alternative(cuerpo_html, "text/html")
+                correo.attach(pdf_file.name, pdf_file.read(), 'application/pdf')
+                correo.send(fail_silently=False)
+                
+                return JsonResponse({'status': 'success'})
+            except Exception as e:
+                return JsonResponse({'status': 'error', 'mensaje': 'Error al enviar el correo.'})
+                
+        return JsonResponse({'status': 'error', 'mensaje': 'No se recibió ningún archivo PDF adjunto.'})
+        
+    return JsonResponse({'status': 'invalid', 'mensaje': 'Método no permitido.'})
