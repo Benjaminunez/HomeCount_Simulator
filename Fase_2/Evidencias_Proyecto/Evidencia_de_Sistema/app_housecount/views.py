@@ -52,7 +52,7 @@ def casas_rapidas(request):
     # 4. Lógica de la API del mercado (se mantiene intacta)
     casas_mercado = []
     try:
-        url_api = "https://gist.githubusercontent.com/Benjaminunez/b367b26daa23044dd9ee7ee14ad3a8e0/raw/ac4792063436f31d0218f2025dccac3a2a285753/casas_api.json" 
+        url_api = url_api = "https://gist.githubusercontent.com/Benjaminunez/b367b26daa23044dd9ee7ee14ad3a8e0/raw/casas_api.json"
         respuesta = requests.get(url_api, timeout=5)
         if respuesta.status_code == 200:
             casas_mercado = respuesta.json()
