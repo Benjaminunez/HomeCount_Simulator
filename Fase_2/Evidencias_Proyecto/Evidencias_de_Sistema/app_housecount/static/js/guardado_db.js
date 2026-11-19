@@ -11,8 +11,16 @@ async function procesarGuardado(objetos, camera, controles, costoTotal, miEscena
         const confirmarActualizacion = await DialogoUI.confirm(`Actualmente estás editando "${proyectoNombre}".\n\n¿Deseas actualizar y sobrescribir este diseño con los nuevos cambios?`);
         if (!confirmarActualizacion) return { exito: false }; 
     } else {
-        nombreProyecto = await DialogoUI.prompt("Nombre para este nuevo proyecto:");
-        if (!nombreProyecto) return { exito: false };
+        // LÓGICA ESTILO CANVA: Solo lanzamos el prompt si dejó el nombre por defecto
+        if (!nombreProyecto || nombreProyecto.trim() === "Nuevo Proyecto" || nombreProyecto.trim() === "") {
+            nombreProyecto = await DialogoUI.prompt("Nombre para este nuevo proyecto:");
+            if (!nombreProyecto) return { exito: false };
+            
+            // Actualizamos la vista si el usuario usó la ventana emergente
+            if (typeof actualizarNombreInterfaz === 'function') {
+                actualizarNombreInterfaz(nombreProyecto);
+            }
+        }
     }
 
     // 2. NUEVO: Pedir descripción SOLO si es modelo público (prefabricada)
@@ -24,7 +32,6 @@ async function procesarGuardado(objetos, camera, controles, costoTotal, miEscena
         );
         
         // Si el usuario presiona "Cancelar" en el prompt de la descripción, detenemos el guardado.
-        // Si quieres que no se cancele al darle a 'Cancelar', borra esta línea.
         if (descripcionPrefabricada === null) return { exito: false };
     }
 

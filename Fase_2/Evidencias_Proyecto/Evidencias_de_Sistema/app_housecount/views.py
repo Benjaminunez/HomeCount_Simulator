@@ -2,6 +2,7 @@ import json
 import requests
 import base64
 import time
+import re
 from django.core.files.base import ContentFile
 import random
 from django.shortcuts import render, redirect
@@ -12,6 +13,7 @@ from django.contrib import messages
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt, ensure_csrf_cookie
 from django.utils import timezone
+from django.utils.html import strip_tags
 from django.core.mail import send_mail, EmailMultiAlternatives, EmailMessage
 from django.conf import settings
 from django.contrib.auth.models import User
@@ -23,7 +25,6 @@ from .models import ModeloCasa, Material, Habitacion, Proyecto3D, CategoriaMater
 
 def inicio(request): 
     casas = CasaPrefabricada.objects.all().order_by('-fecha_creacion')[:6]
-    
     return render(request, 'inicio.html', {'casas_prefabricadas': casas})
 
 def contrucion(request): 
@@ -49,10 +50,10 @@ def casas_rapidas(request):
     if m2_min:
         modelos = modelos.filter(area_cuadrada__gte=m2_min)
 
-    # 4. Lógica de la API del mercado (se mantiene intacta)
+    # 4. Lógica de la API del mercado
     casas_mercado = []
     try:
-        url_api = url_api = "https://gist.githubusercontent.com/Benjaminunez/b367b26daa23044dd9ee7ee14ad3a8e0/raw/casas_api.json"
+        url_api = "https://gist.githubusercontent.com/Benjaminunez/b367b26daa23044dd9ee7ee14ad3a8e0/raw/casas_api.json"
         respuesta = requests.get(url_api, timeout=5)
         if respuesta.status_code == 200:
             casas_mercado = respuesta.json()
@@ -179,8 +180,6 @@ def api_propiedades_unica(request):
 def api_materiales_3d(request):
     if request.method == 'GET':
         materiales = Material.objects.all()
-        
-        # AQUÍ ESTÁ EL CAMBIO: Consultamos CasaPrefabricada en lugar de Habitacion
         casas_db = CasaPrefabricada.objects.all() 
         
         lista_materiales = [
@@ -196,15 +195,14 @@ def api_materiales_3d(request):
             for mat in materiales
         ]
             
-        # AQUÍ ESTÁ EL SEGUNDO CAMBIO: Mapeamos los campos exactos del modelo CasaPrefabricada
         lista_casas = [
             {
                 "id": casa.id,
                 "nombre": casa.nombre,
                 "area_cuadrada": casa.area_cuadrada, 
                 "costo_total": casa.costo_total,    
-                "datos_escena": casa.datos_escena, # Traemos el JSON
-                "datos_camara": casa.datos_camara, # Traemos la cámara
+                "datos_escena": casa.datos_escena, 
+                "datos_camara": casa.datos_camara, 
                 "imagen_captura": casa.imagen_captura.url if casa.imagen_captura and casa.imagen_captura.name else None 
             }
             for casa in casas_db
@@ -247,10 +245,8 @@ def api_materiales_3d(request):
 
 def registro(request):
     if request.method == 'POST':
-        # Copiamos los datos para poder modificarlos
         datos_post = request.POST.copy()
         
-        # Si el usuario ingresó un username, reemplazamos espacios por barras bajas
         if 'username' in datos_post:
             datos_post['username'] = datos_post['username'].replace(' ', '_')
             
@@ -296,14 +292,11 @@ def registro(request):
 
 def iniciar_sesion(request):
     if request.method == 'POST':
-        # 1. Hacemos una copia mutable de los datos enviados
         datos_post = request.POST.copy()
         
-        # 2. Si el usuario escribió su nombre con espacios, lo convertimos a barras bajas
         if 'username' in datos_post:
             datos_post['username'] = datos_post['username'].replace(' ', '_')
             
-        # 3. Le pasamos los datos formateados al formulario de autenticación
         form = AuthenticationForm(request, data=datos_post)
         
         if form.is_valid():
@@ -312,7 +305,6 @@ def iniciar_sesion(request):
             user = authenticate(username=username, password=password)
             if user is not None:
                 login(request, user)
-                # Opcional: si quieres que el mensaje de éxito muestre el nombre sin barras
                 nombre_limpio = username.replace('_', ' ')
                 messages.success(request, f"Has iniciado sesión como {nombre_limpio}.")
                 return redirect('inicio')
@@ -337,38 +329,49 @@ def guardar_diseno(request):
         data = json.loads(request.body)
         
         proyecto_id = data.get('proyecto_id')
-        nombre = data.get('nombre_proyecto', 'Sin Nombre')
-        es_prefabricada = data.get('es_prefabricada', False)
-        descripcion = data.get('descripcion', '') # <-- NUEVO: Capturamos la descripción
         
-        # 1. Parámetros solo de texto y JSON (comunes para todos)
+        # --- INICIO DE SANITIZACIÓN BACKEND ---
+        nombre_crudo = data.get('nombre_proyecto', 'Sin Nombre')
+        
+        # 1. Quitar cualquier etiqueta HTML oculta (previene inyección de scripts)
+        nombre_limpio = strip_tags(nombre_crudo)
+        
+        # 2. Refuerzo: eliminar caracteres que suelen usarse en inyecciones
+        nombre_limpio = re.sub(r'[<>"\';=]', '', nombre_limpio)
+        
+        # 3. Limitar a 50 caracteres máximos y quitar espacios en los bordes
+        nombre = nombre_limpio[:50].strip()
+        
+        # 4. Si después de limpiar quedó vacío, asignamos un valor por defecto
+        if not nombre:
+            nombre = 'Diseño sin nombre'
+        # --- FIN DE SANITIZACIÓN BACKEND ---
+
+        es_prefabricada = data.get('es_prefabricada', False)
+        descripcion = data.get('descripcion', '') 
+        
         parametros_guardado = {
-            'nombre': nombre,
+            'nombre': nombre, # Usamos la variable sanitizada
             'costo_total': data.get('costo_total', 0),
             'datos_escena': data.get('datos_escena'),
             'datos_camara': data.get('datos_camara'),
         }
 
-        # 2. Preparamos la imagen pero NO la metemos al diccionario de update
         captura_b64 = data.get('captura_base64')
         archivo_imagen = None
         nombre_archivo = None
         if captura_b64 and ';base64,' in captura_b64:
             format_str, imgstr = captura_b64.split(';base64,')
             ext = format_str.split('/')[-1]
-            # Agregamos el timestamp (time.time()) para que el navegador no cachee la imagen vieja
             nombre_archivo = f"diseno_{nombre.replace(' ', '_')}_{int(time.time())}.{ext}"
             archivo_imagen = ContentFile(base64.b64decode(imgstr))
         
-        # Flujo 1: Guardado en catálogo global público (Solo Administradores)
         if es_prefabricada and request.user.is_superuser:
-            # Creamos una copia de los parámetros y le añadimos la descripción
             parametros_prefabricada = parametros_guardado.copy()
             parametros_prefabricada['descripcion'] = descripcion 
             
             if proyecto_id:
                 CasaPrefabricada.objects.filter(id=proyecto_id).update(**parametros_prefabricada)
-                # Guardamos la imagen de forma segura
                 if archivo_imagen:
                     obj = CasaPrefabricada.objects.get(id=proyecto_id)
                     obj.imagen_captura.save(nombre_archivo, archivo_imagen, save=True)
@@ -380,7 +383,6 @@ def guardar_diseno(request):
                 obj_id = str(nueva_casa.id)
             return JsonResponse({'estado': 'exito', 'id': obj_id})
             
-        # Flujo 2: Guardado en proyectos personales de usuario registrado
         elif request.user.is_authenticated:
             parametros_guardado['usuario'] = request.user
             if proyecto_id:
@@ -396,7 +398,6 @@ def guardar_diseno(request):
                 obj_id = str(nuevo_proyecto.id)
             return JsonResponse({'estado': 'exito', 'id': obj_id})
             
-        # Flujo 3: Guardado anónimo mediante Session ID (Visitantes no registrados)
         else:
             session_id = data.get('session_id')
             if not session_id:
@@ -423,7 +424,6 @@ def obtener_disenos(request):
     if not request.user.is_authenticated:
         return JsonResponse({'estado': 'error', 'mensaje': 'Debes iniciar sesión.'}, status=403)
     
-    # 1. Cambiamos el ordenamiento para priorizar el último modificado
     proyectos = Proyecto3D.objects.filter(usuario=request.user).order_by('-fecha_modificacion')
     
     lista = [
@@ -431,7 +431,6 @@ def obtener_disenos(request):
             'id': p.id,
             'nombre': p.nombre,
             'costo_total': float(p.costo_total),
-            # 2. Mostramos la fecha de la última actualización en la tarjeta
             'fecha': p.fecha_modificacion.strftime('%d/%m/%Y %H:%M'),
             'datos_escena': p.datos_escena,
             'datos_camara': p.datos_camara,
@@ -580,7 +579,6 @@ def recuperar_clave_nueva(request):
 @login_required
 def editar_perfil(request):
     if request.method == 'POST':
-        # Capturamos los datos y aplicamos el reemplazo de espacios
         nuevo_username = request.POST.get('username', '').replace(' ', '_')
         nuevo_email = request.POST.get('email')
         nuevo_avatar = request.FILES.get('avatar')
@@ -656,10 +654,6 @@ def enviar_contacto(request):
 
 @csrf_exempt
 def obtener_casas_prefabricadas(request):
-    """
-    Devuelve la lista de diseños de Casas Prefabricadas públicas.
-    No requiere autenticación.
-    """
     if request.method == 'GET':
         casas = CasaPrefabricada.objects.all().order_by('-fecha_creacion')
         lista = [
@@ -687,10 +681,8 @@ def enviar_informe_correo_view(request):
             
             asunto = f"Informe de Construcción - Proyecto de {usuario.username}"
             
-            # Texto plano de respaldo
             cuerpo_texto = f"Hola {usuario.username},\n\nAdjuntamos el informe detallado de tu proyecto generado desde el plano 3D.\n\nSaludos,\nEquipo de HouseCountSimulator."
             
-            # Diseño HTML profesional
             cuerpo_html = f"""
             <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #ddd; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
                 <div style="background-color: #f97316; padding: 20px; text-align: center; color: white;">
@@ -722,7 +714,6 @@ def enviar_informe_correo_view(request):
             """
             
             try:
-                # Usamos EmailMultiAlternatives para soportar HTML + Adjunto
                 correo = EmailMultiAlternatives(
                     subject=asunto,
                     body=cuerpo_texto,

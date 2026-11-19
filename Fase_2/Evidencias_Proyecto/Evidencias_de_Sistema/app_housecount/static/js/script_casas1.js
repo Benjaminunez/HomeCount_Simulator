@@ -61,7 +61,7 @@ const DialogoUI = {
 };
 
 
-// Esperar a que el DOM cargue
+// Esperar a que el DOM cargue - EVENTO PRINCIPAL UNIFICADO
 document.addEventListener('DOMContentLoaded', () => {
     const container = document.getElementById('canvas-3d-container');
     if (!container) return;
@@ -77,7 +77,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let escalaActual = 1.0; 
     let urlActual = null;          
     let texturaActual = 'concreto';
-    let esModoOscuro = false; 
+    let esModoOscuro = localStorage.getItem('modo-oscuro') === 'activado'; 
     const uiTotal = document.getElementById('total-3d');
     
     let proyectoCargadoId = null;
@@ -136,7 +136,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false, preserveDrawingBuffer: true});
     renderer.setSize(anchoSeguro, altoSeguro);
-    renderer.setClearColor(0xe0e0e0, 1); 
+    renderer.setClearColor(esModoOscuro ? 0x1a1a1a : 0xe0e0e0, 1); 
     container.appendChild(renderer.domElement);
 
     window.addEventListener('resize', () => {
@@ -160,7 +160,8 @@ document.addEventListener('DOMContentLoaded', () => {
     scene.add(directionalLight);
 
     let tamanoTerreno = 1000;
-    let gridHelper = new THREE.GridHelper(tamanoTerreno, tamanoTerreno / 50, 0x888888, 0x888888);
+    const colorGridInicial = esModoOscuro ? 0x777777 : 0x888888;
+    let gridHelper = new THREE.GridHelper(tamanoTerreno, tamanoTerreno / 50, colorGridInicial, colorGridInicial);
     scene.add(gridHelper);
 
     const ejesBlender = new THREE.AxesHelper(300);
@@ -206,7 +207,7 @@ document.addEventListener('DOMContentLoaded', () => {
         scene.remove(gridHelper);
         if (gridHelper.geometry) gridHelper.geometry.dispose();
         
-        const colorGrid = esModoOscuro ? 0x444444 : 0x888888;
+        const colorGrid = esModoOscuro ? 0x777777 : 0x888888;
         gridHelper = new THREE.GridHelper(tamanoTerreno, Math.floor(tamanoTerreno / 50), colorGrid, colorGrid);
         scene.add(gridHelper);
 
@@ -294,13 +295,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (objetosInteractuables.length <= 1) return;
 
-        const yNivel = 1.5; // Ligeramente sobre el suelo para evitar cruzar puertas/ventanas
+        const yNivel = 1.5; 
         const offsetExterior = 20; 
-        const margenAgrupacionEstructuras = 15; // Estrecho: evita unir dos casas que están cerca
-        const margenFusionMuros = 65; // Amplio: salta puertas dentro de una misma casa
+        const margenAgrupacionEstructuras = 15; 
+        const margenFusionMuros = 65; 
         const margenAlineacion = 15; 
 
-        // 1. Obtener cajas de muros y módulos
         const cajas = [];
         for (let i = 1; i < objetosInteractuables.length; i++) {
             const obj = objetosInteractuables[i];
@@ -322,7 +322,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (cajas.length === 0) return;
 
-        // 2. Separar construcciones independientes (con margen estricto)
         const estructuras = [];
         cajas.forEach(box => {
             let indicesConectados = [];
@@ -350,12 +349,10 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
 
-        // 3. Procesar cada construcción por separado
         estructuras.forEach(cajasEstructura => {
             const cajaLocal = new THREE.Box3();
             cajasEstructura.forEach(box => cajaLocal.union(box));
 
-            // Unir muros en X
             let segmentosX = cajasEstructura.map(b => b.clone());
             let uniendoX = true;
             while (uniendoX) {
@@ -374,7 +371,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             }
 
-            // Unir muros en Z
             let segmentosZ = cajasEstructura.map(b => b.clone());
             let uniendoZ = true;
             while (uniendoZ) {
@@ -393,7 +389,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             }
 
-            // 4. Dibujar Cotas X (SOLO perímetro exterior real de esta estructura)
             segmentosX.forEach(box => {
                 const anchoMundo = box.max.x - box.min.x;
                 const largoMundo = box.max.z - box.min.z;
@@ -402,13 +397,11 @@ document.addEventListener('DOMContentLoaded', () => {
                     const esCaraFrontal = Math.abs(box.max.z - cajaLocal.max.z) < margenAlineacion;
                     const esCaraTrasera = Math.abs(box.min.z - cajaLocal.min.z) < margenAlineacion;
 
-                    // Si es un módulo completo (habitación), dibuja ambos bordes exteriores
                     if (esCaraFrontal) {
                         const p1 = new THREE.Vector3(box.min.x, yNivel, box.max.z);
                         const p2 = new THREE.Vector3(box.max.x, yNivel, box.max.z);
                         grupoCotas.add(crearLineaCotaArquitectonica(p1, p2, new THREE.Vector3(0, 0, 1), offsetExterior, `${(anchoMundo / 50).toFixed(2)} m`));
                     }
-                    // Evita duplicar la línea trasera si mide exactamente lo mismo que la frontal
                     if (esCaraTrasera && !esCaraFrontal) {
                         const p1 = new THREE.Vector3(box.min.x, yNivel, box.min.z);
                         const p2 = new THREE.Vector3(box.max.x, yNivel, box.min.z);
@@ -417,7 +410,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             });
 
-            // 5. Dibujar Cotas Z (SOLO perímetro exterior real de esta estructura)
             segmentosZ.forEach(box => {
                 const anchoMundo = box.max.x - box.min.x;
                 const largoMundo = box.max.z - box.min.z;
@@ -439,7 +431,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             });
 
-            // 6. Cota de Altura (Una sola por cada estructura separada)
             const altoMundo = cajaLocal.max.y - cajaLocal.min.y;
             if (altoMundo >= 45) {
                 const p1Y = new THREE.Vector3(cajaLocal.max.x, cajaLocal.min.y, cajaLocal.max.z);
@@ -648,7 +639,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     });
                 }
                 
-                // --- Guardar mapa global de categorías ---
                 window.mapaCategoriasMateriales = window.mapaCategoriasMateriales || {};
                 if (data.materiales) {
                     data.materiales.forEach(m => {
@@ -667,7 +657,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     });
                 }
 
-                // --- RENDERIZADO DE MATERIALES ---
                 data.materiales.forEach((mat, index) => {
                     const btn = document.createElement('button');
                     btn.className = `btn-mat-3d ${index === 0 ? 'activo' : ''}`;
@@ -703,7 +692,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
             }
             
-            // --- RENDERIZADO DE CASAS PREFABRICADAS ---
             if (data.casas && data.casas.length > 0) {
                 data.casas.forEach(casa => {
                     const btn = document.createElement('button');
@@ -735,17 +723,14 @@ document.addEventListener('DOMContentLoaded', () => {
                         const confirmacion = await DialogoUI.confirm(`¿Deseas cargar la casa prefabricada "${casa.nombre}"? Esto reemplazará tu diseño actual en pantalla.`);
                         
                         if (confirmacion) {
-                            // 1. Limpiamos las medidas (cotas) flotantes del diseño anterior
                             if (typeof grupoCotas !== 'undefined') {
                                 while(grupoCotas.children.length > 0) {
                                     grupoCotas.remove(grupoCotas.children[0]);
                                 }
                             }
                             
-                            // 2. Preparamos los datos JSON (id: null asegura que se use como plantilla)
                             const proyectoCopia = { ...casa, id: null }; 
                             
-                            // 3. Cargamos la escena multiobjeto desde el JSON
                             cargarEscenaDesdeJSON(proyectoCopia, scene, objetosInteractuables, camera, controles, (nuevoCosto, idProyecto, nombreProyecto) => {
                                 costoTotal = nuevoCosto; 
                                 proyectoCargadoId = null;       
@@ -756,7 +741,6 @@ document.addEventListener('DOMContentLoaded', () => {
                                 recalcularTamanoTerreno(); 
                                 actualizarEstadoBotones(); 
                                 
-                                // Recalcula las medidas correctas para la nueva casa
                                 if (typeof calcularYMostrarPerimetro === 'function') calcularYMostrarPerimetro();
                             });
                         }
@@ -945,9 +929,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // --- 1. FUNCIÓN NATIVA PARA DIBUJAR ESCENAS MULTIBLOQUE (Disponible para todos) ---
     async function cargarEscenaDesdeJSON(proyecto, scene, objetos, camera, controles, callbackActualizarUI) {
-        console.log("▶️ [A] Iniciando dibujo de escena con datos:", proyecto);
         let datosEscena = typeof proyecto.datos_escena === 'string' ? JSON.parse(proyecto.datos_escena) : proyecto.datos_escena;
 
         for (let i = objetos.length - 1; i >= 1; i--) {
@@ -961,7 +943,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
             return new Promise((resolve) => {
                 if (item.url3D) {
-                    console.log("📥 [B] Solicitando archivo GLTF:", item.url3D);
                     cargarModeloOptimizado(item.url3D, (modelo) => {
                         const boxOriginal = new THREE.Box3().setFromObject(modelo);
                         const sizeOriginal = boxOriginal.getSize(new THREE.Vector3());
@@ -1019,7 +1000,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         await Promise.all(promesas);
-        console.log("✅ [C] Todos los modelos 3D fueron renderizados.");
 
         if (proyecto.datos_camara) {
             let cam = typeof proyecto.datos_camara === 'string' ? JSON.parse(proyecto.datos_camara) : proyecto.datos_camara;
@@ -1177,25 +1157,26 @@ document.addEventListener('DOMContentLoaded', () => {
         localStorage.removeItem('diseno_temporal_cargado'); 
     }
     
-    // --- 2. CARGA AUTOMÁTICA (PREFABRICADAS Y ÚLTIMO DISEÑO) ---
+    function actualizarNombreInterfaz(nombre) {
+        const displayNombre = document.getElementById('display-nombre-proyecto');
+        if (displayNombre) {
+            const nombreMostrar = nombre && nombre.trim() !== "" ? nombre : "Nuevo Proyecto";
+            displayNombre.textContent = nombreMostrar;
+        }
+    }
+    
     async function autocompletarUltimoDiseño() {
         const params = new URLSearchParams(window.location.search);
         const prefabId = params.get('prefab_id');
 
         if (prefabId) {
-            console.log("🔍 [1] URL detectada con prefab_id:", prefabId);
             try {
                 const response = await fetch('/api/obtener-casas-prefabricadas/');
-                console.log("🔍 [2] Estado HTTP de la API:", response.status);
-                
-                if (!response.ok) console.error("La API rechazó la conexión. Revisa los permisos en Django.");
-
                 const data = await response.json();
                 
                 if (data.estado === 'exito' && data.disenos) {
                     const modelo = data.disenos.find(d => String(d.id) === String(prefabId));
                     if (modelo) {
-                        console.log(" Modelo prefabricado encontrado. Procediendo a dibujar...");
                         const proyectoCopia = { ...modelo, id: null };
                         const callbackActualizarUI = (nuevoCosto, idProyecto, nombreProyecto) => {
                             costoTotal = nuevoCosto;
@@ -1210,9 +1191,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         };
                         await cargarEscenaDesdeJSON(proyectoCopia, scene, objetosInteractuables, camera, controles, callbackActualizarUI);
                         return;
-                    } else {
-                        console.warn("[3] El ID", prefabId, "no existe en la base de datos.");
-                    }
+                    } 
                 }
             } catch (err) {
                 console.error("Error de red al consultar la casa prefabricada:", err);
@@ -1221,7 +1200,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const btnGuardarVerificacion = document.getElementById('btn-guardar-modelo');
         if (!btnGuardarVerificacion) {
-            console.log("👤 Usuario invitado. Cargando LocalStorage...");
             
             if (!sessionStorage.getItem('pestaña_activa')) {
                 localStorage.removeItem('proyecto_homecount');
@@ -1366,7 +1344,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const intersecciones = raycaster.intersectObjects(objetosInteractuables, true);
             if (intersecciones.length > 0) {
-                const interseccion = intersecciones[0]; // <-- AGREGA ESTA LÍNEA
+                const interseccion = intersecciones[0]; 
                 const pos = calcularPosicionSnappeada(interseccion, !event.altKey);
                 bloqueFantasma.position.set(pos.x, pos.y, pos.z);
                 bloqueFantasma.visible = true;
@@ -1455,14 +1433,6 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
     });
-
-    function actualizarNombreInterfaz(nombre) {
-        const displayNombre = document.getElementById('display-nombre-proyecto');
-        if (displayNombre) {
-            const nombreMostrar = nombre && nombre.trim() !== "" ? nombre : "Nuevo Proyecto";
-            displayNombre.innerHTML = `Proyecto: <strong>${nombreMostrar}</strong>`;
-        }
-    }
 
     const btnGuardarModelo = document.getElementById('btn-guardar-modelo');
     if (btnGuardarModelo) {
@@ -1639,23 +1609,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    function ajustarYAgregarModelo(gltfScene, anchoDeseado, altoDeseado, profundoDeseado) {
-        const boxOriginal = new THREE.Box3().setFromObject(gltfScene);
-        const sizeOriginal = boxOriginal.getSize(new THREE.Vector3());
-
-        const factorX = anchoDeseado / sizeOriginal.x;
-        const factorY = altoDeseado / sizeOriginal.y;
-        const factorZ = profundoDeseado / sizeOriginal.z;
-
-        gltfScene.scale.set(factorX, factorY, factorZ);
-        gltfScene.updateMatrixWorld(true);
-
-        const boxEscalado = new THREE.Box3().setFromObject(gltfScene);
-        gltfScene.position.y = -boxEscalado.min.y; 
-
-        return gltfScene;
-    }
-
     const btnDetalle = document.getElementById('btn-detalle-materiales');
     const contenedorLista = document.getElementById('lista-objetos-container');
     const iconoDetalle = document.getElementById('icono-detalle');
@@ -1746,13 +1699,102 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     window.calcularYMostrarPerimetro = calcularYMostrarPerimetro;
 
-    document.addEventListener('DOMContentLoaded', () => {
+    // Lógica para modo oscuro
+    const btnModoOscuro = document.getElementById('btn-modo-oscuro');
+    const body = document.body;
+
+    if (esModoOscuro) {
+        body.classList.add('tema-oscuro');
+        if (btnModoOscuro) btnModoOscuro.textContent = '☀️';
+    }
+
+    if (btnModoOscuro) {
+        btnModoOscuro.addEventListener('click', () => {
+            body.classList.toggle('tema-oscuro');
+            
+            if (body.classList.contains('tema-oscuro')) {
+                localStorage.setItem('modo-oscuro', 'activado');
+                btnModoOscuro.textContent = '☀️';
+            } else {
+                localStorage.setItem('modo-oscuro', 'desactivado');
+                btnModoOscuro.textContent = '🌙';
+            }
+        });
+    }
+
+    // Lógica para editar el nombre del proyecto
+// Lógica para editar el nombre del proyecto
+    const displayNombre = document.getElementById('display-nombre-proyecto');
+    if (displayNombre) {
+        
+        // 1. BLOQUEAR PEGADO CON FORMATO (Prevenir que peguen HTML oculto)
+        displayNombre.addEventListener('paste', (e) => {
+            e.preventDefault();
+            // Obtiene solo el texto sin formato del portapapeles
+            let textoLimpio = (e.clipboardData || window.clipboardData).getData('text');
+            // Lo inserta de forma segura
+            document.execCommand('insertText', false, textoLimpio);
+        });
+
+        // 2. FUNCIÓN DE GUARDADO SANITIZADO
+        const guardarNombreEditado = () => {
+            let nuevoNombre = displayNombre.innerText.trim();
+            
+            // --- INICIO DE SANITIZACIÓN ---
+            // A) Eliminar símbolos peligrosos de HTML (menor que, mayor que)
+            nuevoNombre = nuevoNombre.replace(/[<>]/g, ''); 
+            
+            // B) Limitar la longitud máxima a 50 caracteres
+            if (nuevoNombre.length > 50) {
+                nuevoNombre = nuevoNombre.substring(0, 50);
+            }
+            // --- FIN DE SANITIZACIÓN ---
+
+            // Si lo deja en blanco tras la limpieza, restaurar valor por defecto
+            if (nuevoNombre === "") {
+                nuevoNombre = "Nuevo Proyecto";
+            }
+            
+            // Devolver el nombre ya limpio a la pantalla
+            displayNombre.innerText = nuevoNombre;
+            
+            if (typeof proyectoCargadoNombre !== 'undefined') {
+                proyectoCargadoNombre = nuevoNombre;
+            }
+            localStorage.setItem('proyecto_hc_nombre', nuevoNombre);
+
+            // Guardado automático si el proyecto existe
+            if (typeof proyectoCargadoId !== 'undefined' && proyectoCargadoId !== null) {
+                if (typeof dispararAutoGuardado === 'function') {
+                    dispararAutoGuardado();
+                } else {
+                    const btnGuardar = document.getElementById('btn-guardar-modelo');
+                    if (btnGuardar) btnGuardar.click();
+                }
+            }
+        };
+
+        // Guardar al hacer clic fuera
+        displayNombre.addEventListener('blur', guardarNombreEditado);
+        
+        // Guardar al presionar Enter o evitar seguir escribiendo
+        displayNombre.addEventListener('keydown', (e) => {
+            // Evitar que sigan escribiendo si ya pasaron los 50 caracteres (permitiendo borrar)
+            if (displayNombre.innerText.length >= 50 && e.key !== 'Backspace' && e.key !== 'Delete' && !e.ctrlKey && !e.metaKey) {
+                e.preventDefault();
+            }
+
+            if (e.key === 'Enter') {
+                e.preventDefault(); 
+                displayNombre.blur(); 
+            }
+        });
+    }
+
     const tutorialCompletado = localStorage.getItem('tutorial_homecount_v1');
-    
     if (!tutorialCompletado) {
         setTimeout(iniciarTutorialInteractivo, 1000);
     }
-});
 
     function iniciarTutorialInteractivo() {
         const driver = window.driver.js.driver;
@@ -1842,11 +1884,8 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // 1. Inicialización basada en la clave configurada por inicio.js
-    esModoOscuro = localStorage.getItem('modo-oscuro') === 'activado';
     actualizarColores3D(esModoOscuro);
 
-    // 2. Observar dinámicamente si inicio.js agrega o quita la clase del body
     const observerModoOscuro = new MutationObserver((mutations) => {
         mutations.forEach((mutation) => {
             if (mutation.attributeName === 'class') {
@@ -1855,7 +1894,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     esModoOscuro = ahoraEsOscuro;
                     actualizarColores3D(esModoOscuro);
 
-                    // Refresca las dimensiones del terreno para que adopte el nuevo color
                     if (typeof cambiarTamanoTerreno === 'function') cambiarTamanoTerreno(tamanoTerreno);
                     if (typeof actualizarCotasVisuales === 'function') actualizarCotasVisuales();
                 }
@@ -1864,7 +1902,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     observerModoOscuro.observe(document.body, { attributes: true });
-    // ==========================================
+
     function generarArchivoPDF(datos) {
         return new Promise((resolve, reject) => {
             if (typeof html2pdf === 'undefined') {
@@ -1874,7 +1912,6 @@ document.addEventListener('DOMContentLoaded', () => {
             const contenedorTemporal = document.createElement('div');
             contenedorTemporal.innerHTML = generarHTMLInforme(datos, true);
             
-            // Estilos de rescate para asegurar que se dibuje correctamente
             contenedorTemporal.style.position = 'absolute';
             contenedorTemporal.style.left = '-9999px';
             contenedorTemporal.style.top = '-9999px';
@@ -1893,7 +1930,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     useCORS: true, 
                     logging: false,
                     letterRendering: true,
-                    windowWidth: 850 // Evita que los elementos se aplasten
+                    windowWidth: 850
                 },
                 jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
             };
@@ -1926,7 +1963,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 </tr>`;
         }).join('');
 
-        // 1. Reducimos la altura estricta a 250px para dar espacio obligatorio a la tabla
         const bloqueImagen = datos.imagenProyecto 
             ? `<div style="height: 250px; text-align: center; margin-bottom: 15px;">
                  <img src="${datos.imagenProyecto}" alt="Vista 3D del Proyecto" style="max-width: 100%; height: 100%; object-fit: contain; border-radius: 8px; border: 1px solid #cbd5e1; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
@@ -1945,10 +1981,8 @@ document.addEventListener('DOMContentLoaded', () => {
             .logo-box h1 { margin: 0; color: #2c3e50; font-size: 22px; } .logo-box h1 span { color: #e67e22; }
             .meta-folio { font-size: 13px; font-weight: bold; color: #e67e22; }
             
-            /* 2. Resumen más compacto con fondo claro para diferenciarlo */
             .bloque-resumen { display: flex; justify-content: space-between; margin-bottom: 15px; font-size: 13px; padding: 10px 15px; background: #f8fafc; border-radius: 6px; border: 1px solid #e2e8f0; }
             
-            /* 3. Ajustes de la tabla para evitar cortes (page-break) */
             table.tabla-informe { width: 100%; border-collapse: collapse; margin-bottom: 10px; font-size: 11px; page-break-inside: auto; }
             table.tabla-informe th { background: #f1f5f9; text-align: left; padding: 7px; border-bottom: 2px solid #cbd5e1; }
             table.tabla-informe td { padding: 7px; border-bottom: 1px solid #f1f5f9; }
@@ -1989,7 +2023,6 @@ document.addEventListener('DOMContentLoaded', () => {
         </html>`;
     }
 
-    // --- ACCIONES DEL MODAL Y DESCARGA ---
     window.abrirModalInforme = function() {
         const datos = obtenerDatosInforme();
         if (datos.totalPiezas === 0) {
@@ -2027,15 +2060,14 @@ document.addEventListener('DOMContentLoaded', () => {
             if (btnPdf) btnPdf.textContent = 'Generando archivo PDF...';
 
             const opt = {
-                margin: [10, 10, 15, 10], // Margen inferior más grande para obligar al salto de página
+                margin: [10, 10, 15, 10], 
                 filename: `Informe_Construccion_HomeCount_${datos.folio}.pdf`,
                 image: { type: 'jpeg', quality: 0.98 },
                 html2canvas: { scale: 2, useCORS: true, logging: false },
                 jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
-                pagebreak: { mode: ['css', 'legacy'] } // INSTRUCCIÓN CLAVE DE PAGINACIÓN
+                pagebreak: { mode: ['css', 'legacy'] } 
             };
 
-            // Usamos htmlString directo para que el motor interno no colapse
             html2pdf().set(opt).from(htmlString).save()
                 .then(() => {
                     if (btnPdf) btnPdf.textContent = textoOriginal;
@@ -2100,7 +2132,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 image: { type: 'jpeg', quality: 0.98 },
                 html2canvas: { scale: 2, useCORS: true, logging: false },
                 jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
-                pagebreak: { mode: ['css', 'legacy'] } // INSTRUCCIÓN CLAVE DE PAGINACIÓN
+                pagebreak: { mode: ['css', 'legacy'] }
             };
 
             html2pdf().set(opt).from(htmlString).toPdf().get('pdf').then(function(pdfObj) {
@@ -2146,16 +2178,14 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    document.addEventListener('DOMContentLoaded', () => {
-        const modalInformeEl = document.getElementById('modal-informe');
-        if (modalInformeEl) {
-            modalInformeEl.addEventListener('click', (e) => {
-                if (e.target === modalInformeEl) cerrarModalInforme();
-            });
-        }
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape') cerrarModalInforme();
+    const modalInformeEl = document.getElementById('modal-informe');
+    if (modalInformeEl) {
+        modalInformeEl.addEventListener('click', (e) => {
+            if (e.target === modalInformeEl) cerrarModalInforme();
         });
+    }
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') cerrarModalInforme();
     });
     
     function animar() {
@@ -2183,31 +2213,4 @@ document.addEventListener('DOMContentLoaded', () => {
             elementoBoton.classList.add('activo');
         }
     };
-});
-
-document.addEventListener('DOMContentLoaded', () => {
-    const btnModoOscuro = document.getElementById('btn-modo-oscuro');
-    const body = document.body;
-
-    // 1. Revisar si el usuario ya tenía el modo oscuro activado (guardado en LocalStorage)
-    if (localStorage.getItem('modo-oscuro') === 'activado') {
-        body.classList.add('tema-oscuro');
-        if (btnModoOscuro) btnModoOscuro.textContent = '☀️'; // Cambia el icono al sol
-    }
-
-    // 2. Evento para alternar entre modos al hacer clic
-    if (btnModoOscuro) {
-        btnModoOscuro.addEventListener('click', () => {
-            body.classList.toggle('tema-oscuro');
-            
-            // Guardar preferencia y cambiar el icono
-            if (body.classList.contains('tema-oscuro')) {
-                localStorage.setItem('modo-oscuro', 'activado');
-                btnModoOscuro.textContent = '☀️';
-            } else {
-                localStorage.setItem('modo-oscuro', 'desactivado');
-                btnModoOscuro.textContent = '🌙';
-            }
-        });
-    }
 });
